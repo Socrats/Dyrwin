@@ -7,7 +7,7 @@
 
 #include <vector>
 #include <random>
-#include "CRDPlayer.h"
+#include "Utils.h"
 
 class CollectiveRiskDilemma {
     /**
@@ -20,11 +20,11 @@ class CollectiveRiskDilemma {
      */
 public:
     CollectiveRiskDilemma(unsigned int nb_actions, unsigned int group_size, double target_sum, double risk,
-                          unsigned int game_rounds, double beta);
+                          unsigned int game_rounds);
 
     ~CollectiveRiskDilemma() {};
 
-    void run(unsigned int rounds, std::vector<CRDPlayer *> &players);
+    void run(unsigned int rounds, std::vector<EvoIndividual *> &players);
 
     /**
      * This version of run should be called if we want the fitness of each player returned in a vector
@@ -33,7 +33,7 @@ public:
      * @param fitnessVector
      */
 
-    void run(unsigned int rounds, std::vector<CRDPlayer *> &players, std::vector<double> &fitnessVector) {
+    void run(unsigned int rounds, std::vector<EvoIndividual *> &players, std::vector<double> &fitnessVector) {
         _fitnessVector = fitnessVector;
         run(rounds, players);
     };
@@ -47,7 +47,6 @@ public:
     double target_sum; // T amount that the group must reach at the end of the game
     double risk; // Probability that players loose what they have not invested if T is not reached
     unsigned int game_rounds; // number of rounds that each game will have
-    double beta; // intensity of selection
 
 private:
     unsigned int _current_generation = 0;
@@ -65,7 +64,8 @@ private:
     // normal distribution
     std::normal_distribution<> _normal_distribution;
 
-    double _calculate_fitness(CRDPlayer &player);
+    void _update_fitness_met_threshold(EvoIndividual *individual);
+    void _update_fitness_not_met_threshold(EvoIndividual *individual);
 };
 
 

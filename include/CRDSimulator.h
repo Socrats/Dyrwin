@@ -25,6 +25,7 @@
 
 #include <vector>
 #include <unordered_map>
+#include <boost/random.hpp>
 #include "WrightFisherModel.h"
 #include "CollectiveRiskDilemma.h"
 
@@ -35,18 +36,21 @@ typedef struct StrategyFrequency {
     Strategy strategy;
     unsigned int freq;
 
-    StrategyFrequency & operator++() {
+    StrategyFrequency &operator++() {
         ++freq;
         return *this;
     }
+
     StrategyFrequency operator++(int) {
         freq++;
         return *this;
     }
-    StrategyFrequency & operator--() {
+
+    StrategyFrequency &operator--() {
         --freq;
         return *this;
     }
+
     StrategyFrequency operator--(int) {
         freq--;
         return *this;
@@ -69,7 +73,7 @@ public:
 //    CRDSimulator(S &selection, M &mutation, O *outputHandler, P &population,
 //                      unsigned int population_size, unsigned int group_size);
 
-    virtual ~CRDSimulator(){};
+    virtual ~CRDSimulator() {};
 
     void evolve(unsigned int generations);
 
@@ -78,6 +82,7 @@ public:
     unsigned int group_size;
     unsigned int nb_games;
     unsigned int game_rounds;
+    double beta; // intensity of selection
 //    bool debug = false; // Variable that indicates if the simulation is run on debug mode
 //    char *outputLog; // Pointer to string that specifies the output file
 //    O *OutputHandler; // Pointer to OutputHandler class
@@ -86,16 +91,26 @@ private:
 //    S *_selection; // Pointer to Selection class
 //    M *_mutation; // Pointer to Mutation class
     std::unordered_map<Strategy, strategy_fq, StrategyHasher> _populationTypesHash;
-    std::vector<CRDPlayer> _population;  // holds the population at a given generation
-    std::vector<CRDPlayer> _population_tmp; // holds a vector of players
-    std::vector<double> _fitnessVector;
-    std::vector<unsigned int> _population_indexes;
-    std::vector<CRDPlayer *> _group; // Vector of pointers to player objects
+    std::vector<EvoIndividual> _population;  // holds the population at a given generation
+    std::vector<EvoIndividual> _population_tmp; // holds a vector of players
+    std::vector<double> _fitnessVector; // holds the fitness of each player in the population at a given generation
+    std::vector<int> _population_indexes; // holds indexes to the population
+    std::vector<EvoIndividual *> _group; // Vector of pointers to player objects
     std::vector<unsigned int> _group_indexes; // Holds indexes to the population for selecting a group
 
-    CollectiveRiskDilemma* _game; // Pointer to Game class
+    CollectiveRiskDilemma *_game; // Pointer to Game class
 
-    std::vector<CRDPlayer *> _select_randomly(unsigned int size); // Selects size individuals randomly with replacement from the population
+    // Random generators
+    boost::mt19937 _mt;
+    boost::uniform_real<> _uniform = boost::uniform_real<>(0, 1);
+    boost::variate_generator<boost::mt19937 &, boost::uniform_real<> > _rng =
+            boost::variate_generator<boost::mt19937 &, boost::uniform_real<> >(_mt, _uniform);
+
+    std::vector<EvoIndividual *>
+    _select_randomly(unsigned int size); // Selects size individuals randomly with replacement from the population
+    void _update_fitness_vector();
+
+    void _update_population_indexes();
 };
 
 

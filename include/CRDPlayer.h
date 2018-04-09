@@ -1,11 +1,20 @@
-//
-// Created by Elias Fernandez on 14/03/2018.
-//
+/**
+ * File: ParameterHandler.h
+ * Author: Elias Fernandez
+ * Date Created: 14/03/2018
+ *
+ * CRDPlayer Class. Implements the player encoding defined in M. A. Chakra & A. Traulsen 2012 for the Collective-Risk
+ * Dilemma.
+ *
+ * Each player contains an encoded Strategy which will be optimized through evolution
+ *
+ */
 
 #ifndef DYRWIN_CRDPLAYER_H
 #define DYRWIN_CRDPLAYER_H
 
 #include <boost/functional/hash.hpp>
+
 
 struct Strategy {
     int first;
@@ -23,12 +32,12 @@ struct Strategy {
     Strategy(int first, int second, double threshold) :
             first(first), second(second), threshold(threshold) {};
 
-    Strategy & operator ++() {
+    Strategy &operator++() {
         // Mutate strategy - Prefix
         return *this;
     }
 
-    Strategy operator ++ (int) {
+    Strategy operator++(int) {
         // Mutate strategy - Postfix
         return *this;
     }
@@ -39,7 +48,6 @@ struct Strategy {
         threshold = other.threshold;
     }
 };
-
 
 struct StrategyHasher {
     std::size_t operator()(const Strategy &s) const {
@@ -59,7 +67,6 @@ struct StrategyHasher {
         return seed;
     }
 };
-
 
 class CRDPlayer {
 public:
@@ -93,7 +100,7 @@ public:
 
     void updatePayoff(double curr_payoff);
 
-    void reset();
+    void reset(double endowment);
 
     static int GenerateID() {
         static int idCounter = 111;
