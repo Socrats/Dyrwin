@@ -27,6 +27,12 @@ struct Strategy {
                 && threshold == other.threshold);
     }
 
+    bool operator!=(const Strategy &other) const {
+        return !(first == other.first
+                && second == other.second
+                && threshold == other.threshold);
+    }
+
     Strategy() : first(0), second(0), threshold(0) {};
 
     Strategy(int first, int second, double threshold) :
@@ -49,6 +55,55 @@ struct Strategy {
     }
 };
 
+struct SequentialStrategy {
+    std::vector<Strategy> round_strategies;
+    size_t rounds;
+
+    bool operator==(const SequentialStrategy &other) const {
+        bool equal = true;
+        for (size_t i=0; i < rounds; i++) {
+            if (round_strategies[i] == other.round_strategies[i]) {
+                equal = false;
+                break;
+            }
+        }
+        return equal;
+    }
+
+    SequentialStrategy() : rounds(10) {
+        round_strategies.reserve(rounds);
+        for (size_t i=0; i < rounds; i++) {
+            round_strategies.push_back(Strategy());
+        }
+    };
+
+    SequentialStrategy(size_t rounds) : rounds(rounds) {
+        round_strategies.reserve(rounds);
+        for (size_t i=0; i < rounds; i++) {
+            round_strategies.push_back(Strategy());
+        }
+    };
+
+    SequentialStrategy(std::vector<Strategy> &strategies, size_t rounds) :
+           round_strategies(strategies), rounds(rounds)  {};
+
+    SequentialStrategy &operator++() {
+        // Mutate strategy - Prefix
+        return *this;
+    }
+
+    SequentialStrategy operator++(int) {
+        // Mutate strategy - Postfix
+        return *this;
+    }
+
+    void copy(SequentialStrategy &other) {
+        for (size_t i = 0; i < rounds; i++) {
+            round_strategies[i].copy(other.round_strategies[i]);
+        }
+    }
+};
+
 struct StrategyHasher {
     std::size_t operator()(const Strategy &s) const {
         using boost::hash_value;
@@ -68,6 +123,28 @@ struct StrategyHasher {
     }
 };
 
+struct SequentialStrategyHasher {
+    std::size_t operator()(const SequentialStrategy &s) const {
+        using boost::hash_value;
+        using boost::hash_combine;
+
+        // Start with a hash value of 0    .
+        std::size_t seed = 0;
+
+        // Modify 'seed' by XORing and bit-shifting in
+        // one member of 'Key' after the other:
+        for (size_t i=0; i < s.rounds; i++) {
+            hash_combine(seed, hash_value(s.round_strategies[i].first));
+            hash_combine(seed, hash_value(s.round_strategies[i].second));
+            hash_combine(seed, hash_value(s.round_strategies[i].threshold));
+        }
+        hash_combine(seed, hash_value(s.rounds));
+
+        // Return the result.
+        return seed;
+    }
+};
+
 class CRDPlayer {
 public:
     /**
@@ -78,7 +155,7 @@ public:
 	*/
     CRDPlayer() :
             id(CRDPlayer::GenerateID()),
-            payoff(0), strategy(Strategy()) {};
+            payoff(0) { strategy = SequentialStrategy(); };
 
     virtual ~CRDPlayer() {};
 
@@ -96,7 +173,7 @@ public:
 
     int getAction();
 
-    int getAction(double &public_account);
+    int getAction(double &public_account, size_t rd);
 
     void updatePayoff(double curr_payoff);
 
@@ -109,7 +186,7 @@ public:
 
     double getPayoff();
 
-    Strategy strategy;
+    SequentialStrategy strategy;
 
 protected:
     /**

@@ -21,13 +21,13 @@ void CollectiveRiskDilemma::run(unsigned int rounds, std::vector<EvoIndividual *
     size_t size = players.size();
     double total_donations = 0;
     double round_donations = 0;
-    int i, j;
+    size_t i, j;
 
     // Initialize players on the first round
     round_donations = 0;
     for (j = 0; j < size; j++) {
         players[j]->player.reset(ENDOWMENT);
-        round_donations += players[j]->player.getAction(total_donations);
+        round_donations += players[j]->player.getAction(total_donations, 0);
     }
     total_donations += round_donations;
 
@@ -37,7 +37,7 @@ void CollectiveRiskDilemma::run(unsigned int rounds, std::vector<EvoIndividual *
         // Iterate over the group players
         round_donations = 0;
         for (j = 0; j < size; j++) {
-            round_donations += players[j]->player.getAction(total_donations);
+            round_donations += players[j]->player.getAction(total_donations, i);
         }
         total_donations += round_donations;
     }

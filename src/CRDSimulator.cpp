@@ -23,12 +23,17 @@ CRDSimulator::CRDSimulator(unsigned int population_size) : population_size(popul
     _population.reserve(population_size);
     _population_tmp.reserve(population_size);
 
+
     for (unsigned int i = 0; i < population_size; i++) {
-        _population[i] = EvoIndividual(&_fitnessVector[i], CRDPlayer());
+        _population.push_back(EvoIndividual(&_fitnessVector[i], CRDPlayer()));
         _populationTypesHash.insert(
                 std::make_pair(_population[i].player.strategy, strategy_fq(_population[i].player.strategy, 0))
         );
     }
+
+    // Make sure that population vector has been initialized
+    assert(!_population.empty());
+    assert(!_population[0].player.strategy.round_strategies.empty());
 
     // Copy population into population tmp
     _population_tmp = _population;

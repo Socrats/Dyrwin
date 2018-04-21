@@ -33,7 +33,7 @@
  * Holds the frequency in which each strategy appears
  */
 typedef struct StrategyFrequency {
-    Strategy strategy;
+    SequentialStrategy strategy;
     unsigned int freq;
 
     StrategyFrequency &operator++() {
@@ -56,13 +56,18 @@ typedef struct StrategyFrequency {
         return *this;
     }
 
-    StrategyFrequency(Strategy strategy, unsigned int freq) :
+    StrategyFrequency(SequentialStrategy strategy, unsigned int freq) :
             strategy(strategy), freq(freq) {};
 
     bool operator==(const StrategyFrequency &other) const {
-        return (strategy.first == other.strategy.first
-                && strategy.second == other.strategy.second
-                && strategy.threshold == other.strategy.threshold);
+        bool equal = true;
+        for (size_t i=0; i < strategy.rounds; i++) {
+            if (strategy.round_strategies[i] == other.strategy.round_strategies[i]) {
+                equal = false;
+                break;
+            }
+        }
+        return equal;
     }
 } strategy_fq;
 
@@ -90,7 +95,7 @@ public:
 private:
 //    S *_selection; // Pointer to Selection class
 //    M *_mutation; // Pointer to Mutation class
-    std::unordered_map<Strategy, strategy_fq, StrategyHasher> _populationTypesHash;
+    std::unordered_map<SequentialStrategy, strategy_fq, SequentialStrategyHasher> _populationTypesHash;
     std::vector<EvoIndividual> _population;  // holds the population at a given generation
     std::vector<EvoIndividual> _population_tmp; // holds a vector of players
     std::vector<double> _fitnessVector; // holds the fitness of each player in the population at a given generation
