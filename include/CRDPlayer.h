@@ -56,6 +56,9 @@ struct Strategy {
 };
 
 struct SequentialStrategy {
+    /**
+     * Implements player described in Maria A. Chakra et al. Plos paper.
+     */
     std::vector<Strategy> round_strategies;
     size_t rounds;
 
@@ -146,6 +149,9 @@ struct SequentialStrategyHasher {
 };
 
 class CRDPlayer {
+    /**
+     * Implements the player described in Maria A. Chacra et al. Plos paper.
+     */
 public:
     /**
 	    \brief Constructor

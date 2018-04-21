@@ -52,17 +52,6 @@ CRDSimulator::CRDSimulator(unsigned int population_size) : population_size(popul
 
 }
 
-//template<typename S, typename M, typename O, typename P>
-//CRDSimulator<S, M, O, P>::CRDSimulator(S &selection, M &mutation, O *outputHandler, P &population, unsigned int population_size,
-//                           unsigned int group_size) : _selection(selection), _mutation(mutation), population(population),
-//                                                      OutputHandler(outputHandler), population_size(population_size),
-//                                                      group_size(group_size) {
-//    this->_group = std::vector<P>(group_size);
-//    this->_group_indexes = std::vector<unsigned int>(this->population->size());
-//    std::iota(this->_group_indexes.begin(), this->_group_indexes.end(), 0);
-//
-//}
-
 /**
  * Evolves the population through selection and mutation operators.
  * @param generations - numbers of generations through which the population is evolved
@@ -102,7 +91,7 @@ void CRDSimulator::evolve(unsigned int generations) {
 //            }
         }
         // Update new population
-        _population = _population_tmp;
+        _population.swap(_population_tmp);
 
 
         // And finally mutate
@@ -120,8 +109,7 @@ void CRDSimulator::evolve(unsigned int generations) {
 std::vector<EvoIndividual *> CRDSimulator::_select_randomly(unsigned int size) {
 
     // copy group_indexes
-    std::vector<unsigned int> group_indexes;
-    group_indexes.swap(_group_indexes);
+    std::vector<unsigned int> group_indexes = _group_indexes;
 
     // reshuffle indexes
     std::random_shuffle(group_indexes.begin(), group_indexes.end());
