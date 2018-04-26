@@ -5,15 +5,16 @@
 #include <iostream>
 #include "../include/CRDSimulator.h"
 
-CRDSimulator::CRDSimulator(unsigned int population_size) : population_size(population_size), beta(1.0) {
+CRDSimulator::CRDSimulator(unsigned int population_size, boost::mt19937 &mt) : population_size(population_size),
+                                                                               beta(1.0), _mt(mt) {
     // Default parameters
     group_size = 6;
     nb_games = 1000;
     double target_sum = 120;
     double risk = 0.9;
     unsigned int game_rounds = 10;
-    double_t sigma_e = 0;
-    double_t sigma_t = 0;
+    double mu = 0.003;
+    double sigma = 0.15;
 
     // Initialize fitness vector
     _fitnessVector = std::vector<double>(population_size, 0.0);
@@ -25,7 +26,7 @@ CRDSimulator::CRDSimulator(unsigned int population_size) : population_size(popul
 
 
     for (unsigned int i = 0; i < population_size; i++) {
-        _population.push_back(EvoIndividual(&_fitnessVector[i], CRDPlayer()));
+        _population.push_back(EvoIndividual(&_fitnessVector[i], CRDPlayer(mu, sigma, mt)));
         _populationTypesHash.insert(
                 std::make_pair(_population[i].player.strategy, strategy_fq(_population[i].player.strategy, 0))
         );
@@ -124,7 +125,7 @@ std::vector<EvoIndividual *> CRDSimulator::_select_randomly(unsigned int size) {
 }
 
 void CRDSimulator::_update_fitness_vector() {
-    for(auto & fitness: _fitnessVector) {
+    for (auto &fitness: _fitnessVector) {
         fitness = exp(this->beta * fitness);
     }
 

@@ -73,28 +73,24 @@ typedef struct StrategyFrequency {
 
 class CRDSimulator {
 public:
-    CRDSimulator(unsigned int population_size);
-
-//    CRDSimulator(S &selection, M &mutation, O *outputHandler, P &population,
-//                      unsigned int population_size, unsigned int group_size);
-
+    /**
+     * Initializes the simulation with population size and a random generator
+     * @param population_size
+     * @param mt
+     */
+    CRDSimulator(unsigned int population_size, boost::mt19937& mt);
     virtual ~CRDSimulator() {};
 
     void evolve(unsigned int generations);
 
-//    std::vector<CRDPlayer> population;
+
     unsigned int population_size;
     unsigned int group_size;
     unsigned int nb_games;
     unsigned int game_rounds;
     double beta; // intensity of selection
-//    bool debug = false; // Variable that indicates if the simulation is run on debug mode
-//    char *outputLog; // Pointer to string that specifies the output file
-//    O *OutputHandler; // Pointer to OutputHandler class
 
 private:
-//    S *_selection; // Pointer to Selection class
-//    M *_mutation; // Pointer to Mutation class
     std::unordered_map<SequentialStrategy, strategy_fq, SequentialStrategyHasher> _populationTypesHash;
     std::vector<EvoIndividual> _population;  // holds the population at a given generation
     std::vector<EvoIndividual> _population_tmp; // holds a vector of players
@@ -106,7 +102,7 @@ private:
     CollectiveRiskDilemma *_game; // Pointer to Game class
 
     // Random generators
-    boost::mt19937 _mt;
+    boost::mt19937& _mt;
     boost::uniform_real<> _uniform = boost::uniform_real<>(0, 1);
     boost::variate_generator<boost::mt19937 &, boost::uniform_real<> > _rng =
             boost::variate_generator<boost::mt19937 &, boost::uniform_real<> >(_mt, _uniform);
