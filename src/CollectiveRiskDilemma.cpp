@@ -5,7 +5,7 @@
 #include <iostream>
 #include "../include/CollectiveRiskDilemma.h"
 
-#define ENDOWMENT 40.0
+#define ENDOWMENT 20.0
 
 CollectiveRiskDilemma::CollectiveRiskDilemma(unsigned int nb_actions, unsigned int group_size, double target_sum,
                                              double risk, unsigned int game_rounds) :

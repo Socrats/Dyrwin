@@ -10,7 +10,7 @@ CRDSimulator::CRDSimulator(unsigned int population_size, boost::mt19937 &mt) : p
     // Default parameters
     group_size = 6;
     nb_games = 1000;
-    double target_sum = 120;
+    double target_sum = 60;
     double risk = 0.9;
     unsigned int game_rounds = 10;
     double mu = 0.003;
@@ -93,10 +93,6 @@ void CRDSimulator::evolve(unsigned int generations) {
         }
         // Update new population
         _population.swap(_population_tmp);
-
-
-        // And finally mutate
-//        _mutation->mutate(&this->population);
 
     }
 
