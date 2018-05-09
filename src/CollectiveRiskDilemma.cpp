@@ -8,9 +8,9 @@
 #define ENDOWMENT 20.0
 
 CollectiveRiskDilemma::CollectiveRiskDilemma(unsigned int nb_actions, unsigned int group_size, double target_sum,
-                                             double risk, unsigned int game_rounds) :
+                                             double risk, unsigned int game_rounds, boost::mt19937 &mt) :
         nb_actions(nb_actions), group_size(group_size),
-        target_sum(target_sum), risk(risk), game_rounds(game_rounds) {
+        target_sum(target_sum), risk(risk), game_rounds(game_rounds), _mt(mt) {
 
 }
 
@@ -46,14 +46,13 @@ void CollectiveRiskDilemma::run(unsigned int rounds, std::vector<EvoIndividual *
     // Check if the threshold has NOT been reached
     if (target_sum > total_donations) {
         // Generate random number
-        double rd_number = 0.4;
-        if (risk > rd_number) {
+        if (risk > _rng_uniform()) {
             met_threshold = false;
         }
     }
 
     if (met_threshold) {
-        // Update all players payoffs with 0
+        // Update all players payoffs with their private account
         for (j = 0; j < size; j++) {
             _update_fitness_met_threshold(players[j]);
         }

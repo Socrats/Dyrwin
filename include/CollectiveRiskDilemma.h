@@ -20,7 +20,7 @@ class CollectiveRiskDilemma {
      */
 public:
     CollectiveRiskDilemma(unsigned int nb_actions, unsigned int group_size, double target_sum, double risk,
-                          unsigned int game_rounds);
+                          unsigned int game_rounds, boost::mt19937 &mt);
 
     ~CollectiveRiskDilemma() {};
 
@@ -53,19 +53,15 @@ private:
     double _public_account = 0.0; // Ammount acumulated at the public_account on one game
     std::vector<double> _fitnessVector;
 
-    // seed with a real random value, if available
-    std::random_device rd;
-    // random engine
-    std::default_random_engine _random_engine1;
-    std::seed_seq _seed{rd(), rd(), rd(), rd(), rd(), rd(), rd(), rd()};
-    std::mt19937 _random_engine2;
-    // uniform distribution
-    std::uniform_int_distribution<int> _uniform_dist;
-    // normal distribution
-    std::normal_distribution<> _normal_distribution;
-
     void _update_fitness_met_threshold(EvoIndividual *individual);
+
     void _update_fitness_not_met_threshold(EvoIndividual *individual);
+
+    // Random generators
+    boost::mt19937 &_mt;
+    boost::uniform_real<> _uniform = boost::uniform_real<>(0, 1);
+    boost::variate_generator<boost::mt19937 &, boost::uniform_real<> > _rng_uniform =
+            boost::variate_generator<boost::mt19937 &, boost::uniform_real<> >(_mt, _uniform);
 };
 
 

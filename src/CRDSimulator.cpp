@@ -49,7 +49,7 @@ CRDSimulator::CRDSimulator(unsigned int population_size, boost::mt19937 &mt) : p
     std::iota(_group_indexes.begin(), _group_indexes.end(), 0);
 
     // Initialize Game
-    _game = new CollectiveRiskDilemma(3, group_size, target_sum, risk, game_rounds);
+    _game = new CollectiveRiskDilemma(3, group_size, target_sum, risk, game_rounds, mt);
 
 }
 
