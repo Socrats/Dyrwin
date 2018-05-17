@@ -93,6 +93,9 @@ public:
 
     void evolve(unsigned int generations);
 
+    void printPopulation();
+    void printCurrentStrategyFitness();
+    void printAvgPopulationFitness(int generation);
 
     unsigned int population_size;
     unsigned int group_size;

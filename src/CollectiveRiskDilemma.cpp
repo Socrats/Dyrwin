@@ -68,18 +68,18 @@ void CollectiveRiskDilemma::run(unsigned int rounds, std::vector<EvoIndividual *
 }
 
 void CollectiveRiskDilemma::_update_fitness_met_threshold(EvoIndividual *individual) {
+    double scaling = 1. / (double) (individual->games_played + 1);
     // Calculate moving average
-    *individual->fitness += ((individual->games_played * (*individual->fitness)) + individual->player.getPayoff()) /
-                            (individual->games_played + 1);
+    *(individual->fitness) = (individual->player.getPayoff() * scaling) + (*(individual->fitness) * (1. - scaling));
     individual->games_played++;
+//    individual->player.updatePayoff(0.0);
 }
 
 void CollectiveRiskDilemma::_update_fitness_not_met_threshold(EvoIndividual *individual) {
     individual->player.updatePayoff(0.0);
-//    std::cout << "Reaches here " << std::endl;
-//    std::cout << "Reaches here " << *(individual->fitness) << std::endl;
+    double scaling = 1. / (double) (individual->games_played + 1);
     // Calculate moving average
-    *(individual->fitness) += (individual->games_played * (*(individual->fitness))) / (individual->games_played + 1);
+    *(individual->fitness) = (*(individual->fitness) * (1. - scaling));
     individual->games_played++;
 }
 

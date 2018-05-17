@@ -18,53 +18,33 @@ CRDSimulator::CRDSimulator(unsigned int population_size) : population_size(popul
     // Initialize fitness vector
     _fitnessVector = std::vector<double>(population_size, 0.0);
 
-    // Vector of players
-    std::vector<CRDPlayer> players = std::vector<CRDPlayer>(population_size, CRDPlayer(mu, sigma));
-
     // Generate population
     // reserve memory for vector of pointers
     _population.reserve(population_size);
     _population_tmp.reserve(population_size);
     _populationTypesHash.reserve(population_size);
-    players.reserve(population_size);
 
 
     for (unsigned int i = 0; i < population_size; i++) {
-        players[i] = CRDPlayer(mu, sigma);
-        _population.push_back(EvoIndividual(&_fitnessVector[i], players[i]));
-//        auto it = _populationTypesHash.find(players[i].strategy);
+        _population.push_back(EvoIndividual(&_fitnessVector[i], *(new CRDPlayer(mu, sigma))));
+//        auto it = _populationTypesHash.find(_population.back().player.strategy);
 //        if (it != _populationTypesHash.end()) {
-//            std::cout << "Strategy already exists" << std::endl;
 //            it->second++;
 //        } else {
-//            auto ok = _populationTypesHash.insert(std::make_pair(players[i].strategy, strategy_fq(players[i].strategy, 1)));
-//            std::cout << "New strategy added: " << ok.second << std::endl;
-//            std::cout << "Freq of the strategy: " << ok.first->second.freq << std::endl;
+//            auto ok = _populationTypesHash.insert(std::make_pair(_population.back().player.strategy,
+//                                                                 strategy_fq(_population.back().player.strategy, 1)));
 //        }
     }
-    for (auto const& individual: _population) {
-        std::cout << "===========================" << std::endl;
-        std::cout << "Player fitness: " << *(individual.fitness) << std::endl;
-        std::cout << "---------------------------" << std::endl;
-        int d = 0;
-        for (auto const& strategy: individual.player.strategy.round_strategies) {
-            std::cout << "---------------------------" << std::endl;
-            std::cout << "Round " << ++d << std::endl;
-            std::cout << "First action: " << strategy.first << std::endl;
-            std::cout << "Second action: " << strategy.second << std::endl;
-            std::cout << "Threshold: " << strategy.threshold << std::endl;
-            std::cout << "---------------------------" << std::endl;
-        }
-    }
-
-    std::cout << "Llega aquí! Rounds: " << _population[0].player.strategy.rounds << std::endl;
-    std::cout << "Strategy threshold 0: " << _population[0].player.strategy.round_strategies[1].threshold << std::endl;
 
     // Make sure that population vector has been initialized
     assert(!_population.empty());
     assert(!_population[0].player.strategy.round_strategies.empty());
-    assert(!_populationTypesHash.empty());
-    assert(!_populationTypesHash.find(_population[0].player.strategy)->second.strategy.round_strategies.empty());
+//    assert(!_populationTypesHash.empty());
+//    auto it = _populationTypesHash.find(_population.back().player.strategy);
+//    if (it == _populationTypesHash.end()) {
+//        std::cout << "Strategy is not in the table" << std::endl;
+//    }
+//    assert(!_populationTypesHash.find(_population[0].player.strategy)->second.strategy.round_strategies.empty());
 
     // Copy population into population tmp
     _population_tmp = _population;
@@ -91,14 +71,13 @@ void CRDSimulator::evolve(unsigned int generations) {
     int i, j;
 
     for (j = 0; j < generations; j++) {
-        std::cout << "generation " << j << std::endl;
-
         // First play games and calculate fitness
         for (i = 0; i < nb_games; i++) {
             // Generate group
             auto group = _select_randomly(group_size);
             _game->run(game_rounds, group);
         }
+        printAvgPopulationFitness(j);
 
         // Then apply selection - Wright-Fisher Process
         // First update fitnessVector
@@ -106,7 +85,6 @@ void CRDSimulator::evolve(unsigned int generations) {
         // Then, generate new population_indexes drawn at random with fitnessVector as weights
         _update_population_indexes();
         // Finally, update population
-//        std::pair<std::unordered_map<SequentialStrategy, strategy_fq, SequentialStrategyHasher>::iterator, bool> ok;
         for (i = 0; i < population_size; i++) {
             // Update player in population
             _population_tmp[i].player.strategy.copy(_population[_population_indexes[i]].player.strategy);
@@ -117,16 +95,19 @@ void CRDSimulator::evolve(unsigned int generations) {
             // Mutate player strategy
             ++_population_tmp[i].player.strategy;
 
-            auto ok = _populationTypesHash.insert(
-                    std::make_pair(_population_tmp[i].player.strategy,
-                                   strategy_fq(_population_tmp[i].player.strategy, 1))
-            );
+            // Reset individual
+            _population_tmp[i].init();
 
-            if (!ok.second) {
-                std::cout << " " << ok.second << std::endl;
-//                _populationTypesHash[_population_tmp[i].player.strategy]++;
-            }
-            std::cout << "Reaches here" << std::endl;
+
+//            auto ok = _populationTypesHash.insert(
+//                    std::make_pair(_population_tmp[i].player.strategy,
+//                                   strategy_fq(_population_tmp[i].player.strategy, 1))
+//            );
+//
+//            if (!ok.second) {
+//                std::cout << " " << ok.second << std::endl;
+////                _populationTypesHash[_population_tmp[i].player.strategy]++;
+//            }
         }
         // Update new population
         _population.swap(_population_tmp);
@@ -175,4 +156,30 @@ void CRDSimulator::_update_population_indexes() {
         // Initialize fitness and games played
         _population[i].init();
     }
+}
+
+void CRDSimulator::printPopulation() {
+    for (auto const &individual: _population) {
+        std::cout << "===========================" << std::endl;
+        std::cout << "Player fitness: " << *(individual.fitness) << std::endl;
+        std::cout << "---------------------------" << std::endl;
+        int d = 0;
+        for (auto const &strategy: individual.player.strategy.round_strategies) {
+            std::cout << "---------------------------" << std::endl;
+            std::cout << "Round " << ++d << std::endl;
+            std::cout << "First action: " << strategy.first << std::endl;
+            std::cout << "Second action: " << strategy.second << std::endl;
+            std::cout << "Threshold: " << strategy.threshold << std::endl;
+            std::cout << "---------------------------" << std::endl;
+        }
+    }
+}
+
+void CRDSimulator::printCurrentStrategyFitness() {
+
+}
+
+void CRDSimulator::printAvgPopulationFitness(int generation) {
+    double average = std::accumulate( _fitnessVector.begin(), _fitnessVector.end(), 0.0)/_fitnessVector.size();
+    std::cout << "[Gen " << generation << "] Avg. Fitness of the population: " << average << std::endl;
 }

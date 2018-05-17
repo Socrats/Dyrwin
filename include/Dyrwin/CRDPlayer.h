@@ -125,14 +125,14 @@ struct SequentialStrategy {
     SequentialStrategy(double mu, double sigma) : rounds(10) {
         round_strategies.reserve(rounds);
         for (size_t i = 0; i < rounds; i++) {
-            round_strategies.push_back(Strategy(mu, sigma));
+            round_strategies.push_back(*(new Strategy(mu, sigma)));
         }
     };
 
     SequentialStrategy(double mu, double sigma, size_t rounds) : rounds(rounds) {
         round_strategies.reserve(rounds);
         for (size_t i = 0; i < rounds; i++) {
-            round_strategies.push_back(Strategy(mu, sigma));
+            round_strategies.push_back(*(new Strategy(mu, sigma)));
         }
     };
 
@@ -216,7 +216,7 @@ public:
 	*/
     CRDPlayer(double mu, double sigma) :
             id(CRDPlayer::GenerateID()),
-            payoff(0), strategy(SequentialStrategy(mu, sigma)) {};
+            payoff(0), strategy(*(new SequentialStrategy(mu, sigma))) {};
 
     virtual ~CRDPlayer() {};
 
