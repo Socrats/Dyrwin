@@ -23,17 +23,19 @@
 #define DYRWIN_CRDSIMULATOR_H
 
 
+#include <random>
 #include <vector>
 #include <unordered_map>
 #include <boost/random.hpp>
 #include "WrightFisherModel.h"
 #include "CollectiveRiskDilemma.h"
+#include "SeedGenerator.h"
 
 /**
  * Holds the frequency in which each strategy appears
  */
 typedef struct StrategyFrequency {
-    SequentialStrategy strategy;
+    SequentialStrategy& strategy;
     unsigned int freq;
 
     StrategyFrequency &operator++() {
@@ -56,7 +58,10 @@ typedef struct StrategyFrequency {
         return *this;
     }
 
-    StrategyFrequency(SequentialStrategy strategy, unsigned int freq) :
+    StrategyFrequency(SequentialStrategy& strategy) :
+            strategy(strategy), freq(0) {};
+
+    StrategyFrequency(SequentialStrategy& strategy, unsigned int freq) :
             strategy(strategy), freq(freq) {};
 
     bool operator==(const StrategyFrequency &other) const {
@@ -69,6 +74,11 @@ typedef struct StrategyFrequency {
         }
         return equal;
     }
+
+    StrategyFrequency operator=(const StrategyFrequency &other) const {
+        // Enforces that the reference to the random number generator is not changed
+        return *this;
+    }
 } strategy_fq;
 
 class CRDSimulator {
@@ -78,7 +88,7 @@ public:
      * @param population_size
      * @param mt
      */
-    CRDSimulator(unsigned int population_size, boost::mt19937& mt);
+    CRDSimulator(unsigned int population_size);
     virtual ~CRDSimulator() {};
 
     void evolve(unsigned int generations);
@@ -102,10 +112,7 @@ private:
     CollectiveRiskDilemma *_game; // Pointer to Game class
 
     // Random generators
-    boost::mt19937& _mt;
-    boost::uniform_real<> _uniform = boost::uniform_real<>(0, 1);
-    boost::variate_generator<boost::mt19937 &, boost::uniform_real<> > _rng =
-            boost::variate_generator<boost::mt19937 &, boost::uniform_real<> >(_mt, _uniform);
+    std::mt19937_64 _mt{SeedGenerator::getSeed()};
 
     std::vector<EvoIndividual *>
     _select_randomly(unsigned int size); // Selects size individuals randomly with replacement from the population

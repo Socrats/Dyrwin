@@ -8,6 +8,7 @@
 #include <vector>
 #include <random>
 #include "Utils.h"
+#include "SeedGenerator.h"
 
 class CollectiveRiskDilemma {
     /**
@@ -20,7 +21,7 @@ class CollectiveRiskDilemma {
      */
 public:
     CollectiveRiskDilemma(unsigned int nb_actions, unsigned int group_size, double target_sum, double risk,
-                          unsigned int game_rounds, boost::mt19937 &mt);
+                          unsigned int game_rounds);
 
     ~CollectiveRiskDilemma() {};
 
@@ -58,10 +59,7 @@ private:
     void _update_fitness_not_met_threshold(EvoIndividual *individual);
 
     // Random generators
-    boost::mt19937 &_mt;
-    boost::uniform_real<> _uniform = boost::uniform_real<>(0, 1);
-    boost::variate_generator<boost::mt19937 &, boost::uniform_real<> > _rng_uniform =
-            boost::variate_generator<boost::mt19937 &, boost::uniform_real<> >(_mt, _uniform);
+    std::mt19937_64 _mt{SeedGenerator::getSeed()};
 };
 
 

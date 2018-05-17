@@ -11,10 +11,10 @@
 
 struct EvoIndividual {
     double* fitness;
-    CRDPlayer player;
+    CRDPlayer& player;
     unsigned int games_played;
 
-    EvoIndividual(double *fitness, CRDPlayer player) :
+    EvoIndividual(double *fitness, CRDPlayer& player) :
             fitness(fitness), player(player), games_played(0){}
     ~EvoIndividual() {};
 
@@ -22,6 +22,11 @@ struct EvoIndividual {
         *fitness = 0;
         this->games_played = 0;
     };
+
+    EvoIndividual operator=(const EvoIndividual &other) const {
+        // Enforces that the reference to the random number generator is not changed
+        return *this;
+    }
 };
 
 

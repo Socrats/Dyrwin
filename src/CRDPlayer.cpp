@@ -2,7 +2,7 @@
 // Created by Elias Fernandez on 14/03/2018.
 //
 
-#include "../include/CRDPlayer.h"
+#include "../include/Dyrwin/CRDPlayer.h"
 
 int CRDPlayer::getAction() {
     return 0;

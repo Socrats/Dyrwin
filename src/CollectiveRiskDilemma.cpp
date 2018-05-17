@@ -3,14 +3,14 @@
 //
 
 #include <iostream>
-#include "../include/CollectiveRiskDilemma.h"
+#include "../include/Dyrwin/CollectiveRiskDilemma.h"
 
 #define ENDOWMENT 20.0
 
 CollectiveRiskDilemma::CollectiveRiskDilemma(unsigned int nb_actions, unsigned int group_size, double target_sum,
-                                             double risk, unsigned int game_rounds, boost::mt19937 &mt) :
+                                             double risk, unsigned int game_rounds) :
         nb_actions(nb_actions), group_size(group_size),
-        target_sum(target_sum), risk(risk), game_rounds(game_rounds), _mt(mt) {
+        target_sum(target_sum), risk(risk), game_rounds(game_rounds) {
 
 }
 
@@ -22,6 +22,8 @@ void CollectiveRiskDilemma::run(unsigned int rounds, std::vector<EvoIndividual *
     double total_donations = 0;
     double round_donations = 0;
     size_t i, j;
+    // Uniform Distribution
+    std::uniform_real_distribution<double> _uniform_real_dist(0.0, 1.0);
 
     // Initialize players on the first round
     round_donations = 0;
@@ -46,7 +48,7 @@ void CollectiveRiskDilemma::run(unsigned int rounds, std::vector<EvoIndividual *
     // Check if the threshold has NOT been reached
     if (target_sum > total_donations) {
         // Generate random number
-        if (risk > _rng_uniform()) {
+        if (risk > _uniform_real_dist(_mt)) {
             met_threshold = false;
         }
     }

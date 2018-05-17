@@ -13,8 +13,9 @@
 #ifndef DYRWIN_CRDPLAYER_H
 #define DYRWIN_CRDPLAYER_H
 
+#include <random>
 #include <boost/functional/hash.hpp>
-#include <boost/random.hpp>
+#include "SeedGenerator.h"
 
 
 struct Strategy {
@@ -35,41 +36,55 @@ struct Strategy {
 
     bool operator!=(const Strategy &other) const {
         return !(first == other.first
-                && second == other.second
-                && threshold == other.threshold);
+                 && second == other.second
+                 && threshold == other.threshold);
     }
 
-    Strategy(double mu, double sigma, boost::mt19937& mt) : _mu(mu), _sigma(sigma), _mt(mt) {
+    Strategy(double mu, double sigma) : _mu(mu), _sigma(sigma) {
+
+        std::uniform_real_distribution<double> _uniform_real_dist(0.0, 1.0);
+        std::uniform_int_distribution<unsigned int> _uniform_int_dist(0, 2);
+        std::normal_distribution<double> _normal_dist(_mu, _sigma);
+
         // Strategies actions are initialized at random with 0, 1, or 2
         // and the thresholds are uniformly distributed between 0 and 1
-        threshold = _rng_real();
-        first = _rng_discrete();
-        second = _rng_discrete();
+        threshold = _uniform_real_dist(_mt);
+        first = _uniform_int_dist(_mt);
+        second = _uniform_int_dist(_mt);
     };
 
-    Strategy(int first, int second, double threshold, double mu, double sigma, boost::mt19937& mt) :
-            first(first), second(second), threshold(threshold), _mu(mu), _sigma(sigma), _mt(mt) {};
+    Strategy(int first, int second, double threshold, double mu, double sigma) :
+            first(first), second(second), threshold(threshold), _mu(mu), _sigma(sigma) {};
 
     Strategy &operator++() {
         // Mutate strategy - Prefix
-        if (_rng_real() < _mu) {
-            threshold += _rng_normal();
+        std::uniform_real_distribution<double> _uniform_real_dist(0.0, 1.0);
+        std::uniform_int_distribution<unsigned int> _uniform_int_dist(0, 2);
+        std::normal_distribution<double> _normal_dist(_mu, _sigma);
+
+        // Mutate strategy - Postfix
+        if (_uniform_real_dist(_mt) < _mu) {
+            threshold += _normal_dist(_mt);
         }
-        if (_rng_real() < _mu) {
-            first = _rng_discrete();
-            first = _rng_discrete();
+        if (_uniform_real_dist(_mt) < _mu) {
+            first = _uniform_int_dist(_mt);
+            first = _uniform_int_dist(_mt);
         }
         return *this;
     }
 
     Strategy operator++(int) {
+        std::uniform_real_distribution<double> _uniform_real_dist(0.0, 1.0);
+        std::uniform_int_distribution<unsigned int> _uniform_int_dist(0, 2);
+        std::normal_distribution<double> _normal_dist(_mu, _sigma);
+
         // Mutate strategy - Postfix
-        if (_rng_real() < _mu) {
-            threshold += _rng_normal();
+        if (_uniform_real_dist(_mt) < _mu) {
+            threshold += _normal_dist(_mt);
         }
-        if (_rng_real() < _mu) {
-            first = _rng_discrete();
-            first = _rng_discrete();
+        if (_uniform_real_dist(_mt) < _mu) {
+            first = _uniform_int_dist(_mt);
+            first = _uniform_int_dist(_mt);
         }
         return *this;
     }
@@ -79,17 +94,9 @@ struct Strategy {
         second = other.second;
         threshold = other.threshold;
     }
+
 private:
-    boost::mt19937& _mt;
-    boost::random::uniform_real_distribution<> _uniform_real = boost::random::uniform_real_distribution<>(0, 1);
-    boost::random::uniform_int_distribution<> _uniform_int = boost::random::uniform_int_distribution<>(0, 2);
-    boost::random::normal_distribution<> _normal = boost::random::normal_distribution<>(0.0, _sigma);
-    boost::variate_generator<boost::mt19937 &, boost::random::uniform_real_distribution<> > _rng_real =
-            boost::variate_generator<boost::mt19937 &, boost::random::uniform_real_distribution<> >(_mt, _uniform_real);
-    boost::variate_generator<boost::mt19937 &, boost::random::uniform_int_distribution<> > _rng_discrete =
-            boost::variate_generator<boost::mt19937 &, boost::random::uniform_int_distribution<> >(_mt, _uniform_int);
-    boost::variate_generator<boost::mt19937 &, boost::random::normal_distribution<> > _rng_normal =
-            boost::variate_generator<boost::mt19937 &, boost::random::normal_distribution<> >(_mt, _normal);
+    std::mt19937_64 _mt{SeedGenerator::getSeed()};
 
     // mutation probabilities
     double _mu; // mutation probability
@@ -106,7 +113,7 @@ struct SequentialStrategy {
 
     bool operator==(const SequentialStrategy &other) const {
         bool equal = true;
-        for (size_t i=0; i < rounds; i++) {
+        for (size_t i = 0; i < rounds; i++) {
             if (round_strategies[i] == other.round_strategies[i]) {
                 equal = false;
                 break;
@@ -115,22 +122,22 @@ struct SequentialStrategy {
         return equal;
     }
 
-    SequentialStrategy(double mu, double sigma, boost::mt19937& mt) : rounds(10) {
+    SequentialStrategy(double mu, double sigma) : rounds(10) {
         round_strategies.reserve(rounds);
-        for (size_t i=0; i < rounds; i++) {
-            round_strategies.push_back(Strategy(mu, sigma, mt));
+        for (size_t i = 0; i < rounds; i++) {
+            round_strategies.push_back(Strategy(mu, sigma));
         }
     };
 
-    SequentialStrategy(double mu, double sigma, size_t rounds, boost::mt19937& mt) : rounds(rounds) {
+    SequentialStrategy(double mu, double sigma, size_t rounds) : rounds(rounds) {
         round_strategies.reserve(rounds);
-        for (size_t i=0; i < rounds; i++) {
-            round_strategies.push_back(Strategy(mu, sigma, mt));
+        for (size_t i = 0; i < rounds; i++) {
+            round_strategies.push_back(Strategy(mu, sigma));
         }
     };
 
     SequentialStrategy(std::vector<Strategy> &strategies, size_t rounds) :
-           round_strategies(strategies), rounds(rounds)  {};
+            round_strategies(strategies), rounds(rounds) {};
 
     SequentialStrategy &operator++() {
         // Mutate strategy - Prefix
@@ -184,7 +191,7 @@ struct SequentialStrategyHasher {
 
         // Modify 'seed' by XORing and bit-shifting in
         // one member of 'Key' after the other:
-        for (size_t i=0; i < s.rounds; i++) {
+        for (size_t i = 0; i < s.rounds; i++) {
             hash_combine(seed, hash_value(s.round_strategies[i].first));
             hash_combine(seed, hash_value(s.round_strategies[i].second));
             hash_combine(seed, hash_value(s.round_strategies[i].threshold));
@@ -207,9 +214,9 @@ public:
 	    This constructor generates an ID for this player, and resets its
 	    score.
 	*/
-    CRDPlayer(double mu, double sigma, boost::mt19937& mt) :
+    CRDPlayer(double mu, double sigma) :
             id(CRDPlayer::GenerateID()),
-            payoff(0), mt(mt), strategy(SequentialStrategy(mu, sigma, mt)) {};
+            payoff(0), strategy(SequentialStrategy(mu, sigma)) {};
 
     virtual ~CRDPlayer() {};
 
@@ -223,7 +230,7 @@ public:
 	*/
     CRDPlayer(const CRDPlayer &p) :
             id(p.id),
-            payoff(p.payoff), mt(p.mt), strategy(SequentialStrategy(p.mu, p.sigma, p.mt)) {}
+            payoff(p.payoff), strategy(SequentialStrategy(p.mu, p.sigma)) {}
 
     int getAction();
 
@@ -243,7 +250,6 @@ public:
     SequentialStrategy strategy;
 
     double mu, sigma;
-    boost::mt19937& mt;
 
     CRDPlayer operator=(const CRDPlayer &other) const {
         // Enforces that the reference to the random number generator is not changed
