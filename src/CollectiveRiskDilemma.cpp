@@ -12,7 +12,7 @@ CollectiveRiskDilemma::CollectiveRiskDilemma(unsigned int nb_actions, unsigned i
 
 }
 
-bool CollectiveRiskDilemma::run(unsigned int rounds, std::vector<EvoIndividual *> &players) {
+GameData CollectiveRiskDilemma::run(unsigned int rounds, std::vector<EvoIndividual *> &players) {
     // Defines the game that is being played
 
     // Finds size of arr[] and stores in 'size'
@@ -66,7 +66,7 @@ bool CollectiveRiskDilemma::run(unsigned int rounds, std::vector<EvoIndividual *
             _update_fitness_not_met_threshold(players[j]);
         }
     }
-    return met_threshold;
+    return *(new GameData(met_threshold, total_donations));
 }
 
 void CollectiveRiskDilemma::_update_fitness_met_threshold(EvoIndividual *individual) {

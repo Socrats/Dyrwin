@@ -95,6 +95,9 @@ public:
     void printPopulation();
     void printCurrentStrategyFitness();
     void printAvgPopulationFitness(int generation);
+    void printAvgContributions(int generation);
+    void printAvgReachedThreshold(int generation);
+    void printGenerationInfo(int generation);
 
     unsigned int population_size;
     unsigned int group_size;
@@ -110,17 +113,37 @@ private:
     std::vector<int> _population_indexes; // holds indexes to the population
     std::vector<EvoIndividual *> _group; // Vector of pointers to player objects
     std::vector<unsigned int> _group_indexes; // Holds indexes to the population for selecting a group
+    std::vector<bool> _target_reached; // Holds the vector of target_reached each game during one generation
+    std::vector<double> _contributions; // Holds the contributions at each game during one generation
 
     CollectiveRiskDilemma *_game; // Pointer to Game class
 
     // Random generators
     std::mt19937_64 _mt{SeedGenerator::getSeed()};
 
-    std::vector<EvoIndividual *>
-    _select_randomly(unsigned int size); // Selects size individuals randomly with replacement from the population
+    /**
+     * @brief Selects size individuals randomly with replacement from the population
+     *
+     * Generates a vector of pointers to random elements of the population.
+     *
+     * @param size Size of the group to be selected randomly
+     * @return vector of pointers to the population with Size size.
+     */
+    std::vector<EvoIndividual *> _select_randomly(unsigned int size);
+
+    /**
+     * @brief updates the fitness vector with the fermi function
+     */
     void _update_fitness_vector();
 
+    /**
+     * @brief updates the indexes to the next population randomly with weights equal to the fitness of each individual.
+     */
     void _update_population_indexes();
+
+    double _calculateAvgPopulationFitness();
+    double _calculateAvgContributions();
+    double _calculateAvgReachedThreshold();
 };
 
 

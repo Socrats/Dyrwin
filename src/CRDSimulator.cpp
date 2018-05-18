@@ -62,6 +62,10 @@ CRDSimulator::CRDSimulator(unsigned int population_size) : population_size(popul
     // Initialize Game
     _game = new CollectiveRiskDilemma(3, group_size, target_sum, risk, game_rounds, endowment);
 
+    // Initialize variables that hold information of a generation
+    _target_reached = std::vector<bool>(nb_games);
+    _contributions = std::vector<double>(nb_games);
+
 }
 
 /**
@@ -76,9 +80,11 @@ void CRDSimulator::evolve(unsigned int generations) {
         for (i = 0; i < nb_games; i++) {
             // Generate group
             auto group = _select_randomly(group_size);
-            _game->run(game_rounds, group);
+            auto game_result = _game->run(game_rounds, group);
+            _target_reached[i] = game_result.met_threshold;
+            _contributions[i] = game_result.public_account;
         }
-        printAvgPopulationFitness(j);
+        printGenerationInfo(j);
 //        printPopulation();
 
         // Then apply selection - Wright-Fisher Process
@@ -165,6 +171,35 @@ void CRDSimulator::printCurrentStrategyFitness() {
 }
 
 void CRDSimulator::printAvgPopulationFitness(int generation) {
-    double average = std::accumulate( _fitnessVector.begin(), _fitnessVector.end(), 0.0)/_fitnessVector.size();
-    std::cout << "[Gen " << generation << "] Avg. Fitness of the population: " << average / 20.0 << std::endl;
+    std::cout << "[Gen " << generation << "] Avg. Fitness of the population: " << _calculateAvgPopulationFitness()
+              << std::endl;
+}
+
+void CRDSimulator::printAvgContributions(int generation) {
+    std::cout << "[Gen " << generation << "] Avg. Contributions of the population: "
+              << _calculateAvgContributions() << std::endl;
+}
+
+void CRDSimulator::printAvgReachedThreshold(int generation) {
+    std::cout << "[Gen " << generation << "] Avg. Fitness of the population: " << _calculateAvgReachedThreshold()
+              << std::endl;
+}
+
+double CRDSimulator::_calculateAvgPopulationFitness() {
+    double average = std::accumulate(_fitnessVector.begin(), _fitnessVector.end(), 0.0) / _fitnessVector.size();
+    return average / (double) (2 * game_rounds);
+}
+
+double CRDSimulator::_calculateAvgContributions() {
+    double average = std::accumulate(_contributions.begin(), _contributions.end(), 0.0) / _contributions.size();
+    return average / (double) (group_size * (2 * game_rounds));
+}
+
+double CRDSimulator::_calculateAvgReachedThreshold() {
+    return std::accumulate(_target_reached.begin(), _target_reached.end(), 0.0) / _target_reached.size();
+}
+
+void CRDSimulator::printGenerationInfo(int generation) {
+    std::cout << "[Gen " << generation << "] Fitness: " << _calculateAvgPopulationFitness() << " Contributions: "
+              << _calculateAvgContributions() << " Threshold: " << _calculateAvgReachedThreshold() << std::endl;
 }

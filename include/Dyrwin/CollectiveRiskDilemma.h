@@ -10,6 +10,20 @@
 #include "Utils.h"
 #include "SeedGenerator.h"
 
+
+struct GameData {
+    bool met_threshold;
+    double public_account;
+    double avg_donations;
+
+    GameData() : met_threshold(false), public_account(0), avg_donations(0) {};
+    GameData(bool met_threshold, double public_account) : met_threshold(met_threshold), public_account(public_account),
+                                                          avg_donations(0) {};
+    GameData(bool met_threshold, double public_account, double avg_donations) : met_threshold(met_threshold),
+                                                                                public_account(public_account),
+                                                                                avg_donations(avg_donations) {};
+};
+
 class CollectiveRiskDilemma {
     /**
      * Implements the Collective-Risk Dilemma evolutionary game as defined in
@@ -36,7 +50,7 @@ public:
      * @param players
      * @return met_threshold Wether or not the threshold has been met by the players in the game.
      */
-    bool run(unsigned int rounds, std::vector<EvoIndividual *> &players);
+    GameData run(unsigned int rounds, std::vector<EvoIndividual *> &players);
 
     /**
      * This version of run should be called if we want the fitness of each player returned in a vector
