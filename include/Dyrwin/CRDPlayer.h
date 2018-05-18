@@ -117,10 +117,14 @@ struct SequentialStrategy {
 
     bool operator==(const SequentialStrategy &other) const {
         bool equal = true;
-        for (size_t i = 0; i < rounds; i++) {
-            if (round_strategies[i] == other.round_strategies[i]) {
-                equal = false;
-                break;
+        if (rounds != other.rounds) {
+            equal = false;
+        } else {
+            for (size_t i = 0; i < rounds; i++) {
+                if (round_strategies[i] != other.round_strategies[i]) {
+                    equal = false;
+                    break;
+                }
             }
         }
         return equal;
@@ -129,14 +133,14 @@ struct SequentialStrategy {
     SequentialStrategy(double mu, double sigma) : rounds(10) {
         round_strategies.reserve(rounds);
         for (size_t i = 0; i < rounds; i++) {
-            round_strategies.push_back(*(new Strategy(mu, sigma)));
+            round_strategies.emplace_back(mu, sigma);
         }
     };
 
     SequentialStrategy(double mu, double sigma, size_t rounds) : rounds(rounds) {
         round_strategies.reserve(rounds);
         for (size_t i = 0; i < rounds; i++) {
-            round_strategies.push_back(*(new Strategy(mu, sigma)));
+            round_strategies.emplace_back(mu, sigma);
         }
     };
 
@@ -195,12 +199,12 @@ struct SequentialStrategyHasher {
 
         // Modify 'seed' by XORing and bit-shifting in
         // one member of 'Key' after the other:
+        hash_combine(seed, hash_value(s.rounds));
         for (size_t i = 0; i < s.rounds; i++) {
             hash_combine(seed, hash_value(s.round_strategies[i].first));
             hash_combine(seed, hash_value(s.round_strategies[i].second));
             hash_combine(seed, hash_value(s.round_strategies[i].threshold));
         }
-        hash_combine(seed, hash_value(s.rounds));
 
         // Return the result.
         return seed;
@@ -219,8 +223,8 @@ public:
 	    score.
 	*/
     CRDPlayer(double mu, double sigma) :
-            id(CRDPlayer::GenerateID()),
-            payoff(0), strategy(*(new SequentialStrategy(mu, sigma))) {};
+            id(CRDPlayer::GenerateID()), mu(mu), sigma(sigma),
+            payoff(0), strategy(SequentialStrategy(mu, sigma)) {};
 
     virtual ~CRDPlayer() {};
 

@@ -66,7 +66,7 @@ GameData CollectiveRiskDilemma::run(unsigned int rounds, std::vector<EvoIndividu
             _update_fitness_not_met_threshold(players[j]);
         }
     }
-    return *(new GameData(met_threshold, total_donations));
+    return {met_threshold, total_donations};
 }
 
 void CollectiveRiskDilemma::_update_fitness_met_threshold(EvoIndividual *individual) {
