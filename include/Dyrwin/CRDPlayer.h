@@ -60,7 +60,7 @@ struct Strategy {
         // Mutate strategy - Prefix
         std::uniform_real_distribution<double> _uniform_real_dist(0.0, 1.0);
         std::uniform_int_distribution<unsigned int> _uniform_int_dist(0, 2);
-        std::normal_distribution<double> _normal_dist(_mu, _sigma);
+        std::normal_distribution<double> _normal_dist(0.0, _sigma);
 
         // Mutate strategy - Postfix
         if (_uniform_real_dist(_mt) < _mu) {
@@ -68,7 +68,9 @@ struct Strategy {
         }
         if (_uniform_real_dist(_mt) < _mu) {
             first = _uniform_int_dist(_mt);
-            first = _uniform_int_dist(_mt);
+        }
+        if (_uniform_real_dist(_mt) < _mu) {
+            second = _uniform_int_dist(_mt);
         }
         return *this;
     }
@@ -76,7 +78,7 @@ struct Strategy {
     Strategy operator++(int) {
         std::uniform_real_distribution<double> _uniform_real_dist(0.0, 1.0);
         std::uniform_int_distribution<unsigned int> _uniform_int_dist(0, 2);
-        std::normal_distribution<double> _normal_dist(_mu, _sigma);
+        std::normal_distribution<double> _normal_dist(0.0, _sigma);
 
         // Mutate strategy - Postfix
         if (_uniform_real_dist(_mt) < _mu) {
@@ -84,7 +86,9 @@ struct Strategy {
         }
         if (_uniform_real_dist(_mt) < _mu) {
             first = _uniform_int_dist(_mt);
-            first = _uniform_int_dist(_mt);
+        }
+        if (_uniform_real_dist(_mt) < _mu) {
+            second = _uniform_int_dist(_mt);
         }
         return *this;
     }
@@ -234,7 +238,7 @@ public:
 
     int getAction();
 
-    int getAction(double &public_account, size_t rd);
+    int getAction(double &public_account, size_t rd, double &threshold);
 
     void updatePayoff(double curr_payoff);
 

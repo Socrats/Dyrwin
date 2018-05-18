@@ -9,10 +9,11 @@ CRDSimulator::CRDSimulator(unsigned int population_size) : population_size(popul
     // Default parameters
     group_size = 6;
     nb_games = 1000;
-    double target_sum = 60;
+    game_rounds = 10;
+    double target_sum = group_size * game_rounds;
+    double endowment = (double) (2 * game_rounds);
     double risk = 0.9;
-    unsigned int game_rounds = 10;
-    double mu = 0.003;
+    double mu = 0.03;
     double sigma = 0.15;
 
     // Initialize fitness vector
@@ -59,7 +60,7 @@ CRDSimulator::CRDSimulator(unsigned int population_size) : population_size(popul
     std::iota(_group_indexes.begin(), _group_indexes.end(), 0);
 
     // Initialize Game
-    _game = new CollectiveRiskDilemma(3, group_size, target_sum, risk, game_rounds);
+    _game = new CollectiveRiskDilemma(3, group_size, target_sum, risk, game_rounds, endowment);
 
 }
 
@@ -78,6 +79,7 @@ void CRDSimulator::evolve(unsigned int generations) {
             _game->run(game_rounds, group);
         }
         printAvgPopulationFitness(j);
+//        printPopulation();
 
         // Then apply selection - Wright-Fisher Process
         // First update fitnessVector
@@ -94,10 +96,6 @@ void CRDSimulator::evolve(unsigned int generations) {
 
             // Mutate player strategy
             ++_population_tmp[i].player.strategy;
-
-            // Reset individual
-            _population_tmp[i].init();
-
 
 //            auto ok = _populationTypesHash.insert(
 //                    std::make_pair(_population_tmp[i].player.strategy,
@@ -122,17 +120,10 @@ void CRDSimulator::evolve(unsigned int generations) {
  * @return std::vector<typename playerType>
  */
 std::vector<EvoIndividual *> CRDSimulator::_select_randomly(unsigned int size) {
-
-    // copy group_indexes
-    std::vector<unsigned int> group_indexes = _group_indexes;
-
-    // reshuffle indexes
-    std::random_shuffle(group_indexes.begin(), group_indexes.end());
-
-    // Keep only size elements of the indices vector
-    group_indexes.resize(size);
+    // Uniform int distribution
+    std::uniform_int_distribution<unsigned long int> dist(0, _population.size() - 1);
     for (unsigned int i = 0; i < size; i++) {
-        _group[i] = &_population[group_indexes[i]];
+        _group[i] = &_population[dist(_mt)];
     }
 
     return _group;
@@ -150,7 +141,7 @@ void CRDSimulator::_update_population_indexes() {
      * Implements Russian Roulette selection strategy
      */
     // the boost way
-    boost::random::discrete_distribution<> dist(_fitnessVector);
+    std::discrete_distribution<> dist(_fitnessVector.begin(), _fitnessVector.end());
     for (int i = 0; i < population_size; i++) {
         _population_indexes[i] = dist(_mt);
         // Initialize fitness and games played
@@ -160,17 +151,11 @@ void CRDSimulator::_update_population_indexes() {
 
 void CRDSimulator::printPopulation() {
     for (auto const &individual: _population) {
-        std::cout << "===========================" << std::endl;
-        std::cout << "Player fitness: " << *(individual.fitness) << std::endl;
-        std::cout << "---------------------------" << std::endl;
-        int d = 0;
+        std::cout << std::endl << "---------------------------" << std::endl;
         for (auto const &strategy: individual.player.strategy.round_strategies) {
-            std::cout << "---------------------------" << std::endl;
-            std::cout << "Round " << ++d << std::endl;
-            std::cout << "First action: " << strategy.first << std::endl;
-            std::cout << "Second action: " << strategy.second << std::endl;
-            std::cout << "Threshold: " << strategy.threshold << std::endl;
-            std::cout << "---------------------------" << std::endl;
+            std::cout << "(" << strategy.first << ",";
+            std::cout << strategy.second << ",";
+            std::cout << strategy.threshold << "), ";
         }
     }
 }
@@ -181,5 +166,5 @@ void CRDSimulator::printCurrentStrategyFitness() {
 
 void CRDSimulator::printAvgPopulationFitness(int generation) {
     double average = std::accumulate( _fitnessVector.begin(), _fitnessVector.end(), 0.0)/_fitnessVector.size();
-    std::cout << "[Gen " << generation << "] Avg. Fitness of the population: " << average << std::endl;
+    std::cout << "[Gen " << generation << "] Avg. Fitness of the population: " << average / 20.0 << std::endl;
 }

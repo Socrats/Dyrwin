@@ -21,11 +21,22 @@ class CollectiveRiskDilemma {
      */
 public:
     CollectiveRiskDilemma(unsigned int nb_actions, unsigned int group_size, double target_sum, double risk,
-                          unsigned int game_rounds);
+                          unsigned int game_rounds, double endowment);
 
     ~CollectiveRiskDilemma() {};
 
-    void run(unsigned int rounds, std::vector<EvoIndividual *> &players);
+    /**
+     * @brief Runs the game for a number of rounds
+     *
+     * Runs the Collective-Risk game with the parameters with which the class has been constructed
+     * for a number of rounds with the players specified. The average fitness of each player is updated
+     * at the end of the game.
+     *
+     * @param rounds
+     * @param players
+     * @return met_threshold Wether or not the threshold has been met by the players in the game.
+     */
+    bool run(unsigned int rounds, std::vector<EvoIndividual *> &players);
 
     /**
      * This version of run should be called if we want the fitness of each player returned in a vector
@@ -33,7 +44,6 @@ public:
      * @param players
      * @param fitnessVector
      */
-
     void run(unsigned int rounds, std::vector<EvoIndividual *> &players, std::vector<double> &fitnessVector) {
         _fitnessVector = fitnessVector;
         run(rounds, players);
@@ -47,6 +57,7 @@ public:
     unsigned int group_size; // M individuals selected to play a game at each generation
     double target_sum; // T amount that the group must reach at the end of the game
     double risk; // Probability that players loose what they have not invested if T is not reached
+    double endowment; // Player's endowment
     unsigned int game_rounds; // number of rounds that each game will have
 
 private:

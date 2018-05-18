@@ -5,16 +5,14 @@
 #include <iostream>
 #include "../include/Dyrwin/CollectiveRiskDilemma.h"
 
-#define ENDOWMENT 20.0
-
 CollectiveRiskDilemma::CollectiveRiskDilemma(unsigned int nb_actions, unsigned int group_size, double target_sum,
-                                             double risk, unsigned int game_rounds) :
+                                             double risk, unsigned int game_rounds, double endowment) :
         nb_actions(nb_actions), group_size(group_size),
-        target_sum(target_sum), risk(risk), game_rounds(game_rounds) {
+        target_sum(target_sum), risk(risk), endowment(endowment), game_rounds(game_rounds) {
 
 }
 
-void CollectiveRiskDilemma::run(unsigned int rounds, std::vector<EvoIndividual *> &players) {
+bool CollectiveRiskDilemma::run(unsigned int rounds, std::vector<EvoIndividual *> &players) {
     // Defines the game that is being played
 
     // Finds size of arr[] and stores in 'size'
@@ -28,32 +26,36 @@ void CollectiveRiskDilemma::run(unsigned int rounds, std::vector<EvoIndividual *
     // Initialize players on the first round
     round_donations = 0;
     for (j = 0; j < size; j++) {
-        players[j]->player.reset(ENDOWMENT);
-        round_donations += players[j]->player.getAction(total_donations, 0);
+        players[j]->player.reset(endowment);
+        round_donations += players[j]->player.getAction(total_donations, 0, target_sum);
     }
     total_donations += round_donations;
-
 
     // Iterate for rounds and get each player's contribution
     for (i = 1; i < rounds; i++) {
         // Iterate over the group players
         round_donations = 0;
         for (j = 0; j < size; j++) {
-            round_donations += players[j]->player.getAction(total_donations, i);
+            round_donations += players[j]->player.getAction(total_donations, i, target_sum);
         }
         total_donations += round_donations;
     }
 
+    // Indicates whether the group met the threshold
     bool met_threshold = true;
+    // Indicates whether the players can keep the amount in its public account
+    bool keep_pa = true;
+
     // Check if the threshold has NOT been reached
     if (target_sum > total_donations) {
+        met_threshold = false;
         // Generate random number
         if (risk > _uniform_real_dist(_mt)) {
-            met_threshold = false;
+            keep_pa = false;
         }
     }
 
-    if (met_threshold) {
+    if (keep_pa) {
         // Update all players payoffs with their private account
         for (j = 0; j < size; j++) {
             _update_fitness_met_threshold(players[j]);
@@ -64,7 +66,7 @@ void CollectiveRiskDilemma::run(unsigned int rounds, std::vector<EvoIndividual *
             _update_fitness_not_met_threshold(players[j]);
         }
     }
-
+    return met_threshold;
 }
 
 void CollectiveRiskDilemma::_update_fitness_met_threshold(EvoIndividual *individual) {
