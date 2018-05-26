@@ -129,7 +129,8 @@ private:
      * @param size Size of the group to be selected randomly
      * @return vector of pointers to the population with Size size.
      */
-    std::vector<EvoIndividual *> _select_randomly(unsigned int size);
+//    std::vector<EvoIndividual *> _select_randomly(unsigned int size);
+    void _select_randomly(unsigned int size);
 
     /**
      * @brief updates the fitness vector with the fermi function

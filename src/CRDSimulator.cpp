@@ -11,8 +11,8 @@ CRDSimulator::CRDSimulator(unsigned int population_size) : population_size(popul
     nb_games = 1000;
     game_rounds = 10;
     double target_sum = group_size * game_rounds;
-    double endowment = (double) (2 * game_rounds);
-    double risk = 0.9;
+    auto endowment = (double) (2 * game_rounds);
+    double risk = 0.78;
     double mu = 0.03;
     double sigma = 0.15;
 
@@ -75,8 +75,8 @@ void CRDSimulator::evolve(unsigned int generations) {
         // First play games and calculate fitness
         for (i = 0; i < nb_games; i++) {
             // Generate group
-            auto group = _select_randomly(group_size);
-            auto game_result = _game->run(game_rounds, group);
+            _select_randomly(group_size);
+            auto game_result = _game->run(game_rounds, _group);
             _target_reached[i] = game_result.met_threshold;
             _contributions[i] = game_result.public_account;
         }
@@ -130,14 +130,27 @@ void CRDSimulator::evolve(unsigned int generations) {
  * @param size : size of the subgroup
  * @return std::vector<typename playerType>
  */
-std::vector<EvoIndividual *> CRDSimulator::_select_randomly(unsigned int size) {
+//std::vector<EvoIndividual *> CRDSimulator::_select_randomly(unsigned int size) {
+//    // Uniform int distribution
+//    std::uniform_int_distribution<unsigned long int> dist(0, _population.size() - 1);
+//    for (unsigned int i = 0; i < size; i++) {
+//        _group[i] = &_population[dist(_mt)];
+//    }
+//
+//    return _group;
+//}
+
+/**
+ * This method returns a subgroup formed by randomly selecting members (without replacement) from the population pool.
+ * @param size : size of the subgroup
+ * @return std::vector<typename playerType>
+ */
+void CRDSimulator::_select_randomly(unsigned int size) {
     // Uniform int distribution
     std::uniform_int_distribution<unsigned long int> dist(0, _population.size() - 1);
     for (unsigned int i = 0; i < size; i++) {
         _group[i] = &_population[dist(_mt)];
     }
-
-    return _group;
 }
 
 void CRDSimulator::_update_fitness_vector() {
