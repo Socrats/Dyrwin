@@ -79,7 +79,7 @@ void CRDSimulator::evolve(unsigned int generations) {
             _contributions[i] = game_result.public_account;
         }
         updateGenerationData(j);
-        printGenerationInfo(j);
+//        printGenerationInfo(j);
         saveGenerationData();
 //        printPopulation();
 

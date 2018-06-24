@@ -14,7 +14,7 @@ Compile with make
 ## Execution
 To get help on how to run the simulation execute:
 ````bash
-./dyrwin -help
+./dyrwin --help
 ````
 
 If you want your results to to be stored in an output file, you need to provide a file path
