@@ -7,7 +7,7 @@
 
 CRDSimulator::CRDSimulator(unsigned int population_size, unsigned int group_size, unsigned int nb_games,
                            unsigned int game_rounds,
-                           double beta, double risk, double mu, double sigma, std::ofstream& output_file)
+                           double beta, double risk, double mu, double sigma, std::ofstream &output_file)
         : population_size(population_size), group_size(group_size), nb_games(nb_games), game_rounds(game_rounds),
           beta(beta), risk(risk), mu(mu), sigma(sigma), outFile(output_file) {
 
@@ -78,7 +78,9 @@ void CRDSimulator::evolve(unsigned int generations) {
             _target_reached[i] = game_result.met_threshold;
             _contributions[i] = game_result.public_account;
         }
+        updateGenerationData(j);
         printGenerationInfo(j);
+        saveGenerationData();
 //        printPopulation();
 
         // Then apply selection - Wright-Fisher Process
@@ -216,6 +218,15 @@ double CRDSimulator::_calculateAvgReachedThreshold() {
 }
 
 void CRDSimulator::printGenerationInfo(int generation) {
-    std::cout << "[Gen " << generation << "] Fitness: " << _calculateAvgPopulationFitness() << " Contributions: "
-              << _calculateAvgContributions() << " Threshold: " << _calculateAvgReachedThreshold() << std::endl;
+    std::cout << "[Gen " << generation << "] Fitness: " << _genData.avg_fitness << " Contributions: "
+              << _genData.avg_contributions << " Threshold: " << _genData.avg_threshold << std::endl;
+}
+
+void CRDSimulator::saveGenerationData() {
+    outFile.write( (char *)&_genData, sizeof(CRDSimData));
+}
+
+void CRDSimulator::updateGenerationData(int generation) {
+    _genData.update(generation, _calculateAvgPopulationFitness(), _calculateAvgContributions(),
+                   _calculateAvgReachedThreshold());
 }

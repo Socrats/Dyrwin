@@ -80,6 +80,30 @@ typedef struct StrategyFrequency {
     }
 } strategy_fq;
 
+struct CRDSimData {
+    int generation;
+    double avg_fitness;
+    double avg_contributions;
+    double avg_threshold;
+
+    void update(int generation, double avg_fitness, double avg_contributions, double avg_threshold) {
+        this->generation = generation;
+        this->avg_fitness = avg_fitness;
+        this->avg_contributions = avg_contributions;
+        this->avg_threshold = avg_threshold;
+    }
+
+    std::string getCSVHeader() {
+        return "generation,avg_fitness,avg_contributions,avg_threshold\n";
+    }
+
+    std::string getCSVData() {
+        std::stringstream data;
+        data << generation << "," << avg_fitness << "," << avg_contributions << "," << avg_threshold << "\n";
+        return data.str();
+    }
+};
+
 class CRDSimulator {
 public:
     /**
@@ -105,6 +129,10 @@ public:
     void printAvgReachedThreshold(int generation);
 
     void printGenerationInfo(int generation);
+
+    void saveGenerationData();
+
+    void updateGenerationData(int generation);
 
     unsigned int population_size;
     unsigned int group_size;
@@ -133,6 +161,9 @@ private:
 
     // Random generators
     std::mt19937_64 _mt{SeedGenerator::getSeed()};
+
+    // Generation data
+    CRDSimData _genData;
 
     /**
      * @brief Selects size individuals randomly with replacement from the population
