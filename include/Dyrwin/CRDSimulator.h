@@ -22,7 +22,7 @@
 #ifndef DYRWIN_CRDSIMULATOR_H
 #define DYRWIN_CRDSIMULATOR_H
 
-
+#include <fstream>
 #include <random>
 #include <vector>
 #include <unordered_map>
@@ -34,7 +34,7 @@
  * Holds the frequency in which each strategy appears
  */
 typedef struct StrategyFrequency {
-    SequentialStrategy& strategy;
+    SequentialStrategy &strategy;
     unsigned int freq;
 
     StrategyFrequency &operator++() {
@@ -57,15 +57,15 @@ typedef struct StrategyFrequency {
         return *this;
     }
 
-    StrategyFrequency(SequentialStrategy& strategy) :
+    StrategyFrequency(SequentialStrategy &strategy) :
             strategy(strategy), freq(0) {};
 
-    StrategyFrequency(SequentialStrategy& strategy, unsigned int freq) :
+    StrategyFrequency(SequentialStrategy &strategy, unsigned int freq) :
             strategy(strategy), freq(freq) {};
 
     bool operator==(const StrategyFrequency &other) const {
         bool equal = true;
-        for (size_t i=0; i < strategy.rounds; i++) {
+        for (size_t i = 0; i < strategy.rounds; i++) {
             if (strategy.round_strategies[i] == other.strategy.round_strategies[i]) {
                 equal = false;
                 break;
@@ -87,16 +87,23 @@ public:
      * @param population_size
      * @param mt
      */
-    CRDSimulator(unsigned int population_size);
-    virtual ~CRDSimulator() {};
+    CRDSimulator(unsigned int population_size, unsigned int group_size, unsigned int nb_games, unsigned int game_rounds,
+                 double beta, double risk, double mu, double sigma, std::ofstream& output_file);
+
+    virtual ~CRDSimulator() = default;
 
     void evolve(unsigned int generations);
 
     void printPopulation();
+
     void printCurrentStrategyFitness();
+
     void printAvgPopulationFitness(int generation);
+
     void printAvgContributions(int generation);
+
     void printAvgReachedThreshold(int generation);
+
     void printGenerationInfo(int generation);
 
     unsigned int population_size;
@@ -104,6 +111,12 @@ public:
     unsigned int nb_games;
     unsigned int game_rounds;
     double beta; // intensity of selection
+    double risk;
+    double mu;
+    double sigma;
+    double target_sum;
+    double endowment;
+    std::ofstream& outFile; // output stream
 
 private:
     std::unordered_map<SequentialStrategy, strategy_fq, SequentialStrategyHasher> _populationTypesHash;
@@ -143,7 +156,9 @@ private:
     void _update_population_indexes();
 
     double _calculateAvgPopulationFitness();
+
     double _calculateAvgContributions();
+
     double _calculateAvgReachedThreshold();
 };
 

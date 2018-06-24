@@ -5,16 +5,14 @@
 #include <iostream>
 #include "../include/Dyrwin/CRDSimulator.h"
 
-CRDSimulator::CRDSimulator(unsigned int population_size) : population_size(population_size), beta(1.0) {
-    // Default parameters
-    group_size = 6;
-    nb_games = 1000;
-    game_rounds = 10;
-    double target_sum = group_size * game_rounds;
-    auto endowment = (double) (2 * game_rounds);
-    double risk = 0.78;
-    double mu = 0.03;
-    double sigma = 0.15;
+CRDSimulator::CRDSimulator(unsigned int population_size, unsigned int group_size, unsigned int nb_games,
+                           unsigned int game_rounds,
+                           double beta, double risk, double mu, double sigma, std::ofstream& output_file)
+        : population_size(population_size), group_size(group_size), nb_games(nb_games), game_rounds(game_rounds),
+          beta(beta), risk(risk), mu(mu), sigma(sigma), outFile(output_file) {
+
+    target_sum = (double) (group_size * game_rounds);
+    endowment = (double) (2 * game_rounds);
 
     // Initialize fitness vector
     _fitnessVector = std::vector<double>(population_size, 0.0);
