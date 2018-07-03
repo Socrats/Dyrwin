@@ -21,10 +21,10 @@ int main(int argc, char *argv[]) {
 
     // Setup options
     options.push_back(makeDefaultedOption("generations,g", &generations, "set the number of generations", 1000u));
-    options.push_back(makeDefaultedOption("popSize,p", &population_size, "set the size of the population", 100u));
-    options.push_back(makeDefaultedOption("groupSize,f", &group_size, "set the size of the group", 6u));
+    options.push_back(makeDefaultedOption("popSize,N", &population_size, "set the size of the population", 100u));
+    options.push_back(makeDefaultedOption("groupSize,M", &group_size, "set the size of the group", 6u));
     options.push_back(
-            makeDefaultedOption("nbGames,ng", &nb_games, "set the number of games to be played at each generations",
+            makeDefaultedOption("nbGames,G", &nb_games, "set the number of games to be played at each generations",
                                 1000u));
     options.push_back(makeDefaultedOption("gameRounds,t", &game_rounds, "set the number of rounds of each game", 10u));
     options.push_back(makeDefaultedOption<double>("risk,r", &risk, "set up the risk parameter", 0.9f));

@@ -60,11 +60,13 @@ struct Strategy {
         // Mutate strategy - Prefix
         std::uniform_real_distribution<double> _uniform_real_dist(0.0, 1.0);
         std::uniform_int_distribution<unsigned int> _uniform_int_dist(0, 2);
-        std::normal_distribution<double> _normal_dist(0.0, _sigma);
+        std::normal_distribution<double> _normal_dist(threshold, _sigma);
 
         // Mutate strategy - Postfix
         if (_uniform_real_dist(_mt) < _mu) {
-            threshold += _normal_dist(_mt);
+            do {
+                threshold = _normal_dist(_mt);
+            } while ((threshold < 0) || (threshold > 1));
         }
         if (_uniform_real_dist(_mt) < _mu) {
             first = _uniform_int_dist(_mt);
@@ -75,14 +77,16 @@ struct Strategy {
         return *this;
     }
 
-    Strategy operator++(int) {
+    const Strategy operator++(int) {
         std::uniform_real_distribution<double> _uniform_real_dist(0.0, 1.0);
         std::uniform_int_distribution<unsigned int> _uniform_int_dist(0, 2);
-        std::normal_distribution<double> _normal_dist(0.0, _sigma);
+        std::normal_distribution<double> _normal_dist(threshold, _sigma);
 
         // Mutate strategy - Postfix
         if (_uniform_real_dist(_mt) < _mu) {
-            threshold += _normal_dist(_mt);
+            do {
+                threshold = _normal_dist(_mt);
+            } while ((threshold < 0) || (threshold > 1));
         }
         if (_uniform_real_dist(_mt) < _mu) {
             first = _uniform_int_dist(_mt);

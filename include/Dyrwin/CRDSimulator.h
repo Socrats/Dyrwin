@@ -57,7 +57,7 @@ typedef struct StrategyFrequency {
         return *this;
     }
 
-    StrategyFrequency(SequentialStrategy &strategy) :
+    explicit StrategyFrequency(SequentialStrategy &strategy) :
             strategy(strategy), freq(0) {};
 
     StrategyFrequency(SequentialStrategy &strategy, unsigned int freq) :
@@ -85,6 +85,12 @@ struct CRDSimData {
     double avg_fitness;
     double avg_contributions;
     double avg_threshold;
+//    int32_t nb_contrib0;
+//    int32_t nb_contribR;
+//    int32_t nb_contribLessR;
+//    int32_t nb_contribMoreR;
+//    double avg_contributions_first_half;
+//    double avg_contributions_second_half;
 
     void update(int generation, double avg_fitness, double avg_contributions, double avg_threshold) {
         this->generation = generation;
@@ -92,6 +98,18 @@ struct CRDSimData {
         this->avg_contributions = avg_contributions;
         this->avg_threshold = avg_threshold;
     }
+
+//    void update(int generation, double avg_fitness, double avg_contributions, double avg_threshold, int nb_contrib0,
+//                int nb_contribR, int nb_contribLessR, int nb_conotribMoreR) {
+//        this->generation = generation;
+//        this->avg_fitness = avg_fitness;
+//        this->avg_contributions = avg_contributions;
+//        this->avg_threshold = avg_threshold;
+//        this->nb_contrib0 = nb_contrib0;
+//        this->nb_contribR = nb_contribR;
+//        this->nb_contribLessR = nb_contribLessR;
+//        this->nb_contribMoreR = nb_conotribMoreR;
+//    }
 
     std::string getCSVHeader() {
         return "generation,avg_fitness,avg_contributions,avg_threshold\n";
@@ -112,7 +130,7 @@ public:
      * @param mt
      */
     CRDSimulator(unsigned int population_size, unsigned int group_size, unsigned int nb_games, unsigned int game_rounds,
-                 double beta, double risk, double mu, double sigma, std::ofstream& output_file);
+                 double beta, double risk, double mu, double sigma, std::ofstream &output_file);
 
     virtual ~CRDSimulator() = default;
 
@@ -144,7 +162,7 @@ public:
     double sigma;
     double target_sum;
     double endowment;
-    std::ofstream& outFile; // output stream
+    std::ofstream &outFile; // output stream
 
 private:
     std::unordered_map<SequentialStrategy, strategy_fq, SequentialStrategyHasher> _populationTypesHash;
@@ -156,6 +174,7 @@ private:
     std::vector<unsigned int> _group_indexes; // Holds indexes to the population for selecting a group
     std::vector<bool> _target_reached; // Holds the vector of target_reached each game during one generation
     std::vector<double> _contributions; // Holds the contributions at each game during one generation
+    std::vector<int> _index_helper;
 
     CollectiveRiskDilemma *_game; // Pointer to Game class
 
@@ -166,14 +185,14 @@ private:
     CRDSimData _genData;
 
     /**
-     * @brief Selects size individuals randomly with replacement from the population
-     *
-     * Generates a vector of pointers to random elements of the population.
-     *
+     * @brief updates the group vector by selecting random members of the population without replacement
      * @param size Size of the group to be selected randomly
-     * @return vector of pointers to the population with Size size.
      */
-//    std::vector<EvoIndividual *> _select_randomly(unsigned int size);
+    void _select_randomly_with_replacement(unsigned int size);
+    /**
+     * @brief updates the group vector by selecting random members of the population with replacement
+     * @param size
+     */
     void _select_randomly(unsigned int size);
 
     /**
