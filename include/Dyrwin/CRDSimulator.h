@@ -26,7 +26,6 @@
 #include <random>
 #include <vector>
 #include <unordered_map>
-#include "WrightFisherModel.h"
 #include "CollectiveRiskDilemma.h"
 #include "SeedGenerator.h"
 
