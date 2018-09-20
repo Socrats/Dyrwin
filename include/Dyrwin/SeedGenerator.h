@@ -16,13 +16,13 @@ public:
      * @brief This functions provices a pointer to a Seeder class
      * @return SeedGenerator
      */
-    static SeedGenerator *getInstance();
+    static SeedGenerator& getInstance();
 
     /**
      * @brief This function generates a random number to seed other generators
      * @return A random unsigned long number
      */
-    static unsigned long int getSeed();
+    unsigned long int getSeed();
 
     /**
      * @brief This function sets the seed for the seed generator
@@ -31,12 +31,9 @@ public:
      *
      * @param seed The seed for the random generator used to generate new seeds
      */
-    static void setMainSeed(unsigned long int seed);
+    void setMainSeed(unsigned long int seed);
 
 private:
-    // Here we store the instance
-    static SeedGenerator _instance;
-
     // Random generator
     std::mt19937_64 rng_engine;
 

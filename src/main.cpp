@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include "../include/Dyrwin/CRDSimulator.h"
+#include "../include/Dyrwin/crd/CRDSimulator.h"
 #include "../include/Dyrwin/CommandLineParsing.h"
 #include "../include/Dyrwin/Utils.h"
 

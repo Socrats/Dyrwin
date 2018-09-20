@@ -27,57 +27,8 @@
 #include <vector>
 #include <unordered_map>
 #include "CollectiveRiskDilemma.h"
-#include "SeedGenerator.h"
+#include "../SeedGenerator.h"
 
-/**
- * Holds the frequency in which each strategy appears
- */
-typedef struct StrategyFrequency {
-    SequentialStrategy &strategy;
-    unsigned int freq;
-
-    StrategyFrequency &operator++() {
-        ++freq;
-        return *this;
-    }
-
-    StrategyFrequency operator++(int) {
-        freq++;
-        return *this;
-    }
-
-    StrategyFrequency &operator--() {
-        --freq;
-        return *this;
-    }
-
-    StrategyFrequency operator--(int) {
-        freq--;
-        return *this;
-    }
-
-    StrategyFrequency(SequentialStrategy &strategy) :
-            strategy(strategy), freq(0) {};
-
-    StrategyFrequency(SequentialStrategy &strategy, unsigned int freq) :
-            strategy(strategy), freq(freq) {};
-
-    bool operator==(const StrategyFrequency &other) const {
-        bool equal = true;
-        for (size_t i = 0; i < strategy.rounds; i++) {
-            if (strategy.round_strategies[i] == other.strategy.round_strategies[i]) {
-                equal = false;
-                break;
-            }
-        }
-        return equal;
-    }
-
-    StrategyFrequency operator=(const StrategyFrequency &other) const {
-        // Enforces that the reference to the random number generator is not changed
-        return *this;
-    }
-} strategy_fq;
 
 struct CRDSimData {
     int generation;
@@ -146,7 +97,6 @@ public:
     std::ofstream& outFile; // output stream
 
 private:
-    std::unordered_map<SequentialStrategy, strategy_fq, SequentialStrategyHasher> _populationTypesHash;
     std::vector<EvoIndividual> _population;  // holds the population at a given generation
     std::vector<EvoIndividual> _population_tmp; // holds a vector of players
     std::vector<double> _fitnessVector; // holds the fitness of each player in the population at a given generation
@@ -159,7 +109,7 @@ private:
     CollectiveRiskDilemma *_game; // Pointer to Game class
 
     // Random generators
-    std::mt19937_64 _mt{SeedGenerator::getSeed()};
+    std::mt19937_64 _mt{SeedGenerator::getInstance().getSeed()};
 
     // Generation data
     CRDSimData _genData;

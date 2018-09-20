@@ -7,8 +7,8 @@
 
 #include <vector>
 #include <random>
-#include "Utils.h"
-#include "SeedGenerator.h"
+#include "../Utils.h"
+#include "../SeedGenerator.h"
 
 
 struct GameData {
@@ -37,7 +37,7 @@ public:
     CollectiveRiskDilemma(unsigned int nb_actions, unsigned int group_size, double target_sum, double risk,
                           unsigned int game_rounds, double endowment);
 
-    ~CollectiveRiskDilemma() {};
+    ~CollectiveRiskDilemma() = default;
 
     /**
      * @brief Runs the game for a number of rounds
@@ -84,7 +84,7 @@ private:
     void _update_fitness_not_met_threshold(EvoIndividual *individual);
 
     // Random generators
-    std::mt19937_64 _mt{SeedGenerator::getSeed()};
+    std::mt19937_64 _mt{SeedGenerator::getInstance().getSeed()};
 };
 
 

@@ -15,7 +15,7 @@
 
 #include <random>
 #include <boost/functional/hash.hpp>
-#include "SeedGenerator.h"
+#include "../SeedGenerator.h"
 
 
 struct Strategy {
@@ -100,7 +100,7 @@ struct Strategy {
     }
 
 private:
-    std::mt19937_64 _mt{SeedGenerator::getSeed()};
+    std::mt19937_64 _mt{SeedGenerator::getInstance().getSeed()};
 
     // mutation probabilities
     double _mu; // mutation probability
@@ -170,47 +170,6 @@ struct SequentialStrategy {
     }
 };
 
-struct StrategyHasher {
-    std::size_t operator()(const Strategy &s) const {
-        using boost::hash_value;
-        using boost::hash_combine;
-
-        // Start with a hash value of 0    .
-        std::size_t seed = 0;
-
-        // Modify 'seed' by XORing and bit-shifting in
-        // one member of 'Key' after the other:
-        hash_combine(seed, hash_value(s.first));
-        hash_combine(seed, hash_value(s.second));
-        hash_combine(seed, hash_value(s.threshold));
-
-        // Return the result.
-        return seed;
-    }
-};
-
-struct SequentialStrategyHasher {
-    std::size_t operator()(const SequentialStrategy &s) const {
-        using boost::hash_value;
-        using boost::hash_combine;
-
-        // Start with a hash value of 0    .
-        std::size_t seed = 0;
-
-        // Modify 'seed' by XORing and bit-shifting in
-        // one member of 'Key' after the other:
-        hash_combine(seed, hash_value(s.rounds));
-        for (size_t i = 0; i < s.rounds; i++) {
-            hash_combine(seed, hash_value(s.round_strategies[i].first));
-            hash_combine(seed, hash_value(s.round_strategies[i].second));
-            hash_combine(seed, hash_value(s.round_strategies[i].threshold));
-        }
-
-        // Return the result.
-        return seed;
-    }
-};
-
 class CRDPlayer {
     /**
      * Implements the player described in Maria A. Chacra et al. Plos paper.
@@ -226,7 +185,7 @@ public:
             id(CRDPlayer::GenerateID()), mu(mu), sigma(sigma),
             payoff(0), strategy(SequentialStrategy(mu, sigma)) {};
 
-    virtual ~CRDPlayer() {};
+    virtual ~CRDPlayer() = default;
 
     /**
 	    \brief Copy constructor

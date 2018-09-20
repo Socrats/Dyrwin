@@ -3,7 +3,7 @@
 //
 
 #include <iostream>
-#include "../include/Dyrwin/CollectiveRiskDilemma.h"
+#include "../include/Dyrwin/crd/CollectiveRiskDilemma.h"
 
 CollectiveRiskDilemma::CollectiveRiskDilemma(unsigned int nb_actions, unsigned int group_size, double target_sum,
                                              double risk, unsigned int game_rounds, double endowment) :

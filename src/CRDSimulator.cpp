@@ -3,7 +3,7 @@
 //
 
 #include <iostream>
-#include "../include/Dyrwin/CRDSimulator.h"
+#include "../include/Dyrwin/crd/CRDSimulator.h"
 
 CRDSimulator::CRDSimulator(unsigned int population_size, unsigned int group_size, unsigned int nb_games,
                            unsigned int game_rounds,
@@ -21,25 +21,14 @@ CRDSimulator::CRDSimulator(unsigned int population_size, unsigned int group_size
     // reserve memory for vector of pointers
     _population.reserve(population_size);
     _population_tmp.reserve(population_size);
-//    _populationTypesHash.reserve(population_size);
-
 
     for (unsigned int i = 0; i < population_size; i++) {
         _population.emplace_back(&_fitnessVector[i], mu, sigma);
-//        auto it = _populationTypesHash.find(_population.back().player.strategy);
-//        if (it != _populationTypesHash.end()) {
-//            it->second++;
-//        } else {
-//            auto ok = _populationTypesHash.insert(std::make_pair(_population.back().player.strategy,
-//                                                                 strategy_fq(_population.back().player.strategy, 1)));
-//        }
     }
 
     // Make sure that population vector has been initialized
     assert(!_population.empty());
     assert(!_population[0].player.strategy.round_strategies.empty());
-//    assert(!_populationTypesHash.empty());
-//    assert(!_populationTypesHash.find(_population[0].player.strategy)->second.strategy.round_strategies.empty());
 
     // Copy population into population tmp
     _population_tmp = _population;
@@ -93,29 +82,8 @@ void CRDSimulator::evolve(unsigned int generations) {
             // Update player in population
             _population_tmp[i].player.strategy.copy(_population[_population_indexes[i]].player.strategy);
 
-//            auto it = _populationTypesHash.find(_population_tmp[i].player.strategy);
-//            if (it != _populationTypesHash.end()) {
-//                // Reduce strategy frequency
-//                it->second--;
-//            } else {
-//                auto ok = _populationTypesHash.insert(std::make_pair(_population_tmp[i].player.strategy,
-//                                                                     strategy_fq(_population_tmp[i].player.strategy,
-//                                                                                 0)));
-//            }
-
             // Mutate player strategy
             ++_population_tmp[i].player.strategy;
-
-            // Check if the new strategy exists
-//            it = _populationTypesHash.find(_population_tmp[i].player.strategy);
-//            if (it != _populationTypesHash.end()) {
-//                // Increase strategy frequency
-//                it->second++;
-//            } else {
-//                auto ok = _populationTypesHash.insert(std::make_pair(_population_tmp[i].player.strategy,
-//                                                                     strategy_fq(_population_tmp[i].player.strategy,
-//                                                                                 1)));
-//            }
 
         }
         // Update new population
