@@ -12,6 +12,6 @@ set(SOURCE_FILES src/main.cpp src/CollectiveRiskDilemma.cpp include/Dyrwin/crd/C
 add_executable(Dyrwin ${SOURCE_FILES})
 TARGET_LINK_LIBRARIES(Dyrwin ${Boost_LIBRARIES})
 
-set(PYTHON_MORAN_SOURCE src/PyMoran/pmain.cpp include/Dyrwin/SeedGenerator.h src/SeedGenerator.cpp)
+set(PYTHON_MORAN_SOURCE src/PyMoran/pmain.cpp include/Dyrwin/SeedGenerator.h src/SeedGenerator.cpp include/Dyrwin/PyMoran/PDImitation.h src/PyMoran/PDImitation.cpp)
 add_executable(pmoran ${PYTHON_MORAN_SOURCE})
 TARGET_LINK_LIBRARIES(pmoran ${Boost_LIBRARIES})

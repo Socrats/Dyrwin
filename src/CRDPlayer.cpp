@@ -13,12 +13,12 @@ void CRDPlayer::updatePayoff(double curr_payoff) {
 }
 
 int CRDPlayer::getAction(double &public_account, size_t rd, double &threshold) {
-    if ((strategy.round_strategies[rd].threshold * threshold) > threshold) {
-        payoff -=  strategy.round_strategies[rd].second;
-        return  strategy.round_strategies[rd].second;
-    } else {
+    if ((strategy.round_strategies[rd].threshold * threshold) > public_account) {
         payoff -=  strategy.round_strategies[rd].first;
         return  strategy.round_strategies[rd].first;
+    } else {
+        payoff -=  strategy.round_strategies[rd].second;
+        return  strategy.round_strategies[rd].second;
     }
 }
 
