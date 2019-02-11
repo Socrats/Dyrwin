@@ -48,15 +48,6 @@ CRDSimulator::CRDSimulator(unsigned int population_size, unsigned int group_size
     // Initialize variables that hold information of a generation
     _target_reached = std::vector<bool>(nb_games);
     _contributions = std::vector<double>(nb_games);
-
-    // Index helper
-    _index_helper.reserve(population_size);
-    for (int i=0; i<population_size; ++i)
-    {
-        _index_helper.push_back(i);
-
-    }
-
 }
 
 /**
@@ -107,13 +98,28 @@ void CRDSimulator::evolve(unsigned int generations) {
  * @param size : size of the subgroup
  * @return std::vector<typename playerType>
  */
-void CRDSimulator::_select_randomly_with_replacement(unsigned int size) {
-    // Uniform int distribution
-    std::uniform_int_distribution<unsigned long int> dist(0, _population.size() - 1);
-    for (unsigned int i = 0; i < size; i++) {
-        _group[i] = &_population[dist(_mt)];
-    }
-}
+//void CRDSimulator::_select_randomly_with_replacement(unsigned int size) {
+//    // Uniform int distribution
+//    std::uniform_int_distribution<unsigned long int> dist(0, _population.size() - 1);
+//    for (unsigned int i = 0; i < size; i++) {
+//        _group[i] = &_population[dist(_mt)];
+//    }
+//}
+
+/**
+ * This method returns a subgroup formed by randomly selecting members (without replacement) from the population pool.
+ * @param size : size of the subgroup
+ * @return std::vector<typename playerType>
+ */
+//std::vector<EvoIndividual *> CRDSimulator::_select_randomly(unsigned int size) {
+//    // Uniform int distribution
+//    std::uniform_int_distribution<unsigned long int> dist(0, _population.size() - 1);
+//    for (unsigned int i = 0; i < size; i++) {
+//        _group[i] = &_population[dist(_mt)];
+//    }
+//
+//    return _group;
+//}
 
 /**
  * This method returns a subgroup formed by randomly selecting members (without replacement) from the population pool.
@@ -121,15 +127,10 @@ void CRDSimulator::_select_randomly_with_replacement(unsigned int size) {
  * @return std::vector<typename playerType>
  */
 void CRDSimulator::_select_randomly(unsigned int size) {
-    auto indexes = _index_helper;
-
-    std::shuffle (_index_helper.begin(), _index_helper.end(), _mt); //this shuffles the individuals
-
     // Uniform int distribution
-//    std::uniform_int_distribution<unsigned long int> dist(0, _population.size() - 1);
+    std::uniform_int_distribution<unsigned long int> dist(0, _population.size() - 1);
     for (unsigned int i = 0; i < size; i++) {
-//        _group[i] = &_population[dist(_mt)];
-        _group[i] = &_population[indexes[i]];
+        _group[i] = &_population[dist(_mt)];
     }
 }
 

@@ -3,8 +3,7 @@
 //
 #include <iostream>
 #include "../../include/Dyrwin/PyMoran/PDImitation.h"
-
-float fermifunc(float beta, float a, float b);
+#include "../../include/Dyrwin/CommandLineParsing.h"
 
 using namespace std;
 using namespace egt_tools;
@@ -20,6 +19,17 @@ int main(int argc, char *argv[]) {
     float beta = 1e-4;
     unsigned int generations = 10000;
     unsigned int runs = 100;
+    Options options;
+
+    options.push_back(makeDefaultedOption("generations,g", &generations, "set the number of generations", 1000u));
+    options.push_back(makeDefaultedOption("popSize,N", &pop_size, "set the size of the population", 50u));
+    options.push_back(makeDefaultedOption("mu,m", &mu, "set mutation rate", 1e-3f));
+    options.push_back(makeDefaultedOption("beta,b", &mu, "set intensity of selection", 1e-4f));
+    options.push_back(makeDefaultedOption("runs,R", &runs, "set the number of runs",100u));
+
+    if (!parseCommandLine(argc, argv, options))
+        return 1;
+
     PDImitation pd(generations, pop_size, beta, mu, coop_freq, payoff_matrix);
 
     // Random generators
@@ -42,9 +52,4 @@ int main(int argc, char *argv[]) {
 
     printf("\nExecution time: %.8fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
     return 0;
-}
-
-
-float fermifunc(float beta, float a, float b) {
-    return 1 / (1 + exp(beta * (a - b)));
 }

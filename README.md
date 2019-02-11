@@ -20,3 +20,5 @@ To get help on how to run the simulation execute:
 If you want your results to to be stored in an output file, you need to provide a file path
 
 You can also run the simulation through a python configuration file like the ones provided in ./examples:
+
+Some of the code to make build the CMakeLists.txt was taken from: https://github.com/Svalorzen/AI-Toolbox/blob/master/CMakeLists.txt
