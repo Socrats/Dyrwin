@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(BOOST_VERSION_REQUIRED 1.68)
-set(PYTHON_VERSION 3.6)
+set(PYTHON_VERSION 3.7)
 
 #if (NOT WIN32)
 #    add_definitions(
@@ -80,5 +80,5 @@ TARGET_LINK_LIBRARIES(pmoran ${Boost_LIBRARIES} boost_program_options)
 set_target_properties(pmoran PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
 
 add_library(EGTtools SHARED ${PYTHON_MORAN_SOURCE} include/Dyrwin/PyMoran/PDImitationWrapper.cpp)
-target_link_libraries(EGTtools ${${BOOST_PYTHON_LIBRARY_NAME}} ${PYTHON_LIBRARY} ${PYTHON_LINKS})
+target_link_libraries(EGTtools ${${BOOST_PYTHON_LIBRARY_NAME}} ${PYTHON_LIBRARY})
 set_target_properties(EGTtools PROPERTIES PREFIX "")

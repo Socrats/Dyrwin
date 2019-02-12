@@ -73,7 +73,7 @@ float egt_tools::PDImitation::evolve(unsigned int &runs, float &beta) {
     return _final_coop_freq;
 }
 
-std::vector<float> egt_tools::PDImitation::evolve(std::vector<float> &betas) {
+std::vector<float> egt_tools::PDImitation::evolve(std::vector<float> betas) {
     std::vector<float> coop_freqs(betas.size());
 
     for (unsigned int j = 0; j < betas.size(); j++) {
@@ -83,7 +83,7 @@ std::vector<float> egt_tools::PDImitation::evolve(std::vector<float> &betas) {
     return coop_freqs;
 }
 
-std::vector<float> egt_tools::PDImitation::evolve(std::vector<float> &betas, unsigned int &runs) {
+std::vector<float> egt_tools::PDImitation::evolve(std::vector<float> betas, unsigned int &runs) {
     std::vector<float> coop_freqs(betas.size());
 
     for (unsigned int w = 0; w < betas.size(); w++) {

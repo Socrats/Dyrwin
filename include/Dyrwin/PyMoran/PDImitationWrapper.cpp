@@ -58,6 +58,6 @@ BOOST_PYTHON_MODULE (EGTtools) {
             .def("evolve", static_cast<float (PDImitation::*)(float &)>(&PDImitation::evolve))
             .def("evolve", static_cast<float (PDImitation::*)(unsigned int &, float &)>(&PDImitation::evolve))
             .def("evolve",
-                 static_cast<std::vector<float> (PDImitation::*)(std::vector<float> &, unsigned int &) >
+                 static_cast<std::vector<float> (PDImitation::*)(std::vector<float>, unsigned int &) >
                  (&PDImitation::evolve));
 }

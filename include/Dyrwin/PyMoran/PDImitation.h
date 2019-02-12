@@ -31,9 +31,9 @@ namespace egt_tools {
 
         float evolve(unsigned int &runs, float &beta);
 
-        std::vector<float> evolve(std::vector<float> &betas);
+        std::vector<float> evolve(std::vector<float> betas);
 
-        std::vector<float> evolve(std::vector<float> &betas, unsigned int &runs);
+        std::vector<float> evolve(std::vector<float> betas, unsigned int &runs);
 
         inline void initialize_population(std::vector<unsigned int> &population);
 
