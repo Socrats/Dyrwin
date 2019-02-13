@@ -19,6 +19,7 @@ egt_tools::PDImitation::PDImitation(unsigned int generations, unsigned int pop_s
     std::uniform_real_distribution<double> _uniform_real_dist(0.0, 1.0);
     _nb_coop = (unsigned int) floor((double) (_coop_freq * _pop_size));
     _population = std::vector<unsigned int>(_pop_size);
+    _final_coop_freq = _coop_freq;
 
     initialize_population(_population);
 
@@ -42,7 +43,7 @@ float egt_tools::PDImitation::fermifunc(float beta, float a, float b) {
     return 1 / (1 + exp(beta * (a - b)));
 }
 
-float egt_tools::PDImitation::evolve(float &beta) {
+float egt_tools::PDImitation::evolve(float beta) {
 
     unsigned int i, p1, p2;
     float freq1, freq2, fitness1, fitness2;
@@ -62,7 +63,7 @@ float egt_tools::PDImitation::evolve(float &beta) {
     return _final_coop_freq;
 }
 
-float egt_tools::PDImitation::evolve(unsigned int &runs, float &beta) {
+float egt_tools::PDImitation::evolve(unsigned int runs, float beta) {
     float coop_freq = 0;
 
     // Run loop
@@ -83,7 +84,7 @@ std::vector<float> egt_tools::PDImitation::evolve(std::vector<float> betas) {
     return coop_freqs;
 }
 
-std::vector<float> egt_tools::PDImitation::evolve(std::vector<float> betas, unsigned int &runs) {
+std::vector<float> egt_tools::PDImitation::evolve(std::vector<float> betas, unsigned int runs) {
     std::vector<float> coop_freqs(betas.size());
 
     for (unsigned int w = 0; w < betas.size(); w++) {

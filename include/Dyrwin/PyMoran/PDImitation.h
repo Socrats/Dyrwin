@@ -27,13 +27,13 @@ namespace egt_tools {
 
         float fermifunc(float beta, float a, float b);
 
-        float evolve(float &beta);
+        float evolve(float beta);
 
-        float evolve(unsigned int &runs, float &beta);
+        float evolve(unsigned int runs, float beta);
 
         std::vector<float> evolve(std::vector<float> betas);
 
-        std::vector<float> evolve(std::vector<float> betas, unsigned int &runs);
+        std::vector<float> evolve(std::vector<float> betas, unsigned int runs);
 
         inline void initialize_population(std::vector<unsigned int> &population);
 
@@ -49,7 +49,9 @@ namespace egt_tools {
 
         float beta() { return _beta; }
 
-        float coop_freq() { return _final_coop_freq; }
+        float coop_freq() { return _coop_freq; }
+
+        float result_coop_freq() { return _final_coop_freq; }
 
         std::vector<float> payoff_matrix() {return _payoff_matrix;}
 
