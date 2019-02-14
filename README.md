@@ -8,8 +8,14 @@ The intention of this repository is twofold:
 ## Requirements
 Requires C++ compiler with c++11 support
 
-## Installation
-Compile with make
+## Build
+To install run:
+````
+mkdir build
+cd build
+cmake ..
+make -j 4
+````
 
 ## Execution
 To get help on how to run the simulation execute:
