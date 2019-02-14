@@ -22,6 +22,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(BOOST_VERSION_REQUIRED 1.67)
 set(PYTHON_VERSION 3)
 
+set(PYBIND11_CPP_STANDARD -std=c++1z) # Experimental C++17 support
+
 if (NOT WIN32)
     add_definitions(
             -Wall
@@ -66,32 +68,9 @@ add_executable(pmoran src/PyMoran/pmain.cpp
 TARGET_LINK_LIBRARIES(pmoran ${Boost_LIBRARIES} boost_program_options)
 set_target_properties(pmoran PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
 
-if (MAKE_PYTHON)
-    # Try to find out which version of Python we should be targeting depending
-    # on which interpreter is found. If the version has been selected
-    # explicitly we search for it directly.
-    find_package(PythonInterp ${PYTHON_VERSION} REQUIRED)
-    #    set(PYTHON_VERSION ${PYTHON_VERSION_MAJOR})
-    message("-- Python version: " ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}.${PYTHON_VERSION_PATCH})
-
-    # WARNING: The COMPONENTS parts of Boost here may need to be changed
-    # depending on your system. For example, you may need to rename `python3` to
-    # `python37`, depending on how your libraries are made.
-    # This setup works for Ubuntu, but feel free to change it in Windows.
-    if (${PYTHON_VERSION_MAJOR} EQUAL 3)
-        find_package(PythonLibs 3 REQUIRED)
-        find_package(Boost ${BOOST_VERSION_REQUIRED} COMPONENTS python3 REQUIRED)
-        set(BOOST_PYTHON_LIBRARY_NAME "Boost_PYTHON3_LIBRARY")
-    else ()
-        find_package(PythonLibs 2.7 EXACT REQUIRED)
-        find_package(Boost ${BOOST_VERSION_REQUIRED} COMPONENTS python REQUIRED)
-        set(BOOST_PYTHON_LIBRARY_NAME "Boost_PYTHON_LIBRARY")
-    endif ()
-
-    include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
-endif ()
-
-add_library(EGTtools SHARED ${PYTHON_MORAN_SOURCE} include/Dyrwin/PyMoran/PDImitationWrapper.cpp)
-target_link_libraries(EGTtools ${${BOOST_PYTHON_LIBRARY_NAME}} ${PYTHON_LIBRARY})
-set_target_properties(EGTtools PROPERTIES PREFIX "")
-set_target_properties(EGTtools PROPERTIES SUFFIX ".so")
+# Python bindings
+add_subdirectory(pybind11)
+pybind11_add_module(EGTtools SHARED ${PYTHON_MORAN_SOURCE} src/PyMoran/PDImitationWrapper.cpp)
+# target_link_libraries(EGTtools ${${BOOST_PYTHON_LIBRARY_NAME}} ${PYTHON_LIBRARY})
+# set_target_properties(EGTtools PROPERTIES PREFIX "")
+# set_target_properties(EGTtools PROPERTIES SUFFIX ".so")
