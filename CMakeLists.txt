@@ -62,7 +62,9 @@ set_target_properties(Dyrwin PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
 set(PYTHON_MORAN_SOURCE
         include/Dyrwin/SeedGenerator.h src/SeedGenerator.cpp
         include/Dyrwin/PyMoran/PDImitation.h
-        src/PyMoran/PDImitation.cpp)
+        src/PyMoran/PDImitation.cpp
+        include/Dyrwin/PyMoran/StochDynamics.h
+        src/PyMoran/StochDynamics.cpp)
 add_executable(pmoran src/PyMoran/pmain.cpp
         include/Dyrwin/CommandLineParsing.h ${PYTHON_MORAN_SOURCE})
 TARGET_LINK_LIBRARIES(pmoran ${Boost_LIBRARIES} boost_program_options)

@@ -6,6 +6,7 @@
 #include <pybind11/stl.h>
 #include <vector>
 #include "../../include/Dyrwin/PyMoran/PDImitation.h"
+#include "../../include/Dyrwin/PyMoran/StochDynamics.h"
 
 //PYBIND11_MAKE_OPAQUE(std::vector<float>);
 
@@ -49,4 +50,15 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("evolve", static_cast<std::vector<float> (PDImitation::*)(std::vector<float>,
                                                                            unsigned int) >(&PDImitation::evolve),
                  "Find the stationary distribution for a range of betas.");
+
+    py::class_<StochDynamics>(m, "StochDynamics")
+            .def(py::init<unsigned int, unsigned int, std::vector<double>>())
+            .def_property("pop_size", &StochDynamics::pop_size, &StochDynamics::set_pop_size)
+            .def_property("nb_strategies", &StochDynamics::nb_strategies, &StochDynamics::set_nb_strategies)
+            .def_property("payoff_matrix", &StochDynamics::payoff_matrix, &StochDynamics::set_payoff_matrix)
+            .def("prop_increase_decrease", &StochDynamics::probIncreaseDecrease,
+                 "Calculate the probability of incresing and decreasing the number of invaders")
+            .def("calculate_transition_fixations", &StochDynamics::calculate_transition_fixations,
+                 "Calculate the transition probabilities and the stationary distribution");
+
 }
