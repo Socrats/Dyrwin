@@ -86,7 +86,7 @@ egt_tools::StochDynamics::calculate_transition_fixations(double beta) {
         transitions[(_nb_strategies * i) + i] = 1;
         for (j = 0; j < _nb_strategies; j++) {
             if (j != i) {
-                auto fp = fixation(beta, j, i);
+                auto fp = fixation(beta, i, j);
                 fixations[(_nb_strategies * i) + j] = fp * _pop_size;
                 tmp = fp / (double) (_nb_strategies - 1);
                 transitions[(_nb_strategies * i) + j] = tmp;
