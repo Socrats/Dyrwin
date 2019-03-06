@@ -8,6 +8,8 @@
 #include <random>
 #include <vector>
 #include <cmath>
+#include <tuple>
+#include <iostream>
 #include "../SeedGenerator.h"
 
 namespace egt_tools {

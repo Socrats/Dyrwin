@@ -24,6 +24,8 @@ set(PYTHON_VERSION 3)
 
 set(PYBIND11_CPP_STANDARD -std=c++1z) # Experimental C++17 support
 
+#find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+
 if (NOT WIN32)
     add_definitions(
             -Wall
@@ -69,6 +71,7 @@ add_executable(pmoran src/PyMoran/pmain.cpp
         include/Dyrwin/CommandLineParsing.h ${PYTHON_MORAN_SOURCE})
 TARGET_LINK_LIBRARIES(pmoran ${Boost_LIBRARIES} boost_program_options)
 set_target_properties(pmoran PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
+#target_link_libraries (pmoran Eigen3::Eigen)
 
 # Python bindings
 add_subdirectory(pybind11)
