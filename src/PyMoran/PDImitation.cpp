@@ -32,7 +32,7 @@ void egt_tools::PDImitation::initialize_population(std::vector<unsigned int> &po
     }
 
     // Then we shuffle it randomly
-    shuffle(population.begin(), population.end(), _mt);
+    std::shuffle(population.begin(), population.end(), _mt);
 }
 
 float egt_tools::PDImitation::fermifunc(float beta, float a, float b) {

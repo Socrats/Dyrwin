@@ -8,12 +8,12 @@ set(MAKE_PYTHON 1)
 ##############################
 
 # Set default cmake build type to release
-if(NOT CMAKE_BUILD_TYPE)
+if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING
             "Choose the type of build, options are:
           Debug Release RelWithDebInfo MinSizeRel."
             FORCE)
-endif()
+endif ()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -29,17 +29,17 @@ if (NOT WIN32)
             -Wall
             -Wextra
     )
-endif()
+endif ()
 
 # Check for Link Time Optimizations with this compiler
 include(CheckIPOSupported)
 check_ipo_supported(RESULT LTO_SUPPORTED OUTPUT LTO_ERROR)
 
-if( LTO_SUPPORTED )
+if (LTO_SUPPORTED)
     message(STATUS "IPO / LTO enabled")
-else()
+else ()
     message(STATUS "IPO / LTO not supported: <${LTO_ERROR}>")
-endif()
+endif ()
 
 find_package(Boost ${BOOST_VERSION_REQUIRED} REQUIRED program_options system)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})

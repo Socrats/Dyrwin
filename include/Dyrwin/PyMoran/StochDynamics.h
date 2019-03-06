@@ -5,7 +5,6 @@
 #ifndef DYRWIN_STOCHDYNAMICS_H
 #define DYRWIN_STOCHDYNAMICS_H
 
-#include <iostream>
 #include <random>
 #include <vector>
 #include <cmath>

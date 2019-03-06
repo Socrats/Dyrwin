@@ -7,14 +7,15 @@
 #ifndef DYRWIN_PDIMITATION_H
 #define DYRWIN_PDIMITATION_H
 
-#include <iostream>
 #include <random>
+#include <algorithm>
 #include <vector>
 #include <cmath>
+#include <iostream>
 #include "../SeedGenerator.h"
 
 /**
- * This class implements the moran process for a prisoner's dilema game
+ * This class implements the moran process for a prisoner's dilemma game
  */
 
 namespace egt_tools {
