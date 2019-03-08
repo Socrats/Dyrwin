@@ -6,7 +6,10 @@ The intention of this repository is twofold:
 - and to provide a c++ framework to perform evolutionary analysis of game theoretical scenarios.
 
 ## Requirements
-Requires C++ compiler with c++11 support
+- Requires C++ compiler with c++17 support
+- Eigen 3.3
+- pybind 11 for the python bindings
+- Boost >=1.67 and boost program_options
 
 ## Build
 To install run:
