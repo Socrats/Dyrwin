@@ -4,6 +4,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/eigen.h>
 #include <vector>
 #include "../../include/Dyrwin/PyMoran/PDImitation.h"
 #include "../../include/Dyrwin/PyMoran/StochDynamics.h"
@@ -52,7 +53,7 @@ PYBIND11_MODULE(EGTtools, m) {
                  "Find the stationary distribution for a range of betas.");
 
     py::class_<StochDynamics>(m, "StochDynamics")
-            .def(py::init<unsigned int, unsigned int, std::vector<double>>())
+            .def(py::init<unsigned int, unsigned int, MatrixXd>())
             .def_property("pop_size", &StochDynamics::pop_size, &StochDynamics::set_pop_size)
             .def_property("nb_strategies", &StochDynamics::nb_strategies, &StochDynamics::set_nb_strategies)
             .def_property("payoff_matrix", &StochDynamics::payoff_matrix, &StochDynamics::set_payoff_matrix)

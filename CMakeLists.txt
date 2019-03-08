@@ -1,7 +1,22 @@
 cmake_minimum_required(VERSION 3.9)
 project(Dyrwin LANGUAGES CXX)
 
-set(MAKE_PYTHON 1)
+# Help variables to select what to build
+#
+# MAKE_ALL:      Builds all project executable and python bindings
+# MAKE_DYRWIN:   Builds the Dyrwin library executables
+# MAKE_PMORAN:   Build the moran process executable
+# MAKE_PYTHON:   Builds Python bindings
+
+##############################
+##  CMake helper functions  ##
+##############################
+
+function(append value)
+    foreach(variable ${ARGN})
+        set(${variable} "${${variable}} ${value}" PARENT_SCOPE)
+    endforeach(variable)
+endfunction()
 
 ##############################
 ## Compiler/Linker Settings ##
@@ -18,13 +33,6 @@ endif ()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-set(BOOST_VERSION_REQUIRED 1.67)
-set(PYTHON_VERSION 3)
-
-set(PYBIND11_CPP_STANDARD -std=c++1z) # Experimental C++17 support
-
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 if (NOT WIN32)
     add_definitions(
@@ -43,10 +51,47 @@ else ()
     message(STATUS "IPO / LTO not supported: <${LTO_ERROR}>")
 endif ()
 
+##############################
+##     Project Settings     ##
+##############################
+
+# Default is to build everything
+if (NOT MAKE_ALL AND NOT MAKE_DYRWIN AND NOT MAKE_PMORAN AND NOT MAKE_PYTHON)
+    set(MAKE_ALL    1)
+endif()
+
+if (MAKE_ALL)
+    set(MAKE_DYRWIN     1)
+    set(MAKE_PMORAN     1)
+    set(MAKE_PYTHON     1)
+endif()
+
+##############################
+##       Dependencies       ##
+##############################
+
+set(BOOST_VERSION_REQUIRED 1.67)
+set(EIGEN_VERSION_REQUIRED 3.3)
+set(PYTHON_VERSION 3)
+
+# Optional to force Boost to use static libraries. Can be useful on Windows.
+#
+# set(Boost_USE_STATIC_LIBS ON)
+# add_definitions(-DBOOST_PYTHON_STATIC_LIB)
+
+set(PYBIND11_CPP_STANDARD -std=c++1z) # Experimental C++17 support
+
 find_package(Boost ${BOOST_VERSION_REQUIRED} REQUIRED program_options system)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
+find_package(Eigen3 ${EIGEN_VERSION_REQUIRED} REQUIRED)
+include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+
 include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
+
+##############################
+## Building executables     ##
+##############################
 
 set(SOURCE_FILES src/main.cpp
         src/CollectiveRiskDilemma.cpp
@@ -57,9 +102,12 @@ set(SOURCE_FILES src/main.cpp
         include/Dyrwin/SeedGenerator.h
         include/Dyrwin/CommandLineParsing.h
         include/Dyrwin/ipd/IteratedPrisonersDilemma.cpp)
-add_executable(Dyrwin ${SOURCE_FILES})
-target_link_libraries(Dyrwin ${Boost_LIBRARIES} boost_program_options)
-set_target_properties(Dyrwin PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
+
+if (MAKE_DYRWIN)
+    add_executable(Dyrwin ${SOURCE_FILES})
+    target_link_libraries(Dyrwin ${Boost_LIBRARIES} boost_program_options)
+    set_target_properties(Dyrwin PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
+endif()
 
 set(PYTHON_MORAN_SOURCE
         include/Dyrwin/SeedGenerator.h src/SeedGenerator.cpp
@@ -67,15 +115,20 @@ set(PYTHON_MORAN_SOURCE
         src/PyMoran/PDImitation.cpp
         include/Dyrwin/PyMoran/StochDynamics.h
         src/PyMoran/StochDynamics.cpp)
-add_executable(pmoran src/PyMoran/pmain.cpp
-        include/Dyrwin/CommandLineParsing.h ${PYTHON_MORAN_SOURCE})
-TARGET_LINK_LIBRARIES(pmoran ${Boost_LIBRARIES} boost_program_options)
-set_target_properties(pmoran PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
-target_link_libraries (pmoran Eigen3::Eigen)
+
+if (MAKE_PMORAN)
+    add_executable(pmoran src/PyMoran/pmain.cpp
+            include/Dyrwin/CommandLineParsing.h ${PYTHON_MORAN_SOURCE})
+    TARGET_LINK_LIBRARIES(pmoran ${Boost_LIBRARIES} boost_program_options)
+    set_target_properties(pmoran PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
+    target_link_libraries (pmoran Eigen3::Eigen)
+endif()
 
 # Python bindings
-add_subdirectory(pybind11)
-pybind11_add_module(EGTtools SHARED ${PYTHON_MORAN_SOURCE} src/PyMoran/PDImitationWrapper.cpp)
+if (MAKE_PYTHON)
+    add_subdirectory(pybind11)
+    pybind11_add_module(EGTtools SHARED ${PYTHON_MORAN_SOURCE} src/PyMoran/PDImitationWrapper.cpp)
+endif()
 # target_link_libraries(EGTtools ${${BOOST_PYTHON_LIBRARY_NAME}} ${PYTHON_LIBRARY})
 # set_target_properties(EGTtools PROPERTIES PREFIX "")
 # set_target_properties(EGTtools PROPERTIES SUFFIX ".so")

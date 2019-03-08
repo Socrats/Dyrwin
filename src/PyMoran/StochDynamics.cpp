@@ -5,7 +5,7 @@
 #include "../../include/Dyrwin/PyMoran/StochDynamics.h"
 
 egt_tools::StochDynamics::StochDynamics(unsigned int population_size, unsigned int nb_strategies,
-                                        std::vector<double> payoff_matrix) :
+                                        MatrixXd payoff_matrix) :
         _pop_size(population_size),
         _nb_strategies(nb_strategies),
         _payoff_matrix(std::move(payoff_matrix)) {
@@ -25,10 +25,10 @@ double egt_tools::StochDynamics::fermi(double beta, double a, double b) {
  */
 std::tuple<double, double>
 egt_tools::StochDynamics::calculate_fitness(int k, unsigned int invader, unsigned int resident) {
-    auto resA = (((k - 1) * _payoff_matrix[(_nb_strategies * invader) + invader]) +
-            ((_pop_size - k) * _payoff_matrix[(_nb_strategies * invader) + resident])) / (double) (_pop_size - 1);
-    auto resB = ((k * _payoff_matrix[(_nb_strategies * resident) + invader]) +
-            ((_pop_size - k - 1) * _payoff_matrix[(_nb_strategies * resident) + resident])) / (double) (_pop_size - 1);
+    auto resA = (((k - 1) * _payoff_matrix(invader, invader)) +
+                 ((_pop_size - k) * _payoff_matrix(invader, resident))) / (double) (_pop_size - 1);
+    auto resB = ((k * _payoff_matrix(resident, invader)) +
+                 ((_pop_size - k - 1) * _payoff_matrix(resident, resident))) / (double) (_pop_size - 1);
 
     return std::tuple<double, double>(resA, resB);
 }
@@ -43,7 +43,7 @@ egt_tools::StochDynamics::calculate_fitness(int k, unsigned int invader, unsigne
 std::tuple<double, double>
 egt_tools::StochDynamics::probIncreaseDecrease(double beta, int k, unsigned int invader, unsigned int resident) {
     auto fitness = calculate_fitness(k, invader, resident);
-    double tmp = (k / (double) _pop_size) * ((_pop_size - k)  / (double) _pop_size);
+    double tmp = (k / (double) _pop_size) * ((_pop_size - k) / (double) _pop_size);
     auto increase = tmp * fermi(-beta, std::get<0>(fitness), std::get<1>(fitness));
     auto decrease = tmp * fermi(beta, std::get<0>(fitness), std::get<1>(fitness));
     return std::tuple<double, double>(increase, decrease);
@@ -76,24 +76,25 @@ double egt_tools::StochDynamics::fixation(double beta, unsigned int invader, uns
  * @param beta
  * @return a tuple with the transition probabilities and the fixation probabilities
  */
-std::tuple<std::vector<double>, std::vector<double>>
+std::tuple<MatrixXd, MatrixXd>
 egt_tools::StochDynamics::calculate_transition_fixations(double beta) {
     unsigned int i, j;
     double tmp;
-    std::vector<double> transitions(_nb_strategies * _nb_strategies, 0), fixations(_nb_strategies * _nb_strategies, 0);
+    MatrixXd transitions = MatrixXd::Zero(_nb_strategies, _nb_strategies);
+    MatrixXd fixations = MatrixXd::Zero(_nb_strategies, _nb_strategies);
 
     for (i = 0; i < _nb_strategies; i++) {
-        transitions[(_nb_strategies * i) + i] = 1;
+        transitions(i, i) = 1;
         for (j = 0; j < _nb_strategies; j++) {
             if (j != i) {
                 auto fp = fixation(beta, i, j);
-                fixations[(_nb_strategies * i) + j] = fp * _pop_size;
+                fixations(i, j) = fp * _pop_size;
                 tmp = fp / (double) (_nb_strategies - 1);
-                transitions[(_nb_strategies * i) + j] = tmp;
-                transitions[(_nb_strategies * i) + i] -= tmp;
+                transitions(i, j) = tmp;
+                transitions(i, i) -= tmp;
             }
         }
     }
 
-    return std::tuple<std::vector<double>, std::vector<double>>(transitions, fixations);
+    return std::tuple<MatrixXd, MatrixXd>(transitions, fixations);
 }

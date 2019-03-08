@@ -54,9 +54,11 @@ int main(int argc, char *argv[]) {
     }
 
     if (test) {
-        std::vector<double> payoffs({1, 4, 0, 3});
+        Eigen::Matrix2d payoffs;
+        payoffs << 1, 4,
+                   0, 3;
         StochDynamics sdy(pop_size, 2, payoffs);
-        cout << "Trans prob: " << std::get<1>(sdy.calculate_transition_fixations(1.))[0] << endl;
+        cout << "Trans prob: " << std::get<1>(sdy.calculate_transition_fixations(1.))(0, 0) << endl;
     }
 
     printf("\nExecution time: %.8fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
