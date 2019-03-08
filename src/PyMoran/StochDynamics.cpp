@@ -8,7 +8,22 @@ egt_tools::StochDynamics::StochDynamics(unsigned int population_size, unsigned i
                                         MatrixXd payoff_matrix) :
         _pop_size(population_size),
         _nb_strategies(nb_strategies),
+        _group_size(2),
         _payoff_matrix(std::move(payoff_matrix)) {
+
+}
+
+egt_tools::StochDynamics::StochDynamics(unsigned int population_size, unsigned int nb_strategies,
+                                        unsigned int group_size, MatrixXd payoff_matrix) :
+        _pop_size(population_size),
+        _nb_strategies(nb_strategies),
+        _group_size(group_size),
+        _payoff_matrix(std::move(payoff_matrix)) {
+
+    // For N-person dilemmas, we must sample with the hypergeometric
+    if (_group_size > 2) {
+
+    }
 
 }
 
@@ -59,7 +74,7 @@ double egt_tools::StochDynamics::fixation(double beta, unsigned int invader, uns
     unsigned int i, j;
     double result = 0;
 
-    for (i = 1; i < _pop_size; i++) {
+    for (i = 0; i < _pop_size; i++) {
         double sub = 1.;
         for (j = 1; j < i + 1; j++) {
             auto tmp = probIncreaseDecrease(beta, j, invader, resident);
@@ -67,7 +82,7 @@ double egt_tools::StochDynamics::fixation(double beta, unsigned int invader, uns
         }
         result += sub;
     }
-    return 1 / (1. + result);
+    return 1 / result;
 }
 
 /**
