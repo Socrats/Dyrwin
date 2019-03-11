@@ -10,15 +10,21 @@
 #include <cmath>
 #include <tuple>
 #include <Eigen/Dense>
+//#include <boost/math/distributions/hypergeometric.hpp>
 #include <iostream>
 #include "../SeedGenerator.h"
 
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> MatrixXd;
 
+// TODO: Include calculations for the infinite population case
+// TODO: Include the possibility to do calculate the full transition matrix (outside the small mutation limit)
+
 namespace egt_tools {
     class StochDynamics {
     public:
         StochDynamics(unsigned int population_size, unsigned int nb_strategies, MatrixXd payoff_matrix);
+        StochDynamics(unsigned int population_size, unsigned int nb_strategies, unsigned int group_size,
+                      MatrixXd payoff_matrix);
 
         ~StochDynamics() = default;
 
@@ -50,7 +56,7 @@ namespace egt_tools {
         }
 
     private:
-        unsigned int _pop_size, _nb_strategies;
+        unsigned int _pop_size, _nb_strategies, _group_size;
         MatrixXd _payoff_matrix;
 
         // Random generators
