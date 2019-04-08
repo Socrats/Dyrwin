@@ -13,6 +13,7 @@
 #include <cmath>
 #include <iostream>
 #include "../SeedGenerator.h"
+#include "../rl/RLUtils.h"
 
 /**
  * This class implements the moran process for a prisoner's dilemma game
@@ -22,7 +23,7 @@ namespace egt_tools {
     class PDImitation {
     public:
         PDImitation(unsigned int generations, unsigned int pop_size, float beta, float mu,
-                    float coop_freq, std::vector<float> payoff_matrix);
+                    float coop_freq, MatrixXd payoff_matrix);
 
         ~PDImitation() = default;
 
@@ -54,7 +55,7 @@ namespace egt_tools {
 
         float result_coop_freq() { return _final_coop_freq; }
 
-        std::vector<float> payoff_matrix() {return _payoff_matrix;}
+        MatrixXd payoff_matrix() {return _payoff_matrix;}
 
         // Setters
         void set_generations(unsigned int generations) { _generations = generations; }
@@ -67,7 +68,7 @@ namespace egt_tools {
 
         void set_mu(float mu) { _mu = mu; }
 
-        void set_payoff_matrix(std::vector<float> payoff_matrix) {
+        void set_payoff_matrix(MatrixXd payoff_matrix) {
             _payoff_matrix = std::move(payoff_matrix);
         }
 
@@ -75,7 +76,7 @@ namespace egt_tools {
         unsigned int _generations, _pop_size, _nb_coop;
         float _beta, _mu, _coop_freq, _final_coop_freq;
         std::vector<unsigned int> _population;
-        std::vector<float> _payoff_matrix;
+        MatrixXd _payoff_matrix;
 
         inline void _moran_step(unsigned int &p1, unsigned int &p2, int &gradient, float &ref,
                                float &freq1, float &freq2, float &fitness1, float &fitness2,

@@ -15,7 +15,9 @@ int main(int argc, char *argv[]) {
     unsigned int pop_size = 50, nb_betas = 7;
     float mu = 1e-3;
     float coop_freq = 0.5;
-    std::vector<float> payoff_matrix({1, 4, 0, 3});
+    Eigen::Matrix2d payoff_matrix;
+    payoff_matrix << 1, 4,
+                     0, 3;
     std::vector<float> betas(nb_betas);
     float beta = 1e-4;
     unsigned int generations = 10000;

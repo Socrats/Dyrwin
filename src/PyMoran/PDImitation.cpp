@@ -6,7 +6,7 @@
 
 egt_tools::PDImitation::PDImitation(unsigned int generations, unsigned int pop_size, float beta,
                                     float mu, float coop_freq,
-                                    std::vector<float> payoff_matrix) : _generations(generations),
+                                    MatrixXd payoff_matrix) : _generations(generations),
                                                                         _pop_size(pop_size), _beta(beta),
                                                                         _mu(mu),
                                                                         _coop_freq(coop_freq),
@@ -107,10 +107,8 @@ void egt_tools::PDImitation::_moran_step(unsigned int &p1, unsigned int &p2, int
     freq2 = (ref - population[p2]) / (float) (_pop_size - 1);
 
     // Calculate payoffs
-    fitness1 = _payoff_matrix[(2 * population[p1]) + 1] * freq1 +
-               _payoff_matrix[(2 * population[p1]) + 0] * (1 - freq1);
-    fitness2 = _payoff_matrix[(2 * population[p2]) + 1] * freq2 +
-               _payoff_matrix[(2 * population[p2]) + 0] * (1 - freq2);
+    fitness1 = _payoff_matrix(population[p1], 1) * freq1 + _payoff_matrix(population[p1], 0) * (1 - freq1);
+    fitness2 = _payoff_matrix(population[p2], 1) * freq2 + _payoff_matrix(population[p2], 0) * (1 - freq2);
 
     // Select according to fermi function
     if (_uniform_real_dist(_mt) < fermifunc(beta, fitness1, fitness2)) {
