@@ -8,6 +8,7 @@
 #include <vector>
 #include "../../include/Dyrwin/PyMoran/PDImitation.h"
 #include "../../include/Dyrwin/PyMoran/StochDynamics.h"
+#include "../../include/Dyrwin/PyMoran/TraulsenMoran.h"
 
 //PYBIND11_MAKE_OPAQUE(std::vector<float>);
 
@@ -35,7 +36,7 @@ PYBIND11_MODULE(EGTtools, m) {
 //            }, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
 
     py::class_<PDImitation>(m, "PDImitation")
-            .def(py::init<unsigned int, unsigned int, float, float, float, std::vector<float>>())
+            .def(py::init<unsigned int, unsigned int, float, float, float, MatrixXd>())
             .def_property("generations", &PDImitation::generations, &PDImitation::set_generations)
             .def_property("pop_size", &PDImitation::pop_size, &PDImitation::set_pop_size)
             .def_property_readonly("nb_coop", &PDImitation::nb_coop)
@@ -50,6 +51,27 @@ PYBIND11_MODULE(EGTtools, m) {
                  "Find the stationary distribution for beta.")
             .def("evolve", static_cast<std::vector<float> (PDImitation::*)(std::vector<float>,
                                                                            unsigned int) >(&PDImitation::evolve),
+                 "Find the stationary distribution for a range of betas.");
+
+    py::class_<TraulsenMoran>(m, "TraulsenMoran")
+            .def(py::init<uint64_t, unsigned int, unsigned int, double, double, double, MatrixXd>())
+            .def_property("generations", &TraulsenMoran::generations, &TraulsenMoran::set_generations)
+            .def_property("n", &TraulsenMoran::group_size, &TraulsenMoran::set_group_size)
+            .def_property("m", &TraulsenMoran::nb_groups, &TraulsenMoran::set_nb_groups)
+            .def_property("pop_size", &TraulsenMoran::pop_size, &TraulsenMoran::set_pop_size)
+            .def_property("nb_coop", &TraulsenMoran::nb_coop, &TraulsenMoran::set_nb_coop)
+            .def_property_readonly("group_cooperation", &TraulsenMoran::group_cooperation)
+            .def_property("mu", &TraulsenMoran::mu, &TraulsenMoran::set_mu)
+            .def_property("beta", &TraulsenMoran::beta, &TraulsenMoran::set_beta)
+            .def_property("coop_freq", &TraulsenMoran::coop_freq, &TraulsenMoran::set_coop_freq)
+            .def_property_readonly("result_coop_freq", &TraulsenMoran::result_coop_freq)
+            .def_property("payoff_matrix", &TraulsenMoran::payoff_matrix, &TraulsenMoran::set_payoff_matrix)
+            .def("evolve", static_cast<double (TraulsenMoran::*)(double)>(&TraulsenMoran::evolve),
+                 "Execute the moran process with imitation once.")
+            .def("evolve", static_cast<double (TraulsenMoran::*)(unsigned int, double)>(&TraulsenMoran::evolve),
+                 "Find the stationary distribution for beta.")
+            .def("evolve", static_cast<std::vector<double> (TraulsenMoran::*)(std::vector<double>,
+                                                                              unsigned int) >(&TraulsenMoran::evolve),
                  "Find the stationary distribution for a range of betas.");
 
     py::class_<StochDynamics>(m, "StochDynamics")
