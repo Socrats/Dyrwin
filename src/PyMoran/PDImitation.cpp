@@ -6,11 +6,11 @@
 
 egt_tools::PDImitation::PDImitation(unsigned int generations, unsigned int pop_size, float beta,
                                     float mu, float coop_freq,
-                                    MatrixXd payoff_matrix) : _generations(generations),
-                                                                        _pop_size(pop_size), _beta(beta),
-                                                                        _mu(mu),
-                                                                        _coop_freq(coop_freq),
-                                                                        _payoff_matrix(std::move(payoff_matrix)) {
+                                    Eigen::Ref<const MatrixXd> payoff_matrix) : _generations(generations),
+                                                                                _pop_size(pop_size), _beta(beta),
+                                                                                _mu(mu),
+                                                                                _coop_freq(coop_freq),
+                                                                                _payoff_matrix(payoff_matrix) {
 
     std::uniform_real_distribution<double> _uniform_real_dist(0.0, 1.0);
     _nb_coop = (unsigned int) floor((double) (_coop_freq * _pop_size));
@@ -52,7 +52,8 @@ float egt_tools::PDImitation::evolve(float beta) {
 
     // Now run a Moran Process loop
     for (i = 0; i < _generations; i++) {
-        _moran_step(p1, p2, gradient, ref, freq1, freq2, fitness1, fitness2, beta, _population, dist, _uniform_real_dist);
+        _moran_step(p1, p2, gradient, ref, freq1, freq2, fitness1, fitness2, beta, _population, dist,
+                    _uniform_real_dist);
         if ((ref == _pop_size) || (ref == 0)) break;
     }
     _final_coop_freq = ref / (float) _pop_size;

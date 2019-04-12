@@ -26,7 +26,7 @@ namespace egt_tools {
     class TraulsenMoran {
     public:
         TraulsenMoran(uint64_t generations, unsigned int group_size, unsigned int nb_groups, double beta, double mu,
-                      double coop_freq, MatrixXd payoff_matrix);
+                      double coop_freq, double split_prob, Eigen::Ref<const MatrixXd> payoff_matrix);
 
         ~TraulsenMoran() = default;
 
@@ -64,9 +64,11 @@ namespace egt_tools {
 
         double result_coop_freq() { return _final_coop_freq; }
 
+        double split_prob() { return _split_prob; }
+
         std::vector<unsigned int> group_cooperation() { return _group_coop; }
 
-        MatrixXd payoff_matrix() { return _payoff_matrix; }
+        MatrixXd &payoff_matrix() { return _payoff_matrix; }
 
         // Setters
         void set_generations(uint64_t generations) { _generations = generations; }
@@ -94,8 +96,10 @@ namespace egt_tools {
 
         void set_mu(double mu) { _mu = mu; }
 
-        void set_payoff_matrix(MatrixXd payoff_matrix) {
-            _payoff_matrix = std::move(payoff_matrix);
+        void set_split_prob(double split_prob) { _split_prob = split_prob; }
+
+        void set_payoff_matrix(Eigen::Ref<const MatrixXd> payoff_matrix) {
+            Eigen::Map<MatrixXd>(_payoff_matrix.data(), _payoff_matrix.rows(), _payoff_matrix.cols()) = payoff_matrix;
         }
 
     private:
@@ -113,7 +117,7 @@ namespace egt_tools {
          */
         uint64_t _generations;
         unsigned int _pop_size, _group_size, _nb_groups, _nb_coop;
-        double _beta, _mu, _coop_freq, _final_coop_freq;
+        double _beta, _mu, _coop_freq, _final_coop_freq, _split_prob;
         // group_coop stores the cooperation level of each group
         // when the group splits, we must select another randomly
         std::vector<unsigned int> _population, _group_coop;
@@ -126,6 +130,14 @@ namespace egt_tools {
                                 std::vector<unsigned int> &population,
                                 std::uniform_int_distribution<unsigned int> &dist,
                                 std::uniform_real_distribution<double> &_uniform_real_dist);
+
+        inline void _moran_step_mutation(unsigned int &p1, unsigned int &p2, int &gradient, double &ref,
+                                         double &freq1, double &freq2, double &fitness1, double &fitness2,
+                                         double &beta,
+                                         std::vector<unsigned int> &group_coop,
+                                         std::vector<unsigned int> &population,
+                                         std::uniform_int_distribution<unsigned int> &dist,
+                                         std::uniform_real_distribution<double> &_uniform_real_dist);
 
         // Random generators
         std::mt19937_64 _mt{SeedGenerator::getInstance().getSeed()};

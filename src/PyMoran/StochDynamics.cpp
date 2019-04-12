@@ -5,20 +5,20 @@
 #include "../../include/Dyrwin/PyMoran/StochDynamics.h"
 
 egt_tools::StochDynamics::StochDynamics(unsigned int population_size, unsigned int nb_strategies,
-                                        MatrixXd payoff_matrix) :
+                                        Eigen::Ref<const MatrixXd> payoff_matrix) :
         _pop_size(population_size),
         _nb_strategies(nb_strategies),
         _group_size(2),
-        _payoff_matrix(std::move(payoff_matrix)) {
+        _payoff_matrix(payoff_matrix) {
 
 }
 
 egt_tools::StochDynamics::StochDynamics(unsigned int population_size, unsigned int nb_strategies,
-                                        unsigned int group_size, MatrixXd payoff_matrix) :
+                                        unsigned int group_size, Eigen::Ref<const MatrixXd> payoff_matrix) :
         _pop_size(population_size),
         _nb_strategies(nb_strategies),
         _group_size(group_size),
-        _payoff_matrix(std::move(payoff_matrix)) {
+        _payoff_matrix(payoff_matrix) {
 
     // For N-person dilemmas, we must sample with the hypergeometric
     if (_group_size > 2) {

@@ -22,9 +22,9 @@ typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> MatrixXd;
 namespace egt_tools {
     class StochDynamics {
     public:
-        StochDynamics(unsigned int population_size, unsigned int nb_strategies, MatrixXd payoff_matrix);
+        StochDynamics(unsigned int population_size, unsigned int nb_strategies, Eigen::Ref<const MatrixXd> payoff_matrix);
         StochDynamics(unsigned int population_size, unsigned int nb_strategies, unsigned int group_size,
-                      MatrixXd payoff_matrix);
+                      Eigen::Ref<const MatrixXd> payoff_matrix);
 
         ~StochDynamics() = default;
 
@@ -51,8 +51,8 @@ namespace egt_tools {
 
         void set_nb_strategies(unsigned int nb_strategies) { _nb_strategies = nb_strategies; }
 
-        void set_payoff_matrix(MatrixXd payoff_matrix) {
-            _payoff_matrix = std::move(payoff_matrix);
+        void set_payoff_matrix(Eigen::Ref<const MatrixXd> payoff_matrix) {
+            _payoff_matrix = payoff_matrix;
         }
 
     private:

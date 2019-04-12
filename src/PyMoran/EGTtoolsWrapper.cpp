@@ -36,7 +36,7 @@ PYBIND11_MODULE(EGTtools, m) {
 //            }, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
 
     py::class_<PDImitation>(m, "PDImitation")
-            .def(py::init<unsigned int, unsigned int, float, float, float, MatrixXd>())
+            .def(py::init<unsigned int, unsigned int, float, float, float, Eigen::Ref<const MatrixXd>>())
             .def_property("generations", &PDImitation::generations, &PDImitation::set_generations)
             .def_property("pop_size", &PDImitation::pop_size, &PDImitation::set_pop_size)
             .def_property_readonly("nb_coop", &PDImitation::nb_coop)
@@ -45,6 +45,7 @@ PYBIND11_MODULE(EGTtools, m) {
             .def_property("coop_freq", &PDImitation::coop_freq, &PDImitation::set_coop_freq)
             .def_property_readonly("result_coop_freq", &PDImitation::result_coop_freq)
             .def_property("payoff_matrix", &PDImitation::payoff_matrix, &PDImitation::set_payoff_matrix)
+            .def("update_payoff_matrix", &PDImitation::set_payoff_matrix, py::return_value_policy::reference_internal)
             .def("evolve", static_cast<float (PDImitation::*)(float)>(&PDImitation::evolve),
                  "Execute the moran process with imitation once.")
             .def("evolve", static_cast<float (PDImitation::*)(unsigned int, float)>(&PDImitation::evolve),
@@ -54,7 +55,7 @@ PYBIND11_MODULE(EGTtools, m) {
                  "Find the stationary distribution for a range of betas.");
 
     py::class_<TraulsenMoran>(m, "TraulsenMoran")
-            .def(py::init<uint64_t, unsigned int, unsigned int, double, double, double, MatrixXd>())
+            .def(py::init<uint64_t, unsigned int, unsigned int, double, double, double, double, Eigen::Ref<const MatrixXd>>())
             .def_property("generations", &TraulsenMoran::generations, &TraulsenMoran::set_generations)
             .def_property("n", &TraulsenMoran::group_size, &TraulsenMoran::set_group_size)
             .def_property("m", &TraulsenMoran::nb_groups, &TraulsenMoran::set_nb_groups)
@@ -66,6 +67,7 @@ PYBIND11_MODULE(EGTtools, m) {
             .def_property("coop_freq", &TraulsenMoran::coop_freq, &TraulsenMoran::set_coop_freq)
             .def_property_readonly("result_coop_freq", &TraulsenMoran::result_coop_freq)
             .def_property("payoff_matrix", &TraulsenMoran::payoff_matrix, &TraulsenMoran::set_payoff_matrix)
+            .def("update_payoff_matrix", &TraulsenMoran::set_payoff_matrix, py::return_value_policy::reference_internal)
             .def("evolve", static_cast<double (TraulsenMoran::*)(double)>(&TraulsenMoran::evolve),
                  "Execute the moran process with imitation once.")
             .def("evolve", static_cast<double (TraulsenMoran::*)(unsigned int, double)>(&TraulsenMoran::evolve),
@@ -75,7 +77,7 @@ PYBIND11_MODULE(EGTtools, m) {
                  "Find the stationary distribution for a range of betas.");
 
     py::class_<StochDynamics>(m, "StochDynamics")
-            .def(py::init<unsigned int, unsigned int, MatrixXd>())
+            .def(py::init<unsigned int, unsigned int, Eigen::Ref<MatrixXd>>())
             .def_property("pop_size", &StochDynamics::pop_size, &StochDynamics::set_pop_size)
             .def_property("nb_strategies", &StochDynamics::nb_strategies, &StochDynamics::set_nb_strategies)
             .def_property("payoff_matrix", &StochDynamics::payoff_matrix, &StochDynamics::set_payoff_matrix)
