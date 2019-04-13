@@ -61,7 +61,6 @@ PYBIND11_MODULE(EGTtools, m) {
             .def_property("m", &TraulsenMoran::nb_groups, &TraulsenMoran::set_nb_groups)
             .def_property("pop_size", &TraulsenMoran::pop_size, &TraulsenMoran::set_pop_size)
             .def_property("nb_coop", &TraulsenMoran::nb_coop, &TraulsenMoran::set_nb_coop)
-            .def_property_readonly("group_cooperation", &TraulsenMoran::group_cooperation)
             .def_property("mu", &TraulsenMoran::mu, &TraulsenMoran::set_mu)
             .def_property("beta", &TraulsenMoran::beta, &TraulsenMoran::set_beta)
             .def_property("coop_freq", &TraulsenMoran::coop_freq, &TraulsenMoran::set_coop_freq)
@@ -71,6 +70,7 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("evolve", static_cast<double (TraulsenMoran::*)(double)>(&TraulsenMoran::evolve),
                  "Execute the moran process with imitation once.")
             .def("evolve", static_cast<double (TraulsenMoran::*)(unsigned int, double)>(&TraulsenMoran::evolve),
+                 py::call_guard<py::gil_scoped_release>(),
                  "Find the stationary distribution for beta.")
             .def("evolve", static_cast<std::vector<double> (TraulsenMoran::*)(std::vector<double>,
                                                                               unsigned int) >(&TraulsenMoran::evolve),

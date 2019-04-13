@@ -42,7 +42,7 @@ namespace egt_tools {
 
         inline void initialize_population(std::vector<unsigned int> &population);
 
-        inline void initialize_group_coop(std::vector<unsigned int> &group_coop);
+        inline void initialize_group_coop(std::vector<unsigned int> &group_coop, std::vector<unsigned int> &population);
 
 
         // Getters
@@ -65,8 +65,6 @@ namespace egt_tools {
         double result_coop_freq() { return _final_coop_freq; }
 
         double split_prob() { return _split_prob; }
-
-        std::vector<unsigned int> group_cooperation() { return _group_coop; }
 
         MatrixXd &payoff_matrix() { return _payoff_matrix; }
 
@@ -98,7 +96,7 @@ namespace egt_tools {
 
         void set_split_prob(double split_prob) { _split_prob = split_prob; }
 
-        void set_payoff_matrix(Eigen::Ref<const MatrixXd> payoff_matrix) {
+        void set_payoff_matrix(const Eigen::Ref<const MatrixXd> &payoff_matrix) {
             Eigen::Map<MatrixXd>(_payoff_matrix.data(), _payoff_matrix.rows(), _payoff_matrix.cols()) = payoff_matrix;
         }
 
@@ -120,7 +118,6 @@ namespace egt_tools {
         double _beta, _mu, _coop_freq, _final_coop_freq, _split_prob;
         // group_coop stores the cooperation level of each group
         // when the group splits, we must select another randomly
-        std::vector<unsigned int> _population, _group_coop;
         MatrixXd _payoff_matrix;
 
         inline void _moran_step(unsigned int &p1, unsigned int &p2, int &gradient, double &ref,

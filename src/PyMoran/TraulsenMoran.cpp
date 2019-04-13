@@ -18,20 +18,12 @@ egt_tools::TraulsenMoran::TraulsenMoran(uint64_t generations, unsigned int group
 
     _pop_size = _nb_groups * _group_size;
     _nb_coop = (unsigned int) floor(_coop_freq * _pop_size);
-    _population = std::vector<unsigned int>(_pop_size);
-    _group_coop = std::vector<unsigned int>(_nb_groups);
     _final_coop_freq = _coop_freq;
-
-    initialize_population(_population);
-    initialize_group_coop(_group_coop);
 }
 
 void egt_tools::TraulsenMoran::initialize_population(std::vector<unsigned int> &population) {
     unsigned int i;
 
-    for (i = 0; i < _nb_coop; i++) {
-        population[i] = 0;
-    }
     for (i = _nb_coop; i < _pop_size; i++) {
         population[i] = 1;
     }
@@ -40,14 +32,12 @@ void egt_tools::TraulsenMoran::initialize_population(std::vector<unsigned int> &
     std::shuffle(population.begin(), population.end(), _mt);
 }
 
-void egt_tools::TraulsenMoran::initialize_group_coop(std::vector<unsigned int> &group_coop) {
+void egt_tools::TraulsenMoran::initialize_group_coop(std::vector<unsigned int> &group_coop,
+                                                     std::vector<unsigned int> &population) {
     unsigned int i;
     // Calculate the number of cooperators in each group
-    for (i = 0; i < _nb_groups; i++) {
-        group_coop[i] = 0;
-    }
     for (i = 0; i < _pop_size; i++) {
-        group_coop[floor(i / _group_size)] += _population[i];
+        group_coop[floor(i / _group_size)] += population[i];
     }
 }
 
@@ -63,21 +53,23 @@ double egt_tools::TraulsenMoran::evolve(double beta) {
     int gradient = 0;
     std::uniform_int_distribution<unsigned int> dist(0, _pop_size - 1);
     std::uniform_real_distribution<double> _uniform_real_dist(0.0, 1.0);
+    std::vector<unsigned int> population = std::vector<unsigned int>(_pop_size, 0.0);
+    std::vector<unsigned int> group_coop = std::vector<unsigned int>(_nb_groups, 0.0);
 
-    initialize_population(_population);
-    initialize_group_coop(_group_coop);
+    initialize_population(population);
+    initialize_group_coop(group_coop, population);
 
     // Now run a Moran Process loop
     if (_mu == 0.) { // Without mutation
         for (i = 0; i < _generations; i++) {
-            _moran_step(p1, p2, gradient, ref, freq1, freq2, fitness1, fitness2, beta, _group_coop, _population, dist,
+            _moran_step(p1, p2, gradient, ref, freq1, freq2, fitness1, fitness2, beta, group_coop, population, dist,
                         _uniform_real_dist);
             if ((ref == _pop_size) || (ref == 0)) break;
         }
     } else { // With mutation
         for (i = 0; i < _generations; i++) {
-            _moran_step_mutation(p1, p2, gradient, ref, freq1, freq2, fitness1, fitness2, beta, _group_coop,
-                                 _population, dist,
+            _moran_step_mutation(p1, p2, gradient, ref, freq1, freq2, fitness1, fitness2, beta, group_coop,
+                                 population, dist,
                                  _uniform_real_dist);
             if ((ref == _pop_size) || (ref == 0)) break;
         }
@@ -88,12 +80,11 @@ double egt_tools::TraulsenMoran::evolve(double beta) {
 
 double egt_tools::TraulsenMoran::evolve(unsigned int runs, double beta) {
     float coop_freq = 0;
-
-    // Run loop
-#pragma omp parallel for
-    for (unsigned int j = 0; j < runs; j++) {
-        coop_freq += evolve(beta);
-    }
+        // Run loop
+#pragma omp parallel for shared(coop_freq)
+        for (unsigned int j = 0; j < runs; j++) {
+            coop_freq += evolve(beta);
+        }
     _final_coop_freq = coop_freq / runs;
     return _final_coop_freq;
 }

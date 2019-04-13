@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
     std::vector<float> betas(nb_betas);
     std::vector<double> betas2(nb_betas);
     float beta = 1e-4;
-    unsigned int generations = 10000;
+    unsigned int generations = 1000;
     unsigned int runs = 100;
     bool test;
     Options options;

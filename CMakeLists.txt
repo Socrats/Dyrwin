@@ -13,9 +13,9 @@ project(Dyrwin LANGUAGES CXX)
 ##############################
 
 function(append value)
-    foreach(variable ${ARGN})
+    foreach (variable ${ARGN})
         set(${variable} "${${variable}} ${value}" PARENT_SCOPE)
-    endforeach(variable)
+    endforeach (variable)
 endfunction()
 
 ##############################
@@ -56,15 +56,16 @@ endif ()
 ##############################
 
 # Default is to build everything
-if (NOT MAKE_ALL AND NOT MAKE_DYRWIN AND NOT MAKE_PMORAN AND NOT MAKE_PYTHON)
-    set(MAKE_ALL    1)
-endif()
+if (NOT MAKE_ALL AND NOT MAKE_DYRWIN AND NOT MAKE_PMORAN AND NOT MAKE_PYTHON AND NOT MAKE_CRD)
+    set(MAKE_ALL 1)
+endif ()
 
 if (MAKE_ALL)
-    set(MAKE_DYRWIN     1)
-    set(MAKE_PMORAN     1)
-    set(MAKE_PYTHON     1)
-endif()
+    set(MAKE_DYRWIN 1)
+    set(MAKE_PMORAN 1)
+    set(MAKE_CRD 1)
+    set(MAKE_PYTHON 1)
+endif ()
 
 ##############################
 ##       Dependencies       ##
@@ -89,6 +90,19 @@ include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 
 include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
 
+# Support for OpenMP parallelization
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    include_directories(SYSTEM ${OPENMP_INCLUDE_DIR})
+    message(STATUS "OpenMP enabled")
+endif ()
+#if (OPENMP_FOUND)
+#    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+#    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+#    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+#endif()
+
+
 ##############################
 ## Building executables     ##
 ##############################
@@ -107,28 +121,51 @@ if (MAKE_DYRWIN)
     add_executable(Dyrwin ${SOURCE_FILES})
     target_link_libraries(Dyrwin ${Boost_LIBRARIES} boost_program_options)
     set_target_properties(Dyrwin PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
-endif()
+endif ()
 
 set(PYTHON_MORAN_SOURCE
         include/Dyrwin/SeedGenerator.h src/SeedGenerator.cpp
         include/Dyrwin/PyMoran/PDImitation.h
         src/PyMoran/PDImitation.cpp
         include/Dyrwin/PyMoran/StochDynamics.h
-        src/PyMoran/StochDynamics.cpp)
+        src/PyMoran/StochDynamics.cpp
+        include/Dyrwin/PyMoran/TraulsenMoran.h
+        src/PyMoran/TraulsenMoran.cpp)
 
 if (MAKE_PMORAN)
     add_executable(pmoran src/PyMoran/pmain.cpp
             include/Dyrwin/CommandLineParsing.h ${PYTHON_MORAN_SOURCE})
     TARGET_LINK_LIBRARIES(pmoran ${Boost_LIBRARIES} boost_program_options)
     set_target_properties(pmoran PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
-    target_link_libraries (pmoran Eigen3::Eigen)
-endif()
+    target_link_libraries(pmoran Eigen3::Eigen)
+    if (OPENMP_FOUND)
+        target_link_libraries(pmoran OpenMP::OpenMP_CXX)
+    endif ()
+endif ()
+
+#set(CRD_RL_SOURCE
+#        include/Dyrwin/rl/CRDGame.h
+#        include/Dyrwin/rl/Agent.h
+#        src/rl/Agent.cpp
+#        include/Dyrwin/rl/RLUtils.h
+#        include/Dyrwin/Distributions.h include/Dyrwin/rl/BatchQLearningAgent.cpp include/Dyrwin/rl/BatchQLearningAgent.h include/Dyrwin/rl/RothErevAgent.h)
+#
+#if (MAKE_CRD)
+#    add_executable(crd src/rl/main.cpp
+#            include/Dyrwin/CommandLineParsing.h ${CRD_RL_SOURCE})
+#    TARGET_LINK_LIBRARIES(pmoran ${Boost_LIBRARIES} boost_program_options)
+#    set_target_properties(pmoran PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
+#    target_link_libraries(pmoran Eigen3::Eigen)
+#endif ()
 
 # Python bindings
 if (MAKE_PYTHON)
     add_subdirectory(pybind11)
-    pybind11_add_module(EGTtools SHARED ${PYTHON_MORAN_SOURCE} src/PyMoran/PDImitationWrapper.cpp)
-endif()
+    pybind11_add_module(EGTtools SHARED ${PYTHON_MORAN_SOURCE} src/PyMoran/EGTtoolsWrapper.cpp)
+    if (OPENMP_FOUND)
+        target_link_libraries(EGTtools PRIVATE OpenMP::OpenMP_CXX)
+    endif ()
+endif ()
 # target_link_libraries(EGTtools ${${BOOST_PYTHON_LIBRARY_NAME}} ${PYTHON_LIBRARY})
 # set_target_properties(EGTtools PROPERTIES PREFIX "")
 # set_target_properties(EGTtools PROPERTIES SUFFIX ".so")
