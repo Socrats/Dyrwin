@@ -4,7 +4,7 @@
 
 #include "../../include/Dyrwin/PyMoran/TraulsenMoran.h"
 
-egt_tools::TraulsenMoran::TraulsenMoran(uint64_t generations, unsigned int group_size, unsigned int nb_groups,
+EGTTools::TraulsenMoran::TraulsenMoran(uint64_t generations, unsigned int group_size, unsigned int nb_groups,
                                         double beta, double mu, double coop_freq, double split_prob,
                                         Eigen::Ref<const MatrixXd> payoff_matrix) : _generations(generations),
                                                                                     _group_size(group_size),
@@ -21,7 +21,7 @@ egt_tools::TraulsenMoran::TraulsenMoran(uint64_t generations, unsigned int group
     _final_coop_freq = _coop_freq;
 }
 
-void egt_tools::TraulsenMoran::initialize_population(std::vector<unsigned int> &population) {
+void EGTTools::TraulsenMoran::initialize_population(std::vector<unsigned int> &population) {
     unsigned int i;
 
     for (i = _nb_coop; i < _pop_size; i++) {
@@ -32,7 +32,7 @@ void egt_tools::TraulsenMoran::initialize_population(std::vector<unsigned int> &
     std::shuffle(population.begin(), population.end(), _mt);
 }
 
-void egt_tools::TraulsenMoran::initialize_group_coop(std::vector<unsigned int> &group_coop,
+void EGTTools::TraulsenMoran::initialize_group_coop(std::vector<unsigned int> &group_coop,
                                                      std::vector<unsigned int> &population) {
     unsigned int i;
     // Calculate the number of cooperators in each group
@@ -41,11 +41,11 @@ void egt_tools::TraulsenMoran::initialize_group_coop(std::vector<unsigned int> &
     }
 }
 
-double egt_tools::TraulsenMoran::fermifunc(double beta, double a, double b) {
+double EGTTools::TraulsenMoran::fermifunc(double beta, double a, double b) {
     return 1 / (1 + exp(beta * (a - b)));
 }
 
-double egt_tools::TraulsenMoran::evolve(double beta) {
+double EGTTools::TraulsenMoran::evolve(double beta) {
     uint64_t i;
     unsigned int p1, p2;
     double freq1, freq2, fitness1, fitness2;
@@ -78,7 +78,7 @@ double egt_tools::TraulsenMoran::evolve(double beta) {
     return _final_coop_freq;
 }
 
-double egt_tools::TraulsenMoran::evolve(unsigned int runs, double beta) {
+double EGTTools::TraulsenMoran::evolve(unsigned int runs, double beta) {
     float coop_freq = 0;
         // Run loop
 #pragma omp parallel for shared(coop_freq)
@@ -89,7 +89,7 @@ double egt_tools::TraulsenMoran::evolve(unsigned int runs, double beta) {
     return _final_coop_freq;
 }
 
-std::vector<double> egt_tools::TraulsenMoran::evolve(std::vector<double> betas) {
+std::vector<double> EGTTools::TraulsenMoran::evolve(std::vector<double> betas) {
     std::vector<double> coop_freqs(betas.size());
 
     for (unsigned int j = 0; j < betas.size(); j++) {
@@ -99,7 +99,7 @@ std::vector<double> egt_tools::TraulsenMoran::evolve(std::vector<double> betas) 
     return coop_freqs;
 }
 
-std::vector<double> egt_tools::TraulsenMoran::evolve(std::vector<double> betas, unsigned int runs) {
+std::vector<double> EGTTools::TraulsenMoran::evolve(std::vector<double> betas, unsigned int runs) {
     std::vector<double> coop_freqs(betas.size());
 
     for (unsigned int w = 0; w < betas.size(); w++) {
@@ -133,7 +133,7 @@ std::vector<double> egt_tools::TraulsenMoran::evolve(std::vector<double> betas, 
  * @param dist : random integer generator
  * @param _uniform_real_dist random real number generator
  */
-void egt_tools::TraulsenMoran::_moran_step(unsigned int &p1, unsigned int &p2, int &gradient, double &ref,
+void EGTTools::TraulsenMoran::_moran_step(unsigned int &p1, unsigned int &p2, int &gradient, double &ref,
                                            double &freq1, double &freq2,
                                            double &fitness1, double &fitness2,
                                            double &beta,
@@ -173,7 +173,7 @@ void egt_tools::TraulsenMoran::_moran_step(unsigned int &p1, unsigned int &p2, i
     ref += gradient;
 }
 
-void egt_tools::TraulsenMoran::_moran_step_mutation(unsigned int &p1, unsigned int &p2, int &gradient, double &ref,
+void EGTTools::TraulsenMoran::_moran_step_mutation(unsigned int &p1, unsigned int &p2, int &gradient, double &ref,
                                                     double &freq1, double &freq2,
                                                     double &fitness1, double &fitness2,
                                                     double &beta,

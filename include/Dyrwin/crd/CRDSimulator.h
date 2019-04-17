@@ -109,7 +109,7 @@ private:
     CollectiveRiskDilemma *_game; // Pointer to Game class
 
     // Random generators
-    std::mt19937_64 _mt{SeedGenerator::getInstance().getSeed()};
+    std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 
     // Generation data
     CRDSimData _genData;

@@ -12,6 +12,7 @@
 #include <iostream>
 #include "../SeedGenerator.h"
 #include "../rl/RLUtils.h"
+#include "../Types.h"
 
 /**
  * @brief This class implements the moran process described in Traulsen & Nowak 2006.
@@ -22,7 +23,7 @@
  * population capacity n.
  */
 
-namespace egt_tools {
+namespace EGTTools {
     class TraulsenMoran {
     public:
         TraulsenMoran(uint64_t generations, unsigned int group_size, unsigned int nb_groups, double beta, double mu,
@@ -137,7 +138,7 @@ namespace egt_tools {
                                          std::uniform_real_distribution<double> &_uniform_real_dist);
 
         // Random generators
-        std::mt19937_64 _mt{SeedGenerator::getInstance().getSeed()};
+        std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
     };
 }
 

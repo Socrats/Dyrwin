@@ -4,7 +4,7 @@
 
 #include "../include/Dyrwin/SeedGenerator.h"
 
-
+using namespace EGTTools::Random;
 
 SeedGenerator::SeedGenerator() {
     _initSeed();

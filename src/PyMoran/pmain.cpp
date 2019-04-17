@@ -8,7 +8,7 @@
 #include "../../include/Dyrwin/CommandLineParsing.h"
 
 using namespace std;
-using namespace egt_tools;
+using namespace EGTTools;
 
 int main(int argc, char *argv[]) {
 
@@ -21,7 +21,6 @@ int main(int argc, char *argv[]) {
     payoff_matrix << 1, 4,
             0, 3;
     std::vector<float> betas(nb_betas);
-    std::vector<double> betas2(nb_betas);
     float beta = 1e-4;
     unsigned int generations = 1000;
     unsigned int runs = 100;
@@ -61,7 +60,7 @@ int main(int argc, char *argv[]) {
     cout << "TraulsenMoran" << endl;
     cout << "===========" << endl;
     for (size_t i = 0; i < nb_betas; i++) {
-        cout << "[beta " << betas2[i] << "] freq_coop: " << result2[i] << endl;
+        cout << "[beta " << betas[i] << "] freq_coop: " << result2[i] << endl;
     }
 
     if (test) {

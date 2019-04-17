@@ -117,13 +117,14 @@ set(SOURCE_FILES src/main.cpp
         include/Dyrwin/CommandLineParsing.h
         include/Dyrwin/ipd/IteratedPrisonersDilemma.cpp)
 
-if (MAKE_DYRWIN)
-    add_executable(Dyrwin ${SOURCE_FILES})
-    target_link_libraries(Dyrwin ${Boost_LIBRARIES} boost_program_options)
-    set_target_properties(Dyrwin PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
-endif ()
+#if (MAKE_DYRWIN)
+#    add_executable(Dyrwin ${SOURCE_FILES})
+#    target_link_libraries(Dyrwin ${Boost_LIBRARIES} boost_program_options)
+#    set_target_properties(Dyrwin PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
+#endif ()
 
 set(PYTHON_MORAN_SOURCE
+        include/Dyrwin/Types.h
         include/Dyrwin/SeedGenerator.h src/SeedGenerator.cpp
         include/Dyrwin/PyMoran/PDImitation.h
         src/PyMoran/PDImitation.cpp
@@ -143,20 +144,27 @@ if (MAKE_PMORAN)
     endif ()
 endif ()
 
-#set(CRD_RL_SOURCE
-#        include/Dyrwin/rl/CRDGame.h
-#        include/Dyrwin/rl/Agent.h
-#        src/rl/Agent.cpp
-#        include/Dyrwin/rl/RLUtils.h
-#        include/Dyrwin/Distributions.h include/Dyrwin/rl/BatchQLearningAgent.cpp include/Dyrwin/rl/BatchQLearningAgent.h include/Dyrwin/rl/RothErevAgent.h)
-#
-#if (MAKE_CRD)
-#    add_executable(crd src/rl/main.cpp
-#            include/Dyrwin/CommandLineParsing.h ${CRD_RL_SOURCE})
-#    TARGET_LINK_LIBRARIES(pmoran ${Boost_LIBRARIES} boost_program_options)
-#    set_target_properties(pmoran PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
-#    target_link_libraries(pmoran Eigen3::Eigen)
-#endif ()
+set(CRD_RL_SOURCE
+        include/Dyrwin/SeedGenerator.h src/SeedGenerator.cpp
+        include/Dyrwin/rl/CRDGame.h
+        include/Dyrwin/rl/Agent.h
+        src/rl/Agent.cpp
+        include/Dyrwin/rl/RLUtils.h
+        include/Dyrwin/Distributions.h
+        src/rl/BatchQLearningAgent.cpp
+        include/Dyrwin/rl/BatchQLearningAgent.h
+        include/Dyrwin/rl/RothErevAgent.h
+        include/Dyrwin/rl/QLearningAgent.h
+        src/rl/QLearningAgent.cpp
+        include/Dyrwin/Types.h)
+
+if (MAKE_CRD)
+    add_executable(crd src/rl/main.cpp
+            include/Dyrwin/CommandLineParsing.h ${CRD_RL_SOURCE})
+    TARGET_LINK_LIBRARIES(crd ${Boost_LIBRARIES} boost_program_options)
+    set_target_properties(crd PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
+    target_link_libraries(crd Eigen3::Eigen)
+endif ()
 
 # Python bindings
 if (MAKE_PYTHON)

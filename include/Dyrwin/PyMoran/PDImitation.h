@@ -14,12 +14,13 @@
 #include <iostream>
 #include "../SeedGenerator.h"
 #include "../rl/RLUtils.h"
+#include "../Types.h"
 
 /**
  * This class implements the moran process for a prisoner's dilemma game
  */
 
-namespace egt_tools {
+namespace EGTTools {
     class PDImitation {
     public:
         PDImitation(unsigned int generations, unsigned int pop_size, float beta, float mu,
@@ -86,7 +87,7 @@ namespace egt_tools {
                                std::uniform_real_distribution<double> _uniform_real_dist);
 
         // Random generators
-        std::mt19937_64 _mt{SeedGenerator::getInstance().getSeed()};
+        std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
     };
 }
 

@@ -19,7 +19,7 @@ typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> MatrixXd;
 // TODO: Include calculations for the infinite population case
 // TODO: Include the possibility to do calculate the full transition matrix (outside the small mutation limit)
 
-namespace egt_tools {
+namespace EGTTools {
     class StochDynamics {
     public:
         StochDynamics(unsigned int population_size, unsigned int nb_strategies, Eigen::Ref<const MatrixXd> payoff_matrix);
@@ -60,7 +60,7 @@ namespace egt_tools {
         MatrixXd _payoff_matrix;
 
         // Random generators
-        std::mt19937_64 _mt{SeedGenerator::getInstance().getSeed()};
+        std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 
     };
 };

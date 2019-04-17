@@ -4,7 +4,7 @@
 
 #include "../../include/Dyrwin/PyMoran/PDImitation.h"
 
-egt_tools::PDImitation::PDImitation(unsigned int generations, unsigned int pop_size, float beta,
+EGTTools::PDImitation::PDImitation(unsigned int generations, unsigned int pop_size, float beta,
                                     float mu, float coop_freq,
                                     Eigen::Ref<const MatrixXd> payoff_matrix) : _generations(generations),
                                                                                 _pop_size(pop_size), _beta(beta),
@@ -21,7 +21,7 @@ egt_tools::PDImitation::PDImitation(unsigned int generations, unsigned int pop_s
 
 }
 
-void egt_tools::PDImitation::initialize_population(std::vector<unsigned int> &population) {
+void EGTTools::PDImitation::initialize_population(std::vector<unsigned int> &population) {
     unsigned int i;
 
     for (i = 0; i < _nb_coop; i++) {
@@ -35,11 +35,11 @@ void egt_tools::PDImitation::initialize_population(std::vector<unsigned int> &po
     std::shuffle(population.begin(), population.end(), _mt);
 }
 
-float egt_tools::PDImitation::fermifunc(float beta, float a, float b) {
+float EGTTools::PDImitation::fermifunc(float beta, float a, float b) {
     return 1 / (1 + exp(beta * (a - b)));
 }
 
-float egt_tools::PDImitation::evolve(float beta) {
+float EGTTools::PDImitation::evolve(float beta) {
 
     unsigned int i, p1, p2;
     float freq1, freq2, fitness1, fitness2;
@@ -60,7 +60,7 @@ float egt_tools::PDImitation::evolve(float beta) {
     return _final_coop_freq;
 }
 
-float egt_tools::PDImitation::evolve(unsigned int runs, float beta) {
+float EGTTools::PDImitation::evolve(unsigned int runs, float beta) {
     float coop_freq = 0;
 
     // Run loop
@@ -71,7 +71,7 @@ float egt_tools::PDImitation::evolve(unsigned int runs, float beta) {
     return _final_coop_freq;
 }
 
-std::vector<float> egt_tools::PDImitation::evolve(std::vector<float> betas) {
+std::vector<float> EGTTools::PDImitation::evolve(std::vector<float> betas) {
     std::vector<float> coop_freqs(betas.size());
 
     for (unsigned int j = 0; j < betas.size(); j++) {
@@ -81,7 +81,7 @@ std::vector<float> egt_tools::PDImitation::evolve(std::vector<float> betas) {
     return coop_freqs;
 }
 
-std::vector<float> egt_tools::PDImitation::evolve(std::vector<float> betas, unsigned int runs) {
+std::vector<float> EGTTools::PDImitation::evolve(std::vector<float> betas, unsigned int runs) {
     std::vector<float> coop_freqs(betas.size());
 
     for (unsigned int w = 0; w < betas.size(); w++) {
@@ -91,7 +91,7 @@ std::vector<float> egt_tools::PDImitation::evolve(std::vector<float> betas, unsi
     return coop_freqs;
 }
 
-void egt_tools::PDImitation::_moran_step(unsigned int &p1, unsigned int &p2, int &gradient, float &ref,
+void EGTTools::PDImitation::_moran_step(unsigned int &p1, unsigned int &p2, int &gradient, float &ref,
                                          float &freq1, float &freq2,
                                          float &fitness1, float &fitness2,
                                          float &beta,

@@ -13,7 +13,7 @@
 //PYBIND11_MAKE_OPAQUE(std::vector<float>);
 
 namespace py = pybind11;
-using namespace egt_tools;
+using namespace EGTTools;
 
 PYBIND11_MODULE(EGTtools, m) {
     m.doc() = R"pbdoc(

@@ -84,7 +84,7 @@ private:
     void _update_fitness_not_met_threshold(EvoIndividual *individual);
 
     // Random generators
-    std::mt19937_64 _mt{SeedGenerator::getInstance().getSeed()};
+    std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 };
 
 

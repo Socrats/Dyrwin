@@ -104,7 +104,7 @@ struct Strategy {
     }
 
 private:
-    std::mt19937_64 _mt{SeedGenerator::getInstance().getSeed()};
+    std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 
     // mutation probabilities
     double _mu; // mutation probability

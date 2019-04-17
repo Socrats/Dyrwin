@@ -7,7 +7,7 @@
 
 #include <Eigen/Dense>
 
-namespace egt_tools {
+namespace EGTTools::RL {
     typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> MatrixXd;
 }
 

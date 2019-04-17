@@ -10,32 +10,35 @@
 #include <iostream>
 #include <cassert>
 #include <vector>
-#include <Eigen/Dense>
-#include "../SeedGenerator.h"
 #include "../Distributions.h"
-#include "RLUtils.h"
+#include "../Types.h"
+#include "../SeedGenerator.h"
 
 
-namespace egt_tools {
+namespace EGTTools::RL {
     class Agent {
 /**
      * Implements a version of Roth-Erev learning where each sequence of state-actions
      * that lead to achieving the target is reinforced with 1.0.
      */
     public:
-        Agent(unsigned nb_rounds, unsigned nb_actions, double endowment) : _nb_rounds(nb_rounds),
-                                                                             _nb_actions(nb_actions),
-                                                                             _endowment(endowment), _payoff(endowment) {
+        Agent(unsigned int nb_rounds, unsigned int nb_actions, double endowment) : _nb_rounds(nb_rounds),
+                                                                                   _nb_actions(nb_actions),
+                                                                                   _endowment(endowment),
+                                                                                   _payoff(endowment) {
 
-            _q_values = MatrixXd::Zero(_nb_rounds, _nb_actions);
+            _q_values = Matrix2D::Random(_nb_rounds, _nb_actions);
             // Initialise all actions with equal probability
-            _policy = MatrixXd::Constant(_nb_rounds, _nb_actions, 1.0 / static_cast<double>(_nb_actions));
+            _policy = Matrix2D::Constant(_nb_rounds, _nb_actions, 1.0 / static_cast<double>(_nb_actions));
             // Initialise trajectory (the actions taken at each round)
-            _trajectory = Eigen::VectorXi::Zero(_nb_rounds);
+            _trajectory = VectorXui::Zero(_nb_rounds);
+            _buffer = std::vector<size_t>(_nb_actions);
 
         };
 
         Agent(const Agent &other);
+
+        virtual ~Agent() = default;
 
         Agent &operator=(const Agent &other);
 
@@ -49,22 +52,22 @@ namespace egt_tools {
 
         virtual void reinforceTrajectory();
 
-        virtual unsigned selectAction(unsigned round);
+        virtual size_t selectAction(size_t round);
 
         virtual void resetQValues();
 
         // Getters
-        unsigned nb_rounds() const { return _nb_rounds; }
+        unsigned int nb_rounds() const { return _nb_rounds; }
 
-        unsigned nb_actions() const { return _nb_actions; }
+        unsigned int nb_actions() const { return _nb_actions; }
 
         double endowment() const { return _endowment; }
 
         double payoff() const { return _payoff; }
 
-        MatrixXd policy() const { return _policy; }
+        Matrix2D policy() const { return _policy; }
 
-        MatrixXd qValues() const { return _q_values; }
+        Matrix2D qValues() const { return _q_values; }
 
         // Setters
         void set_nb_rounds(unsigned nb_rounds) { _nb_rounds = nb_rounds; }
@@ -77,23 +80,24 @@ namespace egt_tools {
 
         void resetPayoff() { _payoff = _endowment; }
 
-        void set_policy(MatrixXd policy) { _policy = std::move(policy); }
+        void set_policy(Matrix2D policy) { _policy = std::move(policy); }
 
-        void set_q_values(MatrixXd q_values) { _q_values = std::move(q_values); }
+        void set_q_values(Matrix2D q_values) { _q_values = std::move(q_values); }
 
 
     protected:
         virtual std::ostream &display(std::ostream &os) const;
 
-        unsigned _nb_rounds, _nb_actions;
+        unsigned int _nb_rounds, _nb_actions;
         double _endowment, _payoff;
 
-        MatrixXd _policy;
-        MatrixXd _q_values;
-        Eigen::VectorXi _trajectory;
+        Matrix2D _policy;
+        Matrix2D _q_values;
+        VectorXui _trajectory;
+        std::vector<size_t> _buffer;
 
         // Random generators
-        std::mt19937_64 _mt{SeedGenerator::getInstance().getSeed()};
+        std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
     };
 }
 

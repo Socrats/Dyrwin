@@ -1,5 +1,5 @@
 //
-// Created by Elias Fernandez on 22/06/2018.
+// Copied from https://github.com/Svalorzen/AI-Toolbox/blob/master/include/AIToolbox
 //
 
 #ifndef DYRWIN_COMMANDLINEPARSING_H

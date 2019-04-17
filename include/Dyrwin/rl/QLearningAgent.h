@@ -2,23 +2,23 @@
 // Created by Elias Fernandez on 2019-04-10.
 //
 
-#ifndef DYRWIN_BATCHQLEARNINGAGENT_H
-#define DYRWIN_BATCHQLEARNINGAGENT_H
+#ifndef DYRWIN_QLEARNINGAGENT_H
+#define DYRWIN_QLEARNINGAGENT_H
 
 #include <math.h>
 #include "Agent.h"
 
 namespace EGTTools::RL {
-    class BatchQLearningAgent : public Agent {
+    class QLearningAgent : public Agent {
     public:
-        BatchQLearningAgent(unsigned nb_rounds, unsigned nb_actions, unsigned endowment, double alpha,
-                            double temperature)
+        QLearningAgent(unsigned nb_rounds, unsigned nb_actions, unsigned endowment, double alpha,
+                            double lambda, double temperature)
                 : Agent(
-                nb_rounds, nb_actions, endowment), _alpha(alpha), _temperature(temperature) {};
+                nb_rounds, nb_actions, endowment), _alpha(alpha), _lambda(lambda), _temperature(temperature) {};
 
-        BatchQLearningAgent(const BatchQLearningAgent &other) :
+        QLearningAgent(const QLearningAgent &other) :
                 Agent(other.nb_rounds(), other.nb_actions(), other.endowment()), _alpha(other.alpha()),
-                _temperature(other.temperature()) {}
+                _lambda(other.lambda()), _temperature(other.temperature()) {}
 
         void reinforceTrajectory() override;
 
@@ -35,12 +35,20 @@ namespace EGTTools::RL {
         // Getters
         double alpha() const { return _alpha; }
 
+        double lambda() const { return _lambda; }
+
         double temperature() const { return _temperature; }
 
         // Setters
         void setAlpha(const double alpha) {
             if (alpha <= 0.0 || alpha > 1.0) throw std::invalid_argument("Learning rate parameter must be in (0,1]");
             _alpha = alpha;
+        }
+
+        void setLambda(const double lambda) {
+            if (lambda <= 0.0 || lambda > 1.0)
+                throw std::invalid_argument("Forgetting rate parameter must be in (0,1]");
+            _lambda = lambda;
         }
 
         void setTemperature(const double temperature) {
@@ -50,9 +58,10 @@ namespace EGTTools::RL {
 
     private:
         double _alpha; // learning rate
+        double _lambda; // discount factor
         double _temperature; // temperature of the boltzman distribution
 
     };
 }
 
-#endif //DYRWIN_BATCHQLEARNINGAGENT_H
+#endif //DYRWIN_QLEARNINGAGENT_H
