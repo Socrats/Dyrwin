@@ -9,6 +9,7 @@
 #include "../../include/Dyrwin/rl/BatchQLearningAgent.h"
 #include "../../include/Dyrwin/rl/QLearningAgent.h"
 #include "../../include/Dyrwin/rl/RothErevAgent.h"
+#include "../../include/Dyrwin/rl/HistericQLearningAgent.hpp"
 #include "../../include/Dyrwin/rl/CRDGame.h"
 #include "../../include/Dyrwin/CommandLineParsing.h"
 
@@ -43,7 +44,7 @@ int main(int argc, char *argv[]) {
     size_t attempts;
     size_t games;
     double cataclysm;
-    double alpha;
+    double alpha, beta;
     double temperature;
     double lambda;
     std::string filename;
@@ -62,7 +63,8 @@ int main(int argc, char *argv[]) {
     options.push_back(
             makeDefaultedOption<std::string>("agentType,A", &agent_type, "set agent type", "BatchQLearningAgent"));
     options.push_back(makeDefaultedOption<double>("risk,r", &cataclysm, "set the risk probability", 0.9));
-    options.push_back(makeDefaultedOption<double>("alpha,a", &alpha, "learning rate", 0.03));
+    options.push_back(makeDefaultedOption<double>("alpha,a", &alpha, "learning rate", 0.3));
+    options.push_back(makeDefaultedOption<double>("beta,b", &beta, "learning rate", 0.03));
     options.push_back(
             makeDefaultedOption<double>("temperature,T", &temperature, "temperature of the boltzman distribution",
                                         10.));
@@ -96,6 +98,12 @@ int main(int argc, char *argv[]) {
         reinforce = &reinforceBatchQLearning;
         for (unsigned i = 0; i < group_size; i++) {
             auto a = new QLearningAgent(rounds, actions, endowment, alpha, lambda, temperature);
+            group.push_back(a);
+        }
+    } else if (agent_type == "HistericQLearning") {
+        reinforce = &reinforceBatchQLearning;
+        for (unsigned i = 0; i < group_size; i++) {
+            auto a = new HistericQLearningAgent(rounds, actions, endowment, alpha, beta, temperature);
             group.push_back(a);
         }
     } else {

@@ -14,7 +14,7 @@ namespace EGTTools::RL {
  * Implements the Roth-Erev reinforcement learning with discount factor algorithm
  */
     public:
-        RothErevAgent(unsigned nb_rounds, unsigned nb_actions, unsigned endowment, double lambda, double temperature) :
+        RothErevAgent(unsigned nb_rounds, unsigned nb_actions, double endowment, double lambda, double temperature) :
                 Agent(nb_rounds, nb_actions, endowment), _lambda(lambda), _temperature(temperature) {};
 
         RothErevAgent(const RothErevAgent &other) : Agent(other.nb_rounds(), other.nb_actions(), other.endowment()),

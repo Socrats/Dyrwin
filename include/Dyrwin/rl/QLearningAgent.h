@@ -11,7 +11,7 @@
 namespace EGTTools::RL {
     class QLearningAgent : public Agent {
     public:
-        QLearningAgent(unsigned nb_rounds, unsigned nb_actions, unsigned endowment, double alpha,
+        QLearningAgent(unsigned nb_rounds, unsigned nb_actions, double endowment, double alpha,
                             double lambda, double temperature)
                 : Agent(
                 nb_rounds, nb_actions, endowment), _alpha(alpha), _lambda(lambda), _temperature(temperature) {};

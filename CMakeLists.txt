@@ -156,7 +156,7 @@ set(CRD_RL_SOURCE
         include/Dyrwin/rl/RothErevAgent.h
         include/Dyrwin/rl/QLearningAgent.h
         src/rl/QLearningAgent.cpp
-        include/Dyrwin/Types.h)
+        include/Dyrwin/Types.h include/Dyrwin/rl/histericQLearningAgent.hpp include/Dyrwin/rl/HistericQLearningAgent.hpp)
 
 if (MAKE_CRD)
     add_executable(crd src/rl/main.cpp
