@@ -9,6 +9,7 @@
 #include "../../include/Dyrwin/PyMoran/PDImitation.h"
 #include "../../include/Dyrwin/PyMoran/StochDynamics.h"
 #include "../../include/Dyrwin/PyMoran/TraulsenMoran.h"
+#include <Dyrwin/PyMoran/MoranProcess.hpp>
 
 //PYBIND11_MAKE_OPAQUE(std::vector<float>);
 
@@ -85,5 +86,21 @@ PYBIND11_MODULE(EGTtools, m) {
                  "Calculate the probability of incresing and decreasing the number of invaders")
             .def("calculate_transition_fixations", &StochDynamics::calculate_transition_fixations,
                  "Calculate the transition probabilities and the stationary distribution");
+
+    py::class_<MoranProcess>(m, "MoranProcess")
+            .def(py::init<size_t, size_t, size_t, double, Eigen::Ref<const Vector>, Eigen::Ref<const Matrix2D>>())
+            .def_property("generations", &MoranProcess::generations, &MoranProcess::set_generations)
+            .def_property("n", &MoranProcess::group_size, &MoranProcess::set_group_size)
+            .def_property("m", &MoranProcess::nb_groups, &MoranProcess::set_nb_groups)
+            .def_property("pop_size", &MoranProcess::pop_size, &MoranProcess::set_pop_size)
+            .def_property("mu", &MoranProcess::mu, &MoranProcess::set_mu)
+            .def_property("beta", &MoranProcess::beta, &MoranProcess::set_beta)
+            .def_property("payoff_matrix", &MoranProcess::payoff_matrix, &MoranProcess::set_payoff_matrix)
+            .def("update_payoff_matrix", &MoranProcess::set_payoff_matrix, py::return_value_policy::reference_internal)
+            .def("evolve", static_cast<Vector (MoranProcess::*)(double)>(&MoranProcess::evolve),
+                 "Execute the moran process with imitation once.")
+            .def("evolve", static_cast<Vector (MoranProcess::*)(size_t, double)>(&MoranProcess::evolve),
+                 py::call_guard<py::gil_scoped_release>(),
+                 "Find the stationary distribution for beta.");
 
 }

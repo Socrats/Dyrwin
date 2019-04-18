@@ -22,7 +22,6 @@
  * a new islan with a probability 1-q, when the iland grows over its
  * population capacity n.
  */
-
 namespace EGTTools {
     class TraulsenMoran {
     public:

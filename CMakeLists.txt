@@ -104,6 +104,9 @@ endif ()
 #    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 #endif()
 
+# Include the project directory
+include_directories($(PROJECT_SOURCE_DIR)/include)
+# add_subdirectory(${PROJECT_SOURCE_DIR}/src)
 
 ##############################
 ## Building executables     ##
@@ -133,7 +136,9 @@ set(PYTHON_MORAN_SOURCE
         include/Dyrwin/PyMoran/StochDynamics.h
         src/PyMoran/StochDynamics.cpp
         include/Dyrwin/PyMoran/TraulsenMoran.h
-        src/PyMoran/TraulsenMoran.cpp)
+        src/PyMoran/TraulsenMoran.cpp
+        include/Dyrwin/PyMoran/MoranProcess.hpp
+        src/PyMoran/MoranProcess.cpp)
 
 if (MAKE_PMORAN)
     add_executable(pmoran src/PyMoran/pmain.cpp

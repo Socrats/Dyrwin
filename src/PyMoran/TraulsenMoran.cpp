@@ -74,8 +74,7 @@ double EGTTools::TraulsenMoran::evolve(double beta) {
             if ((ref == _pop_size) || (ref == 0)) break;
         }
     }
-    _final_coop_freq = ref / (double) _pop_size;
-    return _final_coop_freq;
+    return ref / (double) _pop_size;
 }
 
 double EGTTools::TraulsenMoran::evolve(unsigned int runs, double beta) {

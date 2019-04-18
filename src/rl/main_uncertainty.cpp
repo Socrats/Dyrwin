@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
     options.push_back(makeDefaultedOption<size_t>("nbAttempts,E", &attempts, "set the number of epochs", 1000));
     options.push_back(makeDefaultedOption<size_t>("nbGames,G", &games, "set the number of games per epoch", 1000));
     options.push_back(makeDefaultedOption<size_t>("maxRounds,z", &max_rounds, "set the max number of rounds", 20));
-    options.push_back(makeDefaultedOption<size_t>("avgRounds,z", &mean_rounds, "set avg number of rounds", 10));
+    options.push_back(makeDefaultedOption<size_t>("avgRounds,v", &mean_rounds, "set avg number of rounds", 10));
     options.push_back(makeDefaultedOption<size_t>("minRounds,t", &min_rounds, "set the min number of rounds", 8));
     options.push_back(
             makeDefaultedOption<std::string>("agentType,A", &agent_type, "set agent type", "BatchQLearningAgent"));
