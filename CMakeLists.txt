@@ -56,7 +56,7 @@ endif ()
 ##############################
 
 # Default is to build everything
-if (NOT MAKE_ALL AND NOT MAKE_DYRWIN AND NOT MAKE_PMORAN AND NOT MAKE_PYTHON AND NOT MAKE_CRD)
+if (NOT MAKE_ALL AND NOT MAKE_DYRWIN AND NOT MAKE_PMORAN AND NOT MAKE_PYTHON AND NOT MAKE_CRD AND NOT MAKE_CRD_UNCERTAINTY)
     set(MAKE_ALL 1)
 endif ()
 
@@ -64,14 +64,16 @@ if (MAKE_ALL)
     set(MAKE_DYRWIN 1)
     set(MAKE_PMORAN 1)
     set(MAKE_CRD 1)
+    set(MAKE_CRD_UNCERTAINTY 1)
     set(MAKE_PYTHON 1)
 endif ()
 
 ##############################
 ##       Dependencies       ##
 ##############################
-
-set(BOOST_VERSION_REQUIRED 1.67)
+if (MAKE_ALL OR MAKE_DYRWIN OR MAKE_PMORAN OR MAKE_CRD OR MAKE_CRD_UNCERTAINTY)
+    set(BOOST_VERSION_REQUIRED 1.62)
+endif ()
 set(EIGEN_VERSION_REQUIRED 3.3)
 set(PYTHON_VERSION 3)
 
@@ -156,7 +158,9 @@ set(CRD_RL_SOURCE
         include/Dyrwin/rl/RothErevAgent.h
         include/Dyrwin/rl/QLearningAgent.h
         src/rl/QLearningAgent.cpp
-        include/Dyrwin/Types.h include/Dyrwin/rl/histericQLearningAgent.hpp include/Dyrwin/rl/HistericQLearningAgent.hpp)
+        include/Dyrwin/Types.h include/Dyrwin/rl/histericQLearningAgent.hpp
+        include/Dyrwin/rl/HistericQLearningAgent.hpp
+        include/Dyrwin/rl/TimingUncertainty.hpp)
 
 if (MAKE_CRD)
     add_executable(crd src/rl/main.cpp
@@ -164,6 +168,14 @@ if (MAKE_CRD)
     TARGET_LINK_LIBRARIES(crd ${Boost_LIBRARIES} boost_program_options)
     set_target_properties(crd PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
     target_link_libraries(crd Eigen3::Eigen)
+endif ()
+
+if (MAKE_CRD_UNCERTAINTY)
+    add_executable(crdTU src/rl/main_uncertainty.cpp
+                            include/Dyrwin/CommandLineParsing.h ${CRD_RL_SOURCE})
+    TARGET_LINK_LIBRARIES(crdTU ${Boost_LIBRARIES} boost_program_options)
+    set_target_properties(crdTU PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
+    target_link_libraries(crdTU Eigen3::Eigen)
 endif ()
 
 # Python bindings
