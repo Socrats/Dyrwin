@@ -48,6 +48,8 @@ namespace EGTTools {
         // Getters
         size_t generations() { return _generations; }
 
+        size_t nb_strategies() { return _nb_strategies; }
+
         unsigned int pop_size() { return _pop_size; }
 
         unsigned int group_size() { return _group_size; }
@@ -60,7 +62,11 @@ namespace EGTTools {
 
         double split_prob() { return _split_prob; }
 
-        Vector &strategy_freq() { return _strategy_freq; }
+        Vector &init_strategy_freq() { return _strategy_freq; }
+
+        Vector &strategy_freq() { return _final_strategy_freq; }
+
+        VectorXui &init_strategy_count() { return _strategies; }
 
         Matrix2D &payoff_matrix() { return _payoff_matrix; }
 
@@ -85,10 +91,30 @@ namespace EGTTools {
 
         void set_split_prob(double split_prob) { _split_prob = split_prob; }
 
-        void set_strategy_freq(const Eigen::Ref<const Vector> &strategy_freq) { _strategy_freq = strategy_freq; }
+        void set_strategy_freq(const Eigen::Ref<const Vector> &strategy_freq) {
+            if (strategy_freq.sum() != 1.0) throw std::invalid_argument("Frequencies must sum to 1");
+            _strategy_freq.array() = strategy_freq;
+            // Recompute strategies
+            for (size_t i = 0; i < (_nb_strategies - 1); ++i) {
+                _strategies(i) = (size_t) floor(_strategy_freq(i) * _pop_size);
+            }
+            _strategies(_nb_strategies - 1) = (size_t) floor(_strategy_freq(_nb_strategies - 1) * _pop_size);
+        }
+
+        void set_strategy_count(const Eigen::Ref<const VectorXui> &strategies) {
+            if (strategies.sum() != _pop_size)
+                throw std::invalid_argument("The sum of all individuals must be equal to the population size!");
+            _strategies.array() = strategies;
+            // Recompute strategy frequencies
+            _strategy_freq.array() = _strategies.cast<double>() / _pop_size;
+        }
 
         void set_payoff_matrix(const Eigen::Ref<const Matrix2D> &payoff_matrix) {
-            Eigen::Map<Matrix2D>(_payoff_matrix.data(), _payoff_matrix.rows(), _payoff_matrix.cols()) = payoff_matrix;
+            if (payoff_matrix.rows() != payoff_matrix.cols())
+                throw std::invalid_argument("Payoff matrix must be a square Matrix (n,n)");
+            _nb_strategies = payoff_matrix.rows();
+            _payoff_matrix.array() = payoff_matrix;
+//            Eigen::Map<Matrix2D>(_payoff_matrix.data(), _payoff_matrix.rows(), _payoff_matrix.cols()) = payoff_matrix;
         }
 
 
@@ -97,7 +123,7 @@ namespace EGTTools {
         double _beta, _mu, _split_prob;
 
         Vector _strategy_freq, _final_strategy_freq; // frequency of each strategy in the population
-        VectorXui _strategies, _final_strategies; //nb of players of each strategy
+        VectorXui _strategies; //nb of players of each strategy
         Matrix2D _payoff_matrix; // stores the payoff matrix of the game
 
         // Random generators
@@ -106,7 +132,7 @@ namespace EGTTools {
         inline void _moran_step(unsigned int &p1, unsigned int &p2,
                                 Vector &freq1, Vector &freq2, double &fitness1, double &fitness2,
                                 double &beta,
-                                Matrix2D &group_coop,
+                                Matrix2D &group_coop, VectorXui &final_strategies,
                                 std::vector<unsigned int> &population,
                                 std::uniform_int_distribution<unsigned int> &dist,
                                 std::uniform_real_distribution<double> &_uniform_real_dist);
