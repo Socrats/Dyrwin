@@ -56,10 +56,12 @@ MoranProcess::MoranProcess(size_t generations, size_t nb_strategies, size_t grou
     _pop_size = _nb_groups * _group_size;
     _strategies = VectorXui::Zero(_nb_strategies);
     // Calculate the number of individuals belonging to each strategy from the initial frequencies
+    size_t tmp = 0;
     for (size_t i = 0; i < (_nb_strategies - 1); ++i) {
         _strategies(i) = (size_t) floor(_strategy_freq(i) * _pop_size);
+        tmp += _strategies(i);
     }
-    _strategies(_nb_strategies - 1) = (size_t) floor(_strategy_freq(_nb_strategies - 1) * _pop_size);
+    _strategies(_nb_strategies - 1) = (size_t) _pop_size - tmp;
     _final_strategy_freq = Vector::Zero(_nb_strategies);
 }
 
@@ -118,13 +120,13 @@ Vector EGTTools::MoranProcess::evolve(double beta) {
 
     // Now run a Moran Process loop
     if (_mu == 0.) { // Without mutation
-        for (i = 0; i < _generations; i++) {
+        for (i = 0; i < _generations; ++i) {
             _moran_step(p1, p2, freq1, freq2, fitness1, fitness2, beta, group_coop, final_strategies, population, dist,
                         _uniform_real_dist);
             // Check if one of the strategies has dominated the population
             buff = 0;
             for (j = 0; j < _nb_strategies; ++j) {
-                if (final_strategies(i) == _pop_size) {
+                if (final_strategies(j) == _pop_size) {
                     buff = 1;
                     break;
                 }
@@ -142,7 +144,7 @@ Vector EGTTools::MoranProcess::evolve(size_t runs, double beta) {
     for (unsigned int j = 0; j < runs; j++) {
         freq_buff += evolve(beta);
     }
-    _final_strategy_freq.array() = freq_buff / (double) runs;
+    _final_strategy_freq.array() = freq_buff / runs;
     return _final_strategy_freq;
 }
 
@@ -181,8 +183,7 @@ void EGTTools::MoranProcess::_moran_step(unsigned int &p1, unsigned int &p2,
     // Randomly select 2 individuals from the population
     p1 = dist(_mt);
     p2 = dist(_mt);
-    while (p2 == p1) p2 = dist(_mt);
-    if (population[p2] == population[p1]) return;
+    while (population[p2] == population[p1]) p2 = dist(_mt);
     // Group index
     g1 = p1 / _group_size;
     g2 = p2 / _group_size;

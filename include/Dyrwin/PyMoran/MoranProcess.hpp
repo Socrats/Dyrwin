@@ -95,10 +95,12 @@ namespace EGTTools {
             if (strategy_freq.sum() != 1.0) throw std::invalid_argument("Frequencies must sum to 1");
             _strategy_freq.array() = strategy_freq;
             // Recompute strategies
+            size_t tmp = 0;
             for (size_t i = 0; i < (_nb_strategies - 1); ++i) {
                 _strategies(i) = (size_t) floor(_strategy_freq(i) * _pop_size);
+                tmp += _strategies(i);
             }
-            _strategies(_nb_strategies - 1) = (size_t) floor(_strategy_freq(_nb_strategies - 1) * _pop_size);
+            _strategies(_nb_strategies - 1) = _pop_size - tmp;
         }
 
         void set_strategy_count(const Eigen::Ref<const VectorXui> &strategies) {
