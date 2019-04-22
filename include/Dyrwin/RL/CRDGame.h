@@ -51,9 +51,10 @@ namespace EGTTools::RL {
                 player.resetPayoff();
             }
             for (unsigned i = 0; i < final_round; i++) {
-                for (auto a : players) {
-                    unsigned idx = a.selectAction(i);
-                    a.decrease(actions[idx]);
+#pragma omp parallel for shared(total)
+                for (size_t j = 0; j < players.size(); ++j) {
+                    unsigned idx = players[j].selectAction(i);
+                    players[j].decrease(actions[idx]);
                     total += actions[idx];
                 }
             }
@@ -70,9 +71,10 @@ namespace EGTTools::RL {
                 player->resetPayoff();
             }
             for (unsigned i = 0; i < final_round; i++) {
-                for (auto &a : players) {
-                    unsigned idx = a->selectAction(i);
-                    a->decrease(actions[idx]);
+#pragma omp parallel for shared(total)
+                for (size_t j = 0; j < players.size(); ++j) {
+                    unsigned idx = players[j]->selectAction(i);
+                    players[j]->decrease(actions[idx]);
                     total += actions[idx];
                 }
             }
@@ -80,15 +82,17 @@ namespace EGTTools::RL {
         }
 
         bool reinforcePath(std::vector<A> &players) {
-            for (auto &player : players) {
-                player.reinforceTrajectory();
+#pragma omp parallel
+            for (size_t j = 0; j < players.size(); ++j) {
+                players[j].reinforceTrajectory();
             }
             return true;
         }
 
         bool reinforcePath(std::vector<A *> &players) {
-            for (auto &player : players) {
-                player->reinforceTrajectory();
+#pragma omp parallel
+            for (size_t j = 0; j < players.size(); ++j) {
+                players[j]->reinforceTrajectory();
             }
             return true;
         }
@@ -108,15 +112,17 @@ namespace EGTTools::RL {
         }
 
         bool calcProbabilities(std::vector<A> &players) {
-            for (auto &player : players) {
-                player.inferPolicy();
+#pragma omp parallel
+            for (size_t j = 0; j < players.size(); ++j) {
+                players[j].inferPolicy();
             }
             return true;
         }
 
         bool calcProbabilities(std::vector<A *> &players) {
-            for (auto &player : players) {
-                player->inferPolicy();
+#pragma omp parallel
+            for (size_t j = 0; j < players.size(); ++j) {
+                players[j]->inferPolicy();
             }
             return true;
         }
