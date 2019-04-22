@@ -119,6 +119,18 @@ namespace EGTTools {
 //            Eigen::Map<Matrix2D>(_payoff_matrix.data(), _payoff_matrix.rows(), _payoff_matrix.cols()) = payoff_matrix;
         }
 
+        std::string toString() const {
+            Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+            std::stringstream ss;
+            ss << _payoff_matrix.format(CleanFmt);
+            return "Z = " + std::to_string(_pop_size) +
+                   "\nm = " + std::to_string(_nb_groups) +
+                   "\nn = " + std::to_string(_group_size) +
+                   "\nnb_strategies = " + std::to_string(_nb_strategies) +
+                   "\npayoff_matrix = " + ss.str();
+        }
+
+        friend std::ostream &operator<<(std::ostream &o, MoranProcess &r) { return o << r.toString(); }
 
     private:
         size_t _generations, _nb_strategies, _group_size, _nb_groups, _pop_size;
