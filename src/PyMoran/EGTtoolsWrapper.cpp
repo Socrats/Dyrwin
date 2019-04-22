@@ -89,6 +89,9 @@ PYBIND11_MODULE(EGTtools, m) {
 
     py::class_<MoranProcess>(m, "MoranProcess")
             .def(py::init<size_t, size_t, size_t, double, Eigen::Ref<const Vector>, Eigen::Ref<const Matrix2D>>())
+            .def(py::init<size_t, size_t, size_t, size_t, double, Eigen::Ref<const Vector>, Eigen::Ref<const Matrix2D>>())
+            .def(py::init<size_t, size_t, size_t, size_t, double, double, Eigen::Ref<const Vector>, Eigen::Ref<const Matrix2D>>())
+            .def(py::init<size_t, size_t, size_t, size_t, double, double, double, Eigen::Ref<const Vector>, Eigen::Ref<const Matrix2D>>())
             .def_property("generations", &MoranProcess::generations, &MoranProcess::set_generations)
             .def_property_readonly("nb_strategies", &MoranProcess::nb_strategies)
             .def_property("n", &MoranProcess::group_size, &MoranProcess::set_group_size)
@@ -104,6 +107,7 @@ PYBIND11_MODULE(EGTtools, m) {
                  "Execute the moran process with imitation once.")
             .def("evolve", static_cast<Vector (MoranProcess::*)(size_t, double)>(&MoranProcess::evolve),
                  py::call_guard<py::gil_scoped_release>(),
-                 "Find the stationary distribution for beta.");
+                 "Find the stationary distribution for beta.")
+            .def("__repr__", &MoranProcess::toString);
 
 }
