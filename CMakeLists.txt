@@ -131,17 +131,17 @@ set(SOURCE_FILES src/main.cpp
 set(PYTHON_MORAN_SOURCE
         include/Dyrwin/Types.h
         include/Dyrwin/SeedGenerator.h src/SeedGenerator.cpp
-        include/Dyrwin/PyMoran/PDImitation.h
-        src/PyMoran/PDImitation.cpp
-        include/Dyrwin/PyMoran/StochDynamics.h
-        src/PyMoran/StochDynamics.cpp
-        include/Dyrwin/PyMoran/TraulsenMoran.h
-        src/PyMoran/TraulsenMoran.cpp
-        include/Dyrwin/PyMoran/MoranProcess.hpp
-        src/PyMoran/MoranProcess.cpp)
+        include/Dyrwin/SED/PDImitation.h
+        src/SED/PDImitation.cpp
+        include/Dyrwin/SED/StochDynamics.h
+        src/SED/StochDynamics.cpp
+        include/Dyrwin/SED/TraulsenMoran.h
+        src/SED/TraulsenMoran.cpp
+        include/Dyrwin/SED/MoranProcess.hpp
+        src/SED/MoranProcess.cpp)
 
 if (MAKE_PMORAN)
-    add_executable(pmoran src/PyMoran/pmain.cpp
+    add_executable(pmoran src/SED/pmain.cpp
             include/Dyrwin/CommandLineParsing.h ${PYTHON_MORAN_SOURCE})
     TARGET_LINK_LIBRARIES(pmoran ${Boost_LIBRARIES} boost_program_options)
     set_target_properties(pmoran PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
@@ -153,22 +153,22 @@ endif ()
 
 set(CRD_RL_SOURCE
         include/Dyrwin/SeedGenerator.h src/SeedGenerator.cpp
-        include/Dyrwin/rl/CRDGame.h
-        include/Dyrwin/rl/Agent.h
-        src/rl/Agent.cpp
-        include/Dyrwin/rl/RLUtils.h
+        include/Dyrwin/RL/CRDGame.h
+        include/Dyrwin/RL/Agent.h
+        src/RL/Agent.cpp
+        include/Dyrwin/RL/RLUtils.h
         include/Dyrwin/Distributions.h
-        src/rl/BatchQLearningAgent.cpp
-        include/Dyrwin/rl/BatchQLearningAgent.h
-        include/Dyrwin/rl/RothErevAgent.h
-        include/Dyrwin/rl/QLearningAgent.h
-        src/rl/QLearningAgent.cpp
-        include/Dyrwin/Types.h include/Dyrwin/rl/histericQLearningAgent.hpp
-        include/Dyrwin/rl/HistericQLearningAgent.hpp
-        include/Dyrwin/rl/TimingUncertainty.hpp)
+        src/RL/BatchQLearningAgent.cpp
+        include/Dyrwin/RL/BatchQLearningAgent.h
+        include/Dyrwin/RL/RothErevAgent.h
+        include/Dyrwin/RL/QLearningAgent.h
+        src/RL/QLearningAgent.cpp
+        include/Dyrwin/Types.h include/Dyrwin/RL/histericQLearningAgent.hpp
+        include/Dyrwin/RL/HistericQLearningAgent.hpp
+        include/Dyrwin/RL/TimingUncertainty.hpp)
 
 if (MAKE_CRD)
-    add_executable(crd src/rl/main.cpp
+    add_executable(crd src/RL/main.cpp
             include/Dyrwin/CommandLineParsing.h ${CRD_RL_SOURCE})
     TARGET_LINK_LIBRARIES(crd ${Boost_LIBRARIES} boost_program_options)
     set_target_properties(crd PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
@@ -176,7 +176,7 @@ if (MAKE_CRD)
 endif ()
 
 if (MAKE_CRD_UNCERTAINTY)
-    add_executable(crdTU src/rl/main_uncertainty.cpp
+    add_executable(crdTU src/RL/main_uncertainty.cpp
                             include/Dyrwin/CommandLineParsing.h ${CRD_RL_SOURCE})
     TARGET_LINK_LIBRARIES(crdTU ${Boost_LIBRARIES} boost_program_options)
     set_target_properties(crdTU PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
@@ -186,7 +186,7 @@ endif ()
 # Python bindings
 if (MAKE_PYTHON)
     add_subdirectory(pybind11)
-    pybind11_add_module(EGTtools SHARED ${PYTHON_MORAN_SOURCE} src/PyMoran/EGTtoolsWrapper.cpp)
+    pybind11_add_module(EGTtools SHARED ${PYTHON_MORAN_SOURCE} src/SED/EGTtoolsWrapper.cpp)
     if (OPENMP_FOUND)
         target_link_libraries(EGTtools PRIVATE OpenMP::OpenMP_CXX)
     endif ()
