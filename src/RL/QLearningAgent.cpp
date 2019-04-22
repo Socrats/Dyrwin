@@ -2,7 +2,7 @@
 // Created by Elias Fernandez on 2019-04-10.
 //
 
-#include "../../include/Dyrwin/rl/QLearningAgent.h"
+#include <Dyrwin/RL/QLearningAgent.h>
 
 using namespace EGTTools::RL;
 

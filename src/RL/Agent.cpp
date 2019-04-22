@@ -2,7 +2,7 @@
 // Created by Elias Fernandez on 2019-03-11.
 //
 
-#include "../../include/Dyrwin/rl/Agent.h"
+#include <Dyrwin/RL/Agent.h>
 
 using namespace EGTTools::RL;
 

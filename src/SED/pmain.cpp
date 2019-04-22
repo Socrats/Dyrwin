@@ -2,11 +2,11 @@
 // Created by Elias Fernandez on 2019-02-10.
 //
 #include <iostream>
-#include "../../include/Dyrwin/PyMoran/PDImitation.h"
-#include "../../include/Dyrwin/PyMoran/StochDynamics.h"
-#include "../../include/Dyrwin/PyMoran/TraulsenMoran.h"
-#include <Dyrwin/PyMoran/MoranProcess.hpp>
-#include "../../include/Dyrwin/CommandLineParsing.h"
+#include <Dyrwin/SED/PDImitation.h>
+#include <Dyrwin/SED/StochDynamics.h>
+#include <Dyrwin/SED/TraulsenMoran.h>
+#include <Dyrwin/SED/MoranProcess.hpp>
+#include <Dyrwin/CommandLineParsing.h>
 
 using namespace std;
 using namespace EGTTools;

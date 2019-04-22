@@ -2,7 +2,7 @@
 // Created by Elias Fernandez on 17/05/2018.
 //
 
-#include "../include/Dyrwin/SeedGenerator.h"
+#include <Dyrwin/SeedGenerator.h>
 
 using namespace EGTTools::Random;
 

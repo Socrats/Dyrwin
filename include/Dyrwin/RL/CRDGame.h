@@ -10,10 +10,9 @@
 #include <cmath>
 #include <tuple>
 #include <iostream>
-#include "../SeedGenerator.h"
-#include "Agent.h"
-#include "RLUtils.h"
-#include "TimingUncertainty.hpp"
+#include <Dyrwin/SeedGenerator.h>
+#include <Dyrwin/RL/Agent.h>
+#include <Dyrwin/RL/TimingUncertainty.hpp>
 
 
 namespace EGTTools::RL {

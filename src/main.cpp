@@ -1,8 +1,8 @@
 #include <iostream>
 #include <fstream>
-#include "../include/Dyrwin/crd/CRDSimulator.h"
-#include "../include/Dyrwin/CommandLineParsing.h"
-#include "../include/Dyrwin/Utils.h"
+#include <Dyrwin/crd/CRDSimulator.h>
+#include <Dyrwin/CommandLineParsing.h>
+#include <Dyrwin/Utils.h>
 
 int main(int argc, char *argv[]) {
 

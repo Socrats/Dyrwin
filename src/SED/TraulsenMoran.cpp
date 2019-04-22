@@ -2,7 +2,7 @@
 // Created by Elias Fernandez on 2019-04-02.
 //
 
-#include "../../include/Dyrwin/PyMoran/TraulsenMoran.h"
+#include <Dyrwin/SED/TraulsenMoran.h>
 
 EGTTools::TraulsenMoran::TraulsenMoran(uint64_t generations, unsigned int group_size, unsigned int nb_groups,
                                         double beta, double mu, double coop_freq, double split_prob,

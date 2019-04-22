@@ -2,7 +2,7 @@
 // Created by Elias Fernandez on 2019-02-11.
 //
 
-#include "../../include/Dyrwin/PyMoran/PDImitation.h"
+#include <Dyrwin/SED/PDImitation.h>
 
 EGTTools::PDImitation::PDImitation(unsigned int generations, unsigned int pop_size, float beta,
                                     float mu, float coop_freq,

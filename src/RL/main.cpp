@@ -6,12 +6,12 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
-#include "../../include/Dyrwin/rl/BatchQLearningAgent.h"
-#include "../../include/Dyrwin/rl/QLearningAgent.h"
-#include "../../include/Dyrwin/rl/RothErevAgent.h"
-#include "../../include/Dyrwin/rl/HistericQLearningAgent.hpp"
-#include "../../include/Dyrwin/rl/CRDGame.h"
-#include "../../include/Dyrwin/CommandLineParsing.h"
+#include <Dyrwin/RL/BatchQLearningAgent.h>
+#include <Dyrwin/RL/QLearningAgent.h>
+#include <Dyrwin/RL/RothErevAgent.h>
+#include <Dyrwin/RL/HistericQLearningAgent.hpp>
+#include <Dyrwin/RL/CRDGame.h>
+#include <Dyrwin/CommandLineParsing.h>
 
 using namespace std::chrono;
 using namespace EGTTools::RL;

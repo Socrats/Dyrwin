@@ -6,10 +6,10 @@
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
 #include <vector>
-#include "../../include/Dyrwin/PyMoran/PDImitation.h"
-#include "../../include/Dyrwin/PyMoran/StochDynamics.h"
-#include "../../include/Dyrwin/PyMoran/TraulsenMoran.h"
-#include <Dyrwin/PyMoran/MoranProcess.hpp>
+#include <Dyrwin/SED/PDImitation.h>
+#include <Dyrwin/SED/StochDynamics.h>
+#include <Dyrwin/SED/TraulsenMoran.h>
+#include <Dyrwin/SED/MoranProcess.hpp>
 
 //PYBIND11_MAKE_OPAQUE(std::vector<float>);
 

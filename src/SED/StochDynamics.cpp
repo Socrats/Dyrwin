@@ -2,7 +2,7 @@
 // Created by Elias Fernandez on 2019-02-27.
 //
 
-#include "../../include/Dyrwin/PyMoran/StochDynamics.h"
+#include <Dyrwin/SED/StochDynamics.h>
 
 EGTTools::StochDynamics::StochDynamics(unsigned int population_size, unsigned int nb_strategies,
                                         Eigen::Ref<const MatrixXd> payoff_matrix) :

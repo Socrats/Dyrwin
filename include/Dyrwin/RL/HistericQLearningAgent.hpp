@@ -5,7 +5,7 @@
 #ifndef DYRWIN_HISTERICQLEARNINGAGENT_HPP
 #define DYRWIN_HISTERICQLEARNINGAGENT_HPP
 
-#include "Agent.h"
+#include <Dyrwin/RL/Agent.h>
 
 namespace EGTTools::RL {
     class HistericQLearningAgent : public Agent {

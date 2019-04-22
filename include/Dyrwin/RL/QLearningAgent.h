@@ -6,7 +6,7 @@
 #define DYRWIN_QLEARNINGAGENT_H
 
 #include <math.h>
-#include "Agent.h"
+#include <Dyrwin/RL/Agent.h>
 
 namespace EGTTools::RL {
     class QLearningAgent : public Agent {

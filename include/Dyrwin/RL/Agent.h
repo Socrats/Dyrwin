@@ -10,9 +10,9 @@
 #include <iostream>
 #include <cassert>
 #include <vector>
-#include "../Distributions.h"
-#include "../Types.h"
-#include "../SeedGenerator.h"
+#include <Dyrwin/Distributions.h>
+#include <Dyrwin/Types.h>
+#include <Dyrwin/SeedGenerator.h>
 
 
 namespace EGTTools::RL {

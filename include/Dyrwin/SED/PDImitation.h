@@ -12,9 +12,9 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
-#include "../SeedGenerator.h"
-#include "../rl/RLUtils.h"
-#include "../Types.h"
+#include <Dyrwin/SeedGenerator.h>
+#include <Dyrwin/RL/RLUtils.h>
+#include <Dyrwin/Types.h>
 
 /**
  * This class implements the moran process for a prisoner's dilemma game

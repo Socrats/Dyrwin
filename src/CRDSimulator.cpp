@@ -3,7 +3,7 @@
 //
 
 #include <iostream>
-#include "../include/Dyrwin/crd/CRDSimulator.h"
+#include <Dyrwin/crd/CRDSimulator.h>
 
 CRDSimulator::CRDSimulator(unsigned int population_size, unsigned int group_size, unsigned int nb_games,
                            unsigned int game_rounds,

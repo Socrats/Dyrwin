@@ -8,7 +8,7 @@
 #include <random>
 #include <algorithm>
 #include <Eigen/Dense>
-#include "Types.h"
+#include <Dyrwin/Types.h>
 
 namespace EGTTools {
     static std::uniform_real_distribution<double> probabilityDistribution(0.0, 1.0);

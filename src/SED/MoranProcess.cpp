@@ -2,7 +2,7 @@
 // Created by Elias Fernandez on 2019-04-18.
 //
 
-#include <Dyrwin/PyMoran/MoranProcess.hpp>
+#include <Dyrwin/SED/MoranProcess.hpp>
 
 using namespace EGTTools;
 

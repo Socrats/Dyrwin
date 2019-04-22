@@ -5,7 +5,7 @@
 #ifndef DYRWIN_UTILS_H
 #define DYRWIN_UTILS_H
 
-#include "crd/CRDPlayer.h"
+#include <Dyrwin/crd/CRDPlayer.h>
 
 struct EvoIndividual {
     double *fitness;

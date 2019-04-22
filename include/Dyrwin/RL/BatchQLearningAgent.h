@@ -6,7 +6,7 @@
 #define DYRWIN_BATCHQLEARNINGAGENT_H
 
 #include <math.h>
-#include "Agent.h"
+#include <Dyrwin/RL/Agent.h>
 
 namespace EGTTools::RL {
     class BatchQLearningAgent : public Agent {

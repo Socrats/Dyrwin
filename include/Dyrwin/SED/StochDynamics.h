@@ -10,9 +10,8 @@
 #include <cmath>
 #include <tuple>
 #include <Eigen/Dense>
-//#include <boost/math/distributions/hypergeometric.hpp>
 #include <iostream>
-#include "../SeedGenerator.h"
+#include <Dyrwin/SeedGenerator.h>
 
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> MatrixXd;
 

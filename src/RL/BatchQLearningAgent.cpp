@@ -2,7 +2,7 @@
 // Created by Elias Fernandez on 2019-04-10.
 //
 
-#include "../../include/Dyrwin/rl/BatchQLearningAgent.h"
+#include <Dyrwin/RL/BatchQLearningAgent.h>
 
 using namespace EGTTools::RL;
 
