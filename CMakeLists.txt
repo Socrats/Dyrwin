@@ -51,12 +51,15 @@ else ()
     message(STATUS "IPO / LTO not supported: <${LTO_ERROR}>")
 endif ()
 
+# For additional Find library scripts
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules/")
+
 ##############################
 ##     Project Settings     ##
 ##############################
 
 # Default is to build everything
-if (NOT MAKE_ALL AND NOT MAKE_DYRWIN AND NOT MAKE_PMORAN AND NOT MAKE_PYTHON AND NOT MAKE_CRD AND NOT MAKE_CRD_UNCERTAINTY AND NOT MAKE_CRD_POP)
+if (NOT MAKE_ALL AND NOT MAKE_DYRWIN AND NOT MAKE_PMORAN AND NOT MAKE_PYTHON AND NOT MAKE_CRD AND NOT MAKE_CRD_UNCERTAINTY AND NOT MAKE_CRD_POP AND NOT MAKE_APPS)
     set(MAKE_ALL 1)
 endif ()
 
@@ -66,8 +69,19 @@ if (MAKE_ALL)
     set(MAKE_CRD 1)
     set(MAKE_CRD_UNCERTAINTY 1)
     set(MAKE_CRD_POP 1)
+    set(MAKE_APPS 1)
     set(MAKE_PYTHON 1)
 endif ()
+
+#message("")
+#message("Build type:  ${CMAKE_BUILD_TYPE}")
+#message("Logging is  ${LOGGING_STATUS}")
+#foreach(v MAKE_DYRWIN;MAKE_PMORAN;MAKE_CRD;MAKE_CRD_UNCERTAINTY;MAKE_CRD_POP;MAKE_APPS;MAKE_PYTHON)
+#    if (${${v}})
+#        message("${MAP_${v}}")
+#    endif()
+#endforeach(v)
+#message("")
 
 ##############################
 ##       Dependencies       ##
@@ -99,124 +113,31 @@ if (OPENMP_FOUND)
     include_directories(SYSTEM ${OPENMP_INCLUDE_DIR})
     message(STATUS "OpenMP enabled")
 endif ()
-#if (OPENMP_FOUND)
-#    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-#    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-#    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-#endif()
 
 # Include the project directory
-include_directories($(PROJECT_SOURCE_DIR)/include)
-# add_subdirectory(${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/include)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src)
 
-##############################
-## Building executables     ##
-##############################
-
-set(SOURCE_FILES src/main.cpp
-        src/CollectiveRiskDilemma.cpp
-        include/Dyrwin/crd/CollectiveRiskDilemma.h
-        src/CRDPlayer.cpp src/CRDSimulator.cpp
-        include/Dyrwin/crd/CRDSimulator.h
-        include/Dyrwin/Utils.h src/SeedGenerator.cpp
-        include/Dyrwin/SeedGenerator.h
-        include/Dyrwin/CommandLineParsing.h
-        include/Dyrwin/ipd/IteratedPrisonersDilemma.cpp)
-
-#if (MAKE_DYRWIN)
-#    add_executable(Dyrwin ${SOURCE_FILES})
-#    target_link_libraries(Dyrwin ${Boost_LIBRARIES} boost_program_options)
-#    set_target_properties(Dyrwin PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
-#endif ()
-
-set(PYTHON_MORAN_SOURCE
-        include/Dyrwin/Types.h
-        include/Dyrwin/SeedGenerator.h
-        src/SeedGenerator.cpp
-        include/Dyrwin/SED/PDImitation.h
-        src/SED/PDImitation.cpp
-        include/Dyrwin/SED/StochDynamics.h
-        src/SED/StochDynamics.cpp
-        include/Dyrwin/SED/TraulsenMoran.h
-        src/SED/TraulsenMoran.cpp
-        include/Dyrwin/SED/MoranProcess.hpp
-        src/SED/MoranProcess.cpp
-        include/Dyrwin/SED/structure/Group.hpp
-        src/SED/structure/Group.cpp
-        include/Dyrwin/SED/MLS.hpp
-        src/SED/MLS.cpp
-        include/Dyrwin/SED/Utils.hpp)
-
-if (MAKE_PMORAN)
-    add_executable(pmoran src/SED/pmain.cpp
-            include/Dyrwin/CommandLineParsing.h ${PYTHON_MORAN_SOURCE})
-    target_link_libraries(pmoran ${Boost_LIBRARIES} boost_program_options)
-    set_target_properties(pmoran PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
-    target_link_libraries(pmoran Eigen3::Eigen)
-    if (OPENMP_FOUND)
-        target_link_libraries(pmoran OpenMP::OpenMP_CXX)
-    endif ()
-endif ()
-
-set(CRD_RL_SOURCE
-        include/Dyrwin/SeedGenerator.h
-        src/SeedGenerator.cpp
-        include/Dyrwin/RL/CRDGame.h
-        include/Dyrwin/RL/Agent.h
-        src/RL/Agent.cpp
-        include/Dyrwin/RL/SparseAgent.h
-        include/Dyrwin/RL/RLUtils.h
-        include/Dyrwin/Distributions.h
-        src/RL/BatchQLearningAgent.cpp
-        include/Dyrwin/RL/BatchQLearningAgent.h
-        include/Dyrwin/RL/RothErevAgent.h
-        include/Dyrwin/RL/QLearningAgent.h
-        src/RL/QLearningAgent.cpp
-        include/Dyrwin/Types.h include/Dyrwin/RL/histericQLearningAgent.hpp
-        include/Dyrwin/RL/HistericQLearningAgent.hpp
-        include/Dyrwin/RL/TimingUncertainty.hpp)
-
-if (MAKE_CRD)
-    add_executable(crd src/RL/main.cpp
-            include/Dyrwin/CommandLineParsing.h ${CRD_RL_SOURCE})
-    TARGET_LINK_LIBRARIES(crd ${Boost_LIBRARIES} boost_program_options)
-    set_target_properties(crd PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
-    target_link_libraries(crd Eigen3::Eigen)
-    if (OPENMP_FOUND)
-        target_link_libraries(crd OpenMP::OpenMP_CXX)
-    endif ()
-endif ()
-
-if (MAKE_CRD_UNCERTAINTY)
-    add_executable(crdTU src/RL/main_uncertainty.cpp
-            include/Dyrwin/CommandLineParsing.h ${CRD_RL_SOURCE})
-    TARGET_LINK_LIBRARIES(crdTU ${Boost_LIBRARIES} boost_program_options)
-    set_target_properties(crdTU PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
-    target_link_libraries(crdTU Eigen3::Eigen)
-    if (OPENMP_FOUND)
-        target_link_libraries(crdTU OpenMP::OpenMP_CXX)
-    endif ()
-endif ()
-
-if (MAKE_CRD_POP)
-    add_executable(crdP src/RL/main_pop.cpp
-            include/Dyrwin/CommandLineParsing.h ${CRD_RL_SOURCE})
-    TARGET_LINK_LIBRARIES(crdP ${Boost_LIBRARIES} boost_program_options)
-    set_target_properties(crdP PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
-    target_link_libraries(crdP Eigen3::Eigen)
-    if (OPENMP_FOUND)
-        target_link_libraries(crdTU OpenMP::OpenMP_CXX)
-    endif ()
+if (MAKE_APPS)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/apps)
 endif ()
 
 # Python bindings
 if (MAKE_PYTHON)
+    # Wrappers -- if unused macros will skip them
+    set(PYTHON_FILES
+            src/SED/EGTtoolsWrapper.cpp
+            src/SED/MoranProcess.cpp
+            src/SED/PDImitation.cpp
+            src/SED/StochDynamics.cpp
+            src/SED/TraulsenMoran.cpp
+            src/SED/structure/Group.cpp
+            )
     add_subdirectory(pybind11)
-    pybind11_add_module(EGTtools SHARED ${PYTHON_MORAN_SOURCE} src/SED/EGTtoolsWrapper.cpp)
+    pybind11_add_module(EGTtools SHARED ${PYTHON_FILES})
     if (OPENMP_FOUND)
         target_link_libraries(EGTtools PRIVATE OpenMP::OpenMP_CXX)
     endif ()
 endif ()
-# target_link_libraries(EGTtools ${${BOOST_PYTHON_LIBRARY_NAME}} ${PYTHON_LIBRARY})
-# set_target_properties(EGTtools PROPERTIES PREFIX "")
-# set_target_properties(EGTtools PROPERTIES SUFFIX ".so")
+
+

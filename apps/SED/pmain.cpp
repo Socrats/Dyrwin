@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     PDImitation pd(generations, pop_size, beta, mu, coop_freq, payoff_matrix);
     TraulsenMoran ts(generations, group_size, nb_groups, beta, mu, coop_freq, split_prob, payoff_matrix);
     MoranProcess mp(generations, 2, pop_size, beta, strategy_freq, payoff_matrix);
-    SED::MLS<SED::Group> multi_sel(10000000, 2, 100, 1, 0.1, strategy_freq, payoff_matrix);
+    SED::MLS<> multi_sel(10000000, 2, 100, 1, 0.1, strategy_freq, payoff_matrix);
 
     clock_t tStart = clock();
     betas[0] = beta;
