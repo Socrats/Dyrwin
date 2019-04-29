@@ -13,7 +13,6 @@
 #include <cmath>
 #include <iostream>
 #include <Dyrwin/SeedGenerator.h>
-#include <Dyrwin/RL/RLUtils.h>
 #include <Dyrwin/Types.h>
 
 /**

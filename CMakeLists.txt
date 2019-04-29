@@ -56,7 +56,7 @@ endif ()
 ##############################
 
 # Default is to build everything
-if (NOT MAKE_ALL AND NOT MAKE_DYRWIN AND NOT MAKE_PMORAN AND NOT MAKE_PYTHON AND NOT MAKE_CRD AND NOT MAKE_CRD_UNCERTAINTY)
+if (NOT MAKE_ALL AND NOT MAKE_DYRWIN AND NOT MAKE_PMORAN AND NOT MAKE_PYTHON AND NOT MAKE_CRD AND NOT MAKE_CRD_UNCERTAINTY AND NOT MAKE_CRD_POP)
     set(MAKE_ALL 1)
 endif ()
 
@@ -65,6 +65,7 @@ if (MAKE_ALL)
     set(MAKE_PMORAN 1)
     set(MAKE_CRD 1)
     set(MAKE_CRD_UNCERTAINTY 1)
+    set(MAKE_CRD_POP 1)
     set(MAKE_PYTHON 1)
 endif ()
 
@@ -138,7 +139,12 @@ set(PYTHON_MORAN_SOURCE
         include/Dyrwin/SED/TraulsenMoran.h
         src/SED/TraulsenMoran.cpp
         include/Dyrwin/SED/MoranProcess.hpp
-        src/SED/MoranProcess.cpp)
+        src/SED/MoranProcess.cpp
+        include/Dyrwin/SED/structure/Group.hpp
+        src/SED/structure/Group.cpp
+        include/Dyrwin/SED/MLS.hpp
+        src/SED/MLS.cpp
+        include/Dyrwin/SED/Utils.hpp)
 
 if (MAKE_PMORAN)
     add_executable(pmoran src/SED/pmain.cpp
@@ -152,10 +158,12 @@ if (MAKE_PMORAN)
 endif ()
 
 set(CRD_RL_SOURCE
-        include/Dyrwin/SeedGenerator.h src/SeedGenerator.cpp
+        include/Dyrwin/SeedGenerator.h
+        src/SeedGenerator.cpp
         include/Dyrwin/RL/CRDGame.h
         include/Dyrwin/RL/Agent.h
         src/RL/Agent.cpp
+        include/Dyrwin/RL/SparseAgent.h
         include/Dyrwin/RL/RLUtils.h
         include/Dyrwin/Distributions.h
         src/RL/BatchQLearningAgent.cpp
@@ -180,10 +188,21 @@ endif ()
 
 if (MAKE_CRD_UNCERTAINTY)
     add_executable(crdTU src/RL/main_uncertainty.cpp
-                            include/Dyrwin/CommandLineParsing.h ${CRD_RL_SOURCE})
+            include/Dyrwin/CommandLineParsing.h ${CRD_RL_SOURCE})
     TARGET_LINK_LIBRARIES(crdTU ${Boost_LIBRARIES} boost_program_options)
     set_target_properties(crdTU PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
     target_link_libraries(crdTU Eigen3::Eigen)
+    if (OPENMP_FOUND)
+        target_link_libraries(crdTU OpenMP::OpenMP_CXX)
+    endif ()
+endif ()
+
+if (MAKE_CRD_POP)
+    add_executable(crdP src/RL/main_pop.cpp
+            include/Dyrwin/CommandLineParsing.h ${CRD_RL_SOURCE})
+    TARGET_LINK_LIBRARIES(crdP ${Boost_LIBRARIES} boost_program_options)
+    set_target_properties(crdP PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
+    target_link_libraries(crdP Eigen3::Eigen)
     if (OPENMP_FOUND)
         target_link_libraries(crdTU OpenMP::OpenMP_CXX)
     endif ()

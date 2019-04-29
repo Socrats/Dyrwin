@@ -159,5 +159,8 @@ ENV/
 # Rope project settings
 .ropeproject
 
+# Idea stuff
 .idea/workspace.xml
 cmake-build-debug/
+cmake-build-release/
+python/

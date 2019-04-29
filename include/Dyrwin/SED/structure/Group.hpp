@@ -7,11 +7,7 @@
 
 #include <random>
 #include <algorithm>
-#include <vector>
-#include <cmath>
-#include <iostream>
-#include <Dyrwin/SeedGenerator.h>
-#include <Dyrwin/RL/RLUtils.h>
+#include <math.h>
 #include <Dyrwin/Types.h>
 
 namespace EGTTools::SED {
@@ -32,21 +28,23 @@ namespace EGTTools::SED {
          * @param init_strategies : number of individuals of each strategy in the group
          * @param payoff_matrix : reference to the payoff matrix
          */
-        Group(size_t nb_strategies, size_t max_group_size, double w, VectorXui init_strategies,
+        Group(size_t nb_strategies, size_t max_group_size, double w, const VectorXui& init_strategies,
               const Matrix2D &payoff_matrix) : _nb_strategies(nb_strategies),
                                                _max_group_size(max_group_size),
                                                _w(w),
+                                               _strategies(init_strategies),
                                                _payoff_matrix(payoff_matrix){
             if (payoff_matrix.rows() != payoff_matrix.cols())
                 throw std::invalid_argument("Payoff matrix must be a square Matrix (n,n)");
             if (static_cast<size_t>(payoff_matrix.rows()) != nb_strategies)
-                throw std::invalid_argument("Payoff matrix must have the same number of rows and columns as trategies");
+                throw std::invalid_argument("Payoff matrix must have the same number of rows and columns as strategies");
             if (static_cast<size_t>(init_strategies.size()) != nb_strategies)
                 throw std::invalid_argument("size of init strategies must be equal to the number of strategies");
 
             // Initialize the number of individuals of each strategy
             // we take ownership of the init_strategies vector
-            _strategies = std::move(init_strategies);
+//            _strategies = VectorXui(_nb_strategies);
+//            _strategies << init_strategies;
             _group_size = _strategies.sum();
             _fitness = Vector::Zero(_nb_strategies);
             _group_fitness = 0.0;
@@ -56,7 +54,7 @@ namespace EGTTools::SED {
         }
 
         template <typename G = std::mt19937_64>
-        bool createOffspring(G& generator);
+        std::pair<bool, size_t> createOffspring(G& generator);
         void createMutant(size_t invader, size_t resident);
         double totalPayoff();
         bool addMember(size_t new_strategy); // adds a new member to the group
@@ -64,6 +62,8 @@ namespace EGTTools::SED {
         size_t deleteMember(G& generator);    // delete one randomly chosen member
         template <typename G = std::mt19937_64>
         inline size_t payoffProportionalSelection(G& generator);
+        bool isPopulationMonomorphic();
+        void setPopulationHomogeneous(size_t strategy);
 
         // Getters
         size_t nb_strategies() { return _nb_strategies; }
@@ -78,9 +78,13 @@ namespace EGTTools::SED {
 
         VectorXui &strategies() { return _strategies; }
 
+        const VectorXui &strategies() const { return _strategies; }
+
         const Matrix2D &payoff_matrix() { return _payoff_matrix; }
 
         // Setters
+        void set_group_size(size_t group_size) { _group_size = group_size; }
+
         void set_max_group_size(size_t max_group_size) { _max_group_size = max_group_size; }
 
         void set_selection_intensity(double w) { _w = w; }
@@ -101,6 +105,63 @@ namespace EGTTools::SED {
         const Matrix2D &_payoff_matrix;                // reference to a payoff matrix
         std::uniform_real_distribution<double> _urand; // uniform random distribution
     };
+}
+
+/**
+ * @brief Adds a new member of a given strategy to the group (proportional to the fitness).
+ *
+ * @tparam G : random generator container class
+ * @param generator : random generator
+ * @return true if group_size <= max_group_size, else false
+ */
+template<typename G>
+std::pair<bool, size_t> EGTTools::SED::Group::createOffspring(G &generator) {
+    auto new_strategy = payoffProportionalSelection<G>(generator);
+    ++_strategies(new_strategy);
+    return std::make_pair(++_group_size > _max_group_size, new_strategy);
+}
+
+/**
+ * @brief deletes a random member from the group
+ *
+ * @tparam G : random generator container class
+ * @param generator : random generator
+ * @return index to the deleted member
+ */
+template<typename G>
+size_t EGTTools::SED::Group::deleteMember(G &generator) {
+    size_t selected_strategy = 0, sum = 0;
+    // choose random member for deletion
+    std::uniform_int_distribution<size_t> dist(0, _group_size - 1);
+    size_t die = dist(generator);
+    for (selected_strategy = 0; selected_strategy < _nb_strategies; ++selected_strategy) {
+        sum += _strategies(selected_strategy);
+        if (die < sum) break;
+    }
+
+    --_strategies(selected_strategy);
+    --_group_size;
+    return selected_strategy;
+}
+
+/**
+ * @brief selects an individual from a strategy proportionally to the payoff
+ *
+ * @tparam G : random generator container class
+ * @param generator : random generator
+ * @return : index of the strategy selected
+ */
+template<typename G>
+size_t EGTTools::SED::Group::payoffProportionalSelection(G &generator) {
+    double sum = 0.0;
+    auto p = _urand(generator) * _group_fitness;
+    for (size_t i = 0; i < _nb_strategies; ++i) {
+        sum += _fitness(i);
+        if (p < sum) return i;
+    }
+    // It should never get here
+    assert(p < sum);
+    return 0;
 }
 
 

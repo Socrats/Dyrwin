@@ -7,7 +7,7 @@
 
 #include <random>
 #include <algorithm>
-#include <cmath>
+#include <math.h>
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/Types.h>
 

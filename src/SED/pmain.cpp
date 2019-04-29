@@ -6,6 +6,7 @@
 #include <Dyrwin/SED/StochDynamics.h>
 #include <Dyrwin/SED/TraulsenMoran.h>
 #include <Dyrwin/SED/MoranProcess.hpp>
+#include <Dyrwin/SED/MLS.hpp>
 #include <Dyrwin/CommandLineParsing.h>
 
 using namespace std;
@@ -42,7 +43,8 @@ int main(int argc, char *argv[]) {
 
     PDImitation pd(generations, pop_size, beta, mu, coop_freq, payoff_matrix);
     TraulsenMoran ts(generations, group_size, nb_groups, beta, mu, coop_freq, split_prob, payoff_matrix);
-    MoranProcess mp(100000, 2, pop_size, beta, strategy_freq, payoff_matrix);
+    MoranProcess mp(generations, 2, pop_size, beta, strategy_freq, payoff_matrix);
+    SED::MLS<SED::Group> multi_sel(10000000, 2, 100, 1, 0.1, strategy_freq, payoff_matrix);
 
     clock_t tStart = clock();
     betas[0] = beta;
@@ -52,6 +54,7 @@ int main(int argc, char *argv[]) {
 
     std::vector<float> result = pd.evolve(betas, runs);
     std::vector<double> result2 = ts.evolve(std::vector<double>(betas.begin(), betas.end()), runs);
+    double fix_prob = multi_sel.fixationProbability(1, 0, 10000, 0.0, 0.1);
     Vector result3 = mp.evolve(runs, 0.1);
 
     cout << "===========" << endl;
@@ -72,6 +75,11 @@ int main(int argc, char *argv[]) {
     cout << "MoranProcess" << endl;
     cout << "===========" << endl;
     cout << "[beta " << 0.1 << "] freq_coop: " << result3 << endl;
+
+    cout << "===========" << endl;
+    cout << "    MLS    " << endl;
+    cout << "===========" << endl;
+    cout << "fixation probability = " << fix_prob << endl;
 
     if (test) {
         Eigen::Matrix2d payoffs;
