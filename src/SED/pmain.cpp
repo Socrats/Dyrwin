@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     std::vector<float> result = pd.evolve(betas, runs);
     std::vector<double> result2 = ts.evolve(std::vector<double>(betas.begin(), betas.end()), runs);
     double fix_prob = multi_sel.fixationProbability(1, 0, 10000, 0.0, 0.1);
-    EGTTools::Vector gradient = multi_sel.gradientOfSelection(1, 0, 100000, 1.0);
+    EGTTools::Vector gradient = multi_sel.gradientOfSelection(1, 0, 1000, 1.0);
     Vector result3 = mp.evolve(runs, 0.1);
 
     cout << "===========" << endl;

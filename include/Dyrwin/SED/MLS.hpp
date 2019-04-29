@@ -80,7 +80,7 @@ namespace EGTTools::SED {
 
         double selection_intensity() { return _w; }
 
-        Vector &init_strategy_freq() { return _strategies / _pop_size; }
+        Vector init_strategy_freq() { return _strategies.cast<double>() / _pop_size; }
 
         Vector &strategy_freq() { return _strategy_freq; }
 
@@ -219,6 +219,7 @@ EGTTools::SED::MLS<S>::MLS(size_t generations, size_t nb_strategies,
     _pop_size = _nb_groups * _group_size;
     // calculate the frequencies of each strategy in the population
     _strategies = VectorXui::Zero(_nb_strategies);
+    std::cout << "Test" << std::endl;
     // Calculate the number of individuals belonging to each strategy from the initial frequencies
     size_t tmp = 0;
     for (size_t i = 0; i < (_nb_strategies - 1); ++i) {

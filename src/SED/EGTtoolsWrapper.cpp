@@ -10,11 +10,13 @@
 #include <Dyrwin/SED/StochDynamics.h>
 #include <Dyrwin/SED/TraulsenMoran.h>
 #include <Dyrwin/SED/MoranProcess.hpp>
+#include <Dyrwin/SED/MLS.hpp>
 
 //PYBIND11_MAKE_OPAQUE(std::vector<float>);
 
 namespace py = pybind11;
 using namespace EGTTools;
+using namespace EGTTools::SED;
 
 PYBIND11_MODULE(EGTtools, m) {
     m.doc() = R"pbdoc(
@@ -109,5 +111,36 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::call_guard<py::gil_scoped_release>(),
                  "Find the stationary distribution for beta.")
             .def("__repr__", &MoranProcess::toString);
+
+    py::class_<MLS<Group>>(m, "MLS")
+            .def(py::init<size_t, size_t, size_t, size_t, double, const Eigen::Ref<const Vector> &, const Eigen::Ref<const Matrix2D> &>())
+            .def_property("generations", &MLS<Group>::generations, &MLS<Group>::set_generations)
+            .def_property_readonly("nb_strategies", &MLS<Group>::nb_strategies)
+            .def_property("n", &MLS<Group>::group_size, &MLS<Group>::set_group_size)
+            .def_property("m", &MLS<Group>::nb_groups, &MLS<Group>::set_nb_groups)
+            .def_property("init_freq", &MLS<Group>::init_strategy_freq,
+                          &MLS<Group>::set_strategy_freq)
+            .def_property("init_state", &MLS<Group>::init_strategy_count,
+                          &MLS<Group>::set_strategy_count)
+            .def_property_readonly("payoff_matrix", &MLS<Group>::payoff_matrix)
+            .def("update_payoff_matrix", &MLS<Group>::set_payoff_matrix,
+                 py::return_value_policy::reference_internal)
+//            .def("fixation_probability",
+//                 static_cast<double (MLS<Group>::*)(size_t, size_t, size_t, double,
+//                                                              double)>( &MLS<Group>::fixationProbability),
+//                 py::call_guard<py::gil_scoped_release>(),
+//                 "Calculates the fixation probability given a beta.")
+//            .def("fixation_probability",
+//                 static_cast<double (MLS<Group>::*)(size_t, size_t, size_t, double, double,
+//                                                              double)>( &MLS<Group>::fixationProbability),
+//                 py::call_guard<py::gil_scoped_release>(),
+//                 "Calculates the fixation probability given a beta and lambda.")
+//            .def("fixation_probability",
+//                 static_cast<double (MLS<Group>::*)(size_t, size_t, size_t, size_t, double, double, double,
+//                                                              double)>(&MLS<Group>::fixationProbability),
+//                 py::call_guard<py::gil_scoped_release>(),
+//                 "Calculates the fixation probability given a beta, lambda and mu.")
+            .def("gradient_selection", &MLS<Group>::gradientOfSelection)
+            .def("__repr__", &MLS<Group>::toString);
 
 }

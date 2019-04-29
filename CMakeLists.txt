@@ -131,7 +131,8 @@ set(SOURCE_FILES src/main.cpp
 
 set(PYTHON_MORAN_SOURCE
         include/Dyrwin/Types.h
-        include/Dyrwin/SeedGenerator.h src/SeedGenerator.cpp
+        include/Dyrwin/SeedGenerator.h
+        src/SeedGenerator.cpp
         include/Dyrwin/SED/PDImitation.h
         src/SED/PDImitation.cpp
         include/Dyrwin/SED/StochDynamics.h
@@ -149,7 +150,7 @@ set(PYTHON_MORAN_SOURCE
 if (MAKE_PMORAN)
     add_executable(pmoran src/SED/pmain.cpp
             include/Dyrwin/CommandLineParsing.h ${PYTHON_MORAN_SOURCE})
-    TARGET_LINK_LIBRARIES(pmoran ${Boost_LIBRARIES} boost_program_options)
+    target_link_libraries(pmoran ${Boost_LIBRARIES} boost_program_options)
     set_target_properties(pmoran PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
     target_link_libraries(pmoran Eigen3::Eigen)
     if (OPENMP_FOUND)
