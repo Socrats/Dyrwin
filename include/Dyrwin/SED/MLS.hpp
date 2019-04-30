@@ -462,11 +462,11 @@ namespace EGTTools::SED {
                     "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
                     ")");
 
-        if (init_state.sum() < _pop_size)
+        if (init_state.sum() != _pop_size)
             throw std::invalid_argument(
                     "the sum of individuals in the initial state must be equal to " + std::to_string(_pop_size));
 
-        Vector gradient = Vector::Zero(_pop_size + 1);
+        Vector gradient = Vector::Zero(init_state(reduce) + 1);
 
         // This loop can be done in parallel
 #pragma omp parallel for shared(gradient)
@@ -481,13 +481,13 @@ namespace EGTTools::SED {
             // initialize container
             size_t z = 0;
             for (size_t i = 0; i < _nb_strategies; ++i) {
-                strategies(i) = init_state(i);
+                if (i == invader) strategies(i) = k;
+                else if (i == reduce) strategies(i) = init_state(i) - k;
+                else strategies(i) = init_state(i);
                 for (size_t j = 0; j < strategies(i); ++j) {
                     pop_container[z++] = i;
                 }
             }
-            strategies(invader) = k;
-            strategies(reduce) -= k;
 
             // Calculate T+ and T-
             for (size_t i = 0; i < runs; ++i) {
