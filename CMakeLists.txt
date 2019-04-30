@@ -127,17 +127,10 @@ if (MAKE_PYTHON)
     # Wrappers -- if unused macros will skip them
     set(PYTHON_FILES
             src/SED/EGTtoolsWrapper.cpp
-            src/SED/MoranProcess.cpp
-            src/SED/PDImitation.cpp
-            src/SED/StochDynamics.cpp
-            src/SED/TraulsenMoran.cpp
-            src/SED/structure/Group.cpp
             )
     add_subdirectory(pybind11)
     pybind11_add_module(EGTtools SHARED ${PYTHON_FILES})
-    if (OPENMP_FOUND)
-        target_link_libraries(EGTtools PRIVATE OpenMP::OpenMP_CXX)
-    endif ()
+    target_link_libraries(EGTtools PRIVATE EGTTools)
 endif ()
 
 

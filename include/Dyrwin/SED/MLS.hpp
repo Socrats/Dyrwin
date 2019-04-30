@@ -266,6 +266,10 @@ namespace EGTTools::SED {
     template<typename S>
     double
     MLS<S>::fixationProbability(size_t invader, size_t resident, size_t runs, double q, double w) {
+        if (invader > _nb_strategies || resident > _nb_strategies)
+            throw std::invalid_argument(
+                    "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) + ")");
+
         size_t r2m = 0; // resident to mutant count
         size_t r2r = 0; // resident to resident count
         VectorXui group_strategies = VectorXui::Zero(_nb_strategies);
@@ -324,6 +328,10 @@ namespace EGTTools::SED {
     double
     MLS<S>::fixationProbability(size_t invader, size_t resident, size_t runs,
                                                double q, double lambda, double w) {
+        if (invader > _nb_strategies || resident > _nb_strategies)
+            throw std::invalid_argument(
+                    "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) + ")");
+
         size_t r2m = 0; // resident to mutant count
         size_t r2r = 0; // resident to resident count
         VectorXui group_strategies = VectorXui::Zero(_nb_strategies);
@@ -381,20 +389,24 @@ namespace EGTTools::SED {
  * @return : an Eigen vector with the gradient of selection for each k/Z where k is the number of invaders.
  */
     template<typename S>
-    EGTTools::Vector
+    Vector
     MLS<S>::gradientOfSelection(size_t invader, size_t resident, size_t runs, double w) {
-        EGTTools::Vector gradient = EGTTools::Vector::Zero(_pop_size);
-        VectorXui strategies = VectorXui::Zero(_nb_strategies);
-        SED::Group group(_nb_strategies, _group_size, w, strategies, _payoff_matrix);
-        group.set_group_size(_group_size);
-        std::vector<SED::Group> groups(_nb_groups, group);
-        std::vector<size_t> pop_container(_pop_size);
+        if (invader > _nb_strategies || resident > _nb_strategies)
+            throw std::invalid_argument(
+                    "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) + ")");
+
+        Vector gradient = Vector::Zero(_pop_size + 1);
 
         // This loop can be done in parallel
-        for (size_t k = 0; k < _pop_size; ++k) { // Loops over all population configurations
+#pragma omp parallel for shared(gradient)
+        for (size_t k = 0; k <= _pop_size; ++k) { // Loops over all population configurations
+            VectorXui strategies = VectorXui::Zero(_nb_strategies);
+            Group group(_nb_strategies, _group_size, w, strategies, _payoff_matrix);
+            group.set_group_size(_group_size);
+            std::vector<Group> groups(_nb_groups, group);
+            std::vector<size_t> pop_container(_pop_size);
             size_t t_plus = 0; // resident to mutant count
             size_t t_minus = 0; // resident to resident count
-            group.set_group_size(_group_size);
             strategies(resident) = _pop_size - k;
             strategies(invader) = k;
             // initialize container
@@ -410,11 +422,13 @@ namespace EGTTools::SED {
                 // First we initialize a homogeneous population with the resident strategy
                 _setState(groups, pop_container);
                 _update(0.0, groups, strategies); // no group splitting
-                if (strategies(invader) == k + 1) {
+                if (strategies(invader) > k) {
                     ++t_plus;
-                } else if (strategies(invader) == k - 1) {
+                } else if (strategies(invader) < k) {
                     ++t_minus;
                 }
+                strategies(resident) = _pop_size - k;
+                strategies(invader) = k;
             }
             // Calculate gradient
             gradient(k) = (static_cast<double>(t_plus) - static_cast<double>(t_minus)) / static_cast<double>(runs);

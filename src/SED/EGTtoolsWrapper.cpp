@@ -5,18 +5,14 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
-#include <vector>
 #include <Dyrwin/SED/PDImitation.h>
 #include <Dyrwin/SED/StochDynamics.h>
 #include <Dyrwin/SED/TraulsenMoran.h>
 #include <Dyrwin/SED/MoranProcess.hpp>
 #include <Dyrwin/SED/MLS.hpp>
 
-//PYBIND11_MAKE_OPAQUE(std::vector<float>);
-
 namespace py = pybind11;
 using namespace EGTTools;
-using namespace EGTTools::SED;
 
 PYBIND11_MODULE(EGTtools, m) {
     m.doc() = R"pbdoc(
@@ -28,15 +24,6 @@ PYBIND11_MODULE(EGTtools, m) {
            add
            subtract
     )pbdoc";
-
-//    py::class_<std::vector<float>>(m, "FloatVector")
-//            .def(py::init<>())
-//            .def("clear", &std::vector<int>::clear)
-//            .def("pop_back", &std::vector<int>::pop_back)
-//            .def("__len__", [](const std::vector<int> &v) { return v.size(); })
-//            .def("__iter__", [](std::vector<int> &v) {
-//                return py::make_iterator(v.begin(), v.end());
-//            }, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
 
     py::class_<PDImitation>(m, "PDImitation")
             .def(py::init<unsigned int, unsigned int, float, float, float, Eigen::Ref<const MatrixXd>>())
@@ -112,35 +99,36 @@ PYBIND11_MODULE(EGTtools, m) {
                  "Find the stationary distribution for beta.")
             .def("__repr__", &MoranProcess::toString);
 
-    py::class_<MLS<Group>>(m, "MLS")
+    py::class_<SED::MLS<SED::Group>>(m, "MLS")
             .def(py::init<size_t, size_t, size_t, size_t, double, const Eigen::Ref<const Vector> &, const Eigen::Ref<const Matrix2D> &>())
-            .def_property("generations", &MLS<Group>::generations, &MLS<Group>::set_generations)
-            .def_property_readonly("nb_strategies", &MLS<Group>::nb_strategies)
-            .def_property("n", &MLS<Group>::group_size, &MLS<Group>::set_group_size)
-            .def_property("m", &MLS<Group>::nb_groups, &MLS<Group>::set_nb_groups)
-            .def_property("init_freq", &MLS<Group>::init_strategy_freq,
-                          &MLS<Group>::set_strategy_freq)
-            .def_property("init_state", &MLS<Group>::init_strategy_count,
-                          &MLS<Group>::set_strategy_count)
-            .def_property_readonly("payoff_matrix", &MLS<Group>::payoff_matrix)
-            .def("update_payoff_matrix", &MLS<Group>::set_payoff_matrix,
+            .def_property("generations", &SED::MLS<SED::Group>::generations, &SED::MLS<SED::Group>::set_generations)
+            .def_property_readonly("nb_strategies", &SED::MLS<SED::Group>::nb_strategies)
+            .def_property("n", &SED::MLS<SED::Group>::group_size, &SED::MLS<SED::Group>::set_group_size)
+            .def_property("m", &SED::MLS<SED::Group>::nb_groups, &SED::MLS<SED::Group>::set_nb_groups)
+            .def_property("init_freq", &SED::MLS<SED::Group>::init_strategy_freq,
+                          &SED::MLS<SED::Group>::set_strategy_freq)
+            .def_property("init_state", &SED::MLS<SED::Group>::init_strategy_count,
+                          &SED::MLS<SED::Group>::set_strategy_count)
+            .def_property_readonly("payoff_matrix", &SED::MLS<SED::Group>::payoff_matrix)
+            .def("update_payoff_matrix", &SED::MLS<SED::Group>::set_payoff_matrix,
                  py::return_value_policy::reference_internal)
+            .def("fixation_probability",
+                 static_cast<double (SED::MLS<SED::Group>::*)(size_t, size_t, size_t, double,
+                                                              double)>( &SED::MLS<SED::Group>::fixationProbability),
+                 py::call_guard<py::gil_scoped_release>(),
+                 "Calculates the fixation probability given a beta.")
+            .def("fixation_probability",
+                 static_cast<double (SED::MLS<SED::Group>::*)(size_t, size_t, size_t, double, double,
+                                                              double)>( &SED::MLS<SED::Group>::fixationProbability),
+                 py::call_guard<py::gil_scoped_release>(),
+                 "Calculates the fixation probability given a beta and lambda.")
 //            .def("fixation_probability",
-//                 static_cast<double (MLS<Group>::*)(size_t, size_t, size_t, double,
-//                                                              double)>( &MLS<Group>::fixationProbability),
-//                 py::call_guard<py::gil_scoped_release>(),
-//                 "Calculates the fixation probability given a beta.")
-//            .def("fixation_probability",
-//                 static_cast<double (MLS<Group>::*)(size_t, size_t, size_t, double, double,
-//                                                              double)>( &MLS<Group>::fixationProbability),
-//                 py::call_guard<py::gil_scoped_release>(),
-//                 "Calculates the fixation probability given a beta and lambda.")
-//            .def("fixation_probability",
-//                 static_cast<double (MLS<Group>::*)(size_t, size_t, size_t, size_t, double, double, double,
-//                                                              double)>(&MLS<Group>::fixationProbability),
+//                 static_cast<double (SED::MLS<SED::Group>::*)(size_t, size_t, size_t, size_t, double, double, double,
+//                                                              double)>(&SED::MLS<SED::Group>::fixationProbability),
 //                 py::call_guard<py::gil_scoped_release>(),
 //                 "Calculates the fixation probability given a beta, lambda and mu.")
-            .def("gradient_selection", &MLS<Group>::gradientOfSelection)
-            .def("__repr__", &MLS<Group>::toString);
+            .def("gradient_selection", &SED::MLS<SED::Group>::gradientOfSelection, py::call_guard<py::gil_scoped_release>(),
+                 "Calculates the gradient of selection between two strategies.")
+            .def("__repr__", &SED::MLS<SED::Group>::toString);
 
 }
