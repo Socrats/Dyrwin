@@ -127,8 +127,16 @@ PYBIND11_MODULE(EGTtools, m) {
 //                                                              double)>(&SED::MLS<SED::Group>::fixationProbability),
 //                 py::call_guard<py::gil_scoped_release>(),
 //                 "Calculates the fixation probability given a beta, lambda and mu.")
-            .def("gradient_selection", &SED::MLS<SED::Group>::gradientOfSelection, py::call_guard<py::gil_scoped_release>(),
+            .def("gradient_selection",
+                 static_cast<Vector (SED::MLS<SED::Group>::*)(size_t, size_t, size_t,
+                                                              double)>(&SED::MLS<SED::Group>::gradientOfSelection),
+                 py::call_guard<py::gil_scoped_release>(),
                  "Calculates the gradient of selection between two strategies.")
+            .def("gradient_selection",
+                 static_cast<Vector (SED::MLS<SED::Group>::*)(size_t, const Eigen::Ref<const VectorXui>&, size_t,
+                                                              double)>(&SED::MLS<SED::Group>::gradientOfSelection),
+                 py::call_guard<py::gil_scoped_release>(),
+                 "Calculates the gradient of selection for an invading strategy and any initial state.")
             .def("__repr__", &SED::MLS<SED::Group>::toString);
 
 }

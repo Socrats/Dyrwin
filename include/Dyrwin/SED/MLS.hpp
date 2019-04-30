@@ -60,6 +60,9 @@ namespace EGTTools::SED {
         Vector
         gradientOfSelection(size_t invader, size_t resident, size_t runs, double w);
 
+        Vector
+        gradientOfSelection(size_t invader, const Eigen::Ref<const VectorXui> &init_state, size_t runs, double w);
+
         // To avoid memory explosion, we limit the call to this function for a maximum of 3 strategies
         SparseMatrix2D transitionMatrix(size_t runs, size_t t0, double q, double lambda, double w);
 
@@ -382,9 +385,6 @@ namespace EGTTools::SED {
  * @param invader : index of the invading strategy
  * @param resident : index of the resident strategy
  * @param runs : number of runs (to average the results)
- * @param t0 : transitory period
- * @param q : splitting probability
- * @param lambda : probability of migration
  * @param w : intensity of selection
  * @return : an Eigen vector with the gradient of selection for each k/Z where k is the number of invaders.
  */
@@ -429,6 +429,75 @@ namespace EGTTools::SED {
                 }
                 strategies(resident) = _pop_size - k;
                 strategies(invader) = k;
+            }
+            // Calculate gradient
+            gradient(k) = (static_cast<double>(t_plus) - static_cast<double>(t_minus)) / static_cast<double>(runs);
+        }
+
+        return gradient;
+    }
+
+    /**
+    * @brief calculates the gradient of selection for an invading strategy and any initial state.
+    *
+    * Will return the difference between T+ and T- for each possible population configuration
+    * when the is conformed only by the resident and the invading strategy.
+    *
+    * To estimate T+ - T- (the probability that the number of invaders increase/decrease in the population)
+    * we run the simulation for population with k invaders and Z - k residents for @param run
+    * times and average how many times did the number of invadors increase and decrease.
+    *
+    * @tparam S : group container
+    * @param invader : index of the invading strategy
+    * @param init_state : vector indicating the initial state of the population (how many individuals of each strategy)
+    * @param runs : number of runs (to average the results)
+    * @param w : intensity of selection
+    * @return : an Eigen vector with the gradient of selection for each k/Z where k is the number of invaders.
+    */
+    template<typename S>
+    Vector
+    MLS<S>::gradientOfSelection(size_t invader, const Eigen::Ref<const VectorXui> &init_state, size_t runs, double w) {
+        if (invader > _nb_strategies)
+            throw std::invalid_argument(
+                    "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
+                    ")");
+
+        if (init_state.sum() < _pop_size)
+            throw std::invalid_argument(
+                    "the sum of individuals in the initial state must be equal to " + std::to_string(_pop_size));
+
+        Vector gradient = Vector::Zero(_pop_size + 1);
+
+        // This loop can be done in parallel
+#pragma omp parallel for shared(gradient)
+        for (size_t k = 0; k <= _pop_size; ++k) { // Loops over all population configurations
+            VectorXui strategies = VectorXui::Zero(_nb_strategies);
+            Group group(_nb_strategies, _group_size, w, strategies, _payoff_matrix);
+            group.set_group_size(_group_size);
+            std::vector<Group> groups(_nb_groups, group);
+            std::vector<size_t> pop_container(_pop_size);
+            size_t t_plus = 0; // resident to mutant count
+            size_t t_minus = 0; // resident to resident count
+            // initialize container
+            size_t z = 0;
+            for (size_t i = 0; i < _nb_strategies; ++i) {
+                strategies(i) = init_state(i);
+                for (size_t j = 0; j < strategies(i); ++j) {
+                    pop_container[z++] = i;
+                }
+            }
+
+            // Calculate T+ and T-
+            for (size_t i = 0; i < runs; ++i) {
+                // First we initialize a homogeneous population with the resident strategy
+                _setState(groups, pop_container);
+                _update(0.0, groups, strategies); // no group splitting
+                if (strategies(invader) > k) {
+                    ++t_plus;
+                } else if (strategies(invader) < k) {
+                    ++t_minus;
+                }
+                strategies.array() = init_state;
             }
             // Calculate gradient
             gradient(k) = (static_cast<double>(t_plus) - static_cast<double>(t_minus)) / static_cast<double>(runs);

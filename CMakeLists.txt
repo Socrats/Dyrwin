@@ -86,7 +86,7 @@ endif ()
 ##############################
 ##       Dependencies       ##
 ##############################
-if (MAKE_ALL OR MAKE_DYRWIN OR MAKE_PMORAN OR MAKE_CRD OR MAKE_CRD_UNCERTAINTY)
+if (MAKE_ALL OR MAKE_DYRWIN OR MAKE_PMORAN OR MAKE_CRD OR MAKE_CRD_UNCERTAINTY OR MAKE_CRD_POP OR MAKE_APPS)
     set(BOOST_VERSION_REQUIRED 1.62)
 endif ()
 set(EIGEN_VERSION_REQUIRED 3.3)
