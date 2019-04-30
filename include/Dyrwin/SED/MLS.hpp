@@ -61,7 +61,7 @@ namespace EGTTools::SED {
         gradientOfSelection(size_t invader, size_t resident, size_t runs, double w);
 
         Vector
-        gradientOfSelection(size_t invader, const Eigen::Ref<const VectorXui> &init_state, size_t runs, double w);
+        gradientOfSelection(size_t invader, size_t reduce, const Eigen::Ref<const VectorXui> &init_state, size_t runs, double w);
 
         // To avoid memory explosion, we limit the call to this function for a maximum of 3 strategies
         SparseMatrix2D transitionMatrix(size_t runs, size_t t0, double q, double lambda, double w);
@@ -456,7 +456,7 @@ namespace EGTTools::SED {
     */
     template<typename S>
     Vector
-    MLS<S>::gradientOfSelection(size_t invader, const Eigen::Ref<const VectorXui> &init_state, size_t runs, double w) {
+    MLS<S>::gradientOfSelection(size_t invader, size_t reduce, const Eigen::Ref<const VectorXui> &init_state, size_t runs, double w) {
         if (invader > _nb_strategies)
             throw std::invalid_argument(
                     "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
@@ -470,7 +470,7 @@ namespace EGTTools::SED {
 
         // This loop can be done in parallel
 #pragma omp parallel for shared(gradient)
-        for (size_t k = 0; k <= _pop_size; ++k) { // Loops over all population configurations
+        for (size_t k = 0; k <= init_state(reduce); ++k) { // Loops over all population configurations
             VectorXui strategies = VectorXui::Zero(_nb_strategies);
             Group group(_nb_strategies, _group_size, w, strategies, _payoff_matrix);
             group.set_group_size(_group_size);
@@ -486,6 +486,8 @@ namespace EGTTools::SED {
                     pop_container[z++] = i;
                 }
             }
+            strategies(invader) = k;
+            strategies(reduce) -= k;
 
             // Calculate T+ and T-
             for (size_t i = 0; i < runs; ++i) {
@@ -498,6 +500,8 @@ namespace EGTTools::SED {
                     ++t_minus;
                 }
                 strategies.array() = init_state;
+                strategies(invader) = k;
+                strategies(reduce) -= k;
             }
             // Calculate gradient
             gradient(k) = (static_cast<double>(t_plus) - static_cast<double>(t_minus)) / static_cast<double>(runs);
