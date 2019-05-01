@@ -418,15 +418,6 @@ namespace EGTTools::SED {
                 if (strategies(invader) > k) {
                     ++t_plus;
                 } else if (strategies(invader) < k) {
-                    if (strategies(invader) > 0 && strategies(resident) < _pop_size - k) {
-                        // if the reduction in the resident is bigger than in the invader
-                        if ((static_cast<int64_t >(_pop_size) - static_cast<int64_t >(k) -
-                             static_cast<int64_t >(strategies(resident))) >
-                            (static_cast<int64_t >(k) - static_cast<int64_t >(strategies(invader)))) {
-                            ++t_minus;
-                            continue;
-                        }
-                    }
                     ++t_minus;
                 }
                 strategies(resident) = _pop_size - k;
