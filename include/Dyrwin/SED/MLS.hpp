@@ -11,6 +11,7 @@
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/Types.h>
 #include <Dyrwin/SED/structure/Group.hpp>
+#include <Dyrwin/SED/Utils.hpp>
 
 namespace EGTTools::SED {
     template<typename S = Group>
@@ -211,15 +212,12 @@ namespace EGTTools::SED {
                 size_t group_size, size_t nb_groups, double w,
                 const Eigen::Ref<const EGTTools::Vector> &strategies_freq,
                 const Eigen::Ref<const EGTTools::Matrix2D> &payoff_matrix) : _generations(generations),
-                                                                             _nb_strategies(
-                                                                                     nb_strategies),
+                                                                             _nb_strategies(nb_strategies),
                                                                              _group_size(group_size),
                                                                              _nb_groups(nb_groups),
                                                                              _w(w),
-                                                                             _strategy_freq(
-                                                                                     strategies_freq),
-                                                                             _payoff_matrix(
-                                                                                     payoff_matrix) {
+                                                                             _strategy_freq(strategies_freq),
+                                                                             _payoff_matrix(payoff_matrix) {
         if (static_cast<size_t>(_payoff_matrix.rows() * _payoff_matrix.cols()) != (_nb_strategies * _nb_strategies))
             throw std::invalid_argument(
                     "Payoff matrix has wrong dimensions it must have shape (nb_strategies, nb_strategies)");
@@ -263,6 +261,9 @@ namespace EGTTools::SED {
             throw std::invalid_argument(
                     "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
                     ")");
+        if ((_nb_groups == 1) && q != 0.)
+            throw std::invalid_argument(
+                    "The splitting probability must be zero when there is only 1 group in the population");
 
         size_t r2m = 0; // resident to mutant count
         size_t r2r = 0; // resident to resident count
@@ -325,6 +326,9 @@ namespace EGTTools::SED {
             throw std::invalid_argument(
                     "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
                     ")");
+        if ((_nb_groups == 1) && q != 0.)
+            throw std::invalid_argument(
+                    "The splitting probability must be zero when there is only 1 group in the population");
 
         size_t r2m = 0; // resident to mutant count
         size_t r2r = 0; // resident to resident count
@@ -387,6 +391,10 @@ namespace EGTTools::SED {
             throw std::invalid_argument(
                     "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
                     ")");
+        if ((_nb_groups == 1) && q != 0.)
+            throw std::invalid_argument(
+                    "The splitting probability must be zero when there is only 1 group in the population");
+
 
         Vector gradient = Vector::Zero(_pop_size + 1);
 
@@ -416,9 +424,11 @@ namespace EGTTools::SED {
                 _setState(groups, pop_container);
                 _update(q, groups, strategies);
                 auto sum = static_cast<double>(strategies.sum());
-                if (strategies(invader) / sum > k / static_cast<double>(_pop_size)) {
+                if (static_cast<double>(strategies(invader)) / sum >
+                    static_cast<double>(k) / static_cast<double>(_pop_size)) {
                     ++t_plus;
-                } else if (strategies(invader) / sum < k / static_cast<double>(_pop_size)) {
+                } else if (static_cast<double>(strategies(invader)) / sum <
+                           static_cast<double>(k) / static_cast<double>(_pop_size)) {
                     ++t_minus;
                 }
                 strategies(resident) = _pop_size - k;
@@ -457,6 +467,9 @@ namespace EGTTools::SED {
             throw std::invalid_argument(
                     "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
                     ")");
+        if (_nb_groups == 1 && q > 0.0)
+            throw std::invalid_argument(
+                    "The splitting probability must be zero when there is only 1 group in the population");
 
         if (init_state.sum() != _pop_size)
             throw std::invalid_argument(
@@ -490,9 +503,10 @@ namespace EGTTools::SED {
                 // First we initialize a homogeneous population with the resident strategy
                 _setState(groups, pop_container);
                 _update(q, groups, strategies);
-                if (strategies(invader) > k) {
+                auto sum = static_cast<double>(strategies.sum());
+                if (strategies(invader) / sum > k / static_cast<double>(_pop_size)) {
                     ++t_plus;
-                } else if (strategies(invader) < k) {
+                } else if (strategies(invader) / sum < k / static_cast<double>(_pop_size)) {
                     ++t_minus;
                 }
                 strategies.array() = init_state;
@@ -676,41 +690,33 @@ namespace EGTTools::SED {
         // First choose a group to die
         size_t child_group = _uint_rand(_mt);
         while (child_group == parent_group) child_group = _uint_rand(_mt);
-
         // Now we split the group
         VectorXui &strategies_parent = groups[parent_group].strategies();
         VectorXui &strategies_child = groups[child_group].strategies();
+
         // update strategies with the eliminated strategies from the child group
-        for (size_t i = 0; i < _nb_strategies; ++i)
-            strategies(i) -= strategies_child(i);
+        strategies -= strategies_child;
         strategies_child.setZero();
 
         // vector of binomial distributions for each strategy (this will be used to select the members
         // that go to the child group
         std::binomial_distribution<size_t> binomial(_group_size, 0.5);
-//    std::vector<std::binomial_distribution<size_t>> binomials;
-//    binomials.reserve(_nb_strategies);
-//    for (size_t i = 0; i < _nb_strategies; ++i)
-//        binomials.emplace_back(strategies_parent(i), 0.5);
-
-        size_t sum = strategies_child.sum();
+        size_t sum = 0;
         while ((sum == 0) || (sum == groups[parent_group].group_size())) {
+            sum = 0;
             for (size_t i = 0; i < _nb_strategies; ++i) {
                 if (strategies_parent(i) > 0) {
                     binomial.param(std::binomial_distribution<size_t>::param_type(strategies_parent(i), 0.5));
                     strategies_child(i) = binomial(_mt);
+                    sum += strategies_child(i);
                 }
             }
-            sum = strategies_child.sum();
         }
-
         // reset group size
         groups[child_group].set_group_size(sum);
         groups[parent_group].set_group_size(groups[parent_group].group_size() - sum);
         // reset parent group strategies
-        for (size_t i = 0; i < _nb_strategies; ++i)
-            if (strategies_child(i) > 0) strategies_parent(i) = strategies_parent(i) - strategies_child(i);
-
+        strategies_parent -= strategies_child;
     }
 
 /**
