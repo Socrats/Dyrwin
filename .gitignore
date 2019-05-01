@@ -25,6 +25,7 @@
 *.lo
 
 # Shared objects (inc. Windows DLLs)
+# C extensions
 *.dll
 *.so
 *.so.*
@@ -68,9 +69,6 @@ dkms.conf
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
-*.so
 
 # Distribution / packaging
 .Python
@@ -163,4 +161,3 @@ ENV/
 .idea/workspace.xml
 cmake-build-debug/
 cmake-build-release/
-python/

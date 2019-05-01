@@ -86,7 +86,7 @@ endif ()
 ##############################
 ##       Dependencies       ##
 ##############################
-if (MAKE_ALL OR MAKE_DYRWIN OR MAKE_PMORAN OR MAKE_CRD OR MAKE_CRD_UNCERTAINTY)
+if (MAKE_ALL OR MAKE_DYRWIN OR MAKE_PMORAN OR MAKE_CRD OR MAKE_CRD_UNCERTAINTY OR MAKE_CRD_POP OR MAKE_APPS)
     set(BOOST_VERSION_REQUIRED 1.62)
 endif ()
 set(EIGEN_VERSION_REQUIRED 3.3)
@@ -126,7 +126,7 @@ endif ()
 if (MAKE_PYTHON)
     # Wrappers -- if unused macros will skip them
     set(PYTHON_FILES
-            src/SED/EGTtoolsWrapper.cpp
+            src/python/EGTtoolsWrapper.cpp
             )
     add_subdirectory(pybind11)
     pybind11_add_module(EGTtools SHARED ${PYTHON_FILES})
