@@ -189,7 +189,7 @@ namespace EGTTools::SED {
 
         void _mutate(std::vector<S> &groups, VectorXui &strategies);
 
-        void _splitGroup(size_t parent_group, std::vector<S> &groups);
+        void _splitGroup(size_t parent_group, std::vector<S> &groups, VectorXui &strategies);
 
         size_t _payoffProportionalSelection(std::vector<S> &groups);
 
@@ -594,7 +594,7 @@ namespace EGTTools::SED {
         auto parent_group = _payoffProportionalSelection(groups);
         auto[split, new_strategy] = groups[parent_group].createOffspring(_mt);
         ++strategies(new_strategy);
-        _splitGroup(parent_group, groups);
+        _splitGroup(parent_group, groups, strategies);
     }
 
 /**
@@ -614,7 +614,7 @@ namespace EGTTools::SED {
         ++strategies(new_strategy);
         if (split) {
             if (_real_rand(_mt) < q) { // split group
-                _splitGroup(parent_group, groups);
+                _splitGroup(parent_group, groups, strategies);
             } else { // remove individual
                 size_t deleted_strategy = groups[parent_group].deleteMember(_mt);
                 --strategies(deleted_strategy);
@@ -640,7 +640,7 @@ namespace EGTTools::SED {
         migrating_strategy = groups[parent_group].deleteMember(_mt);
         // Then add the member to the child group
         if (groups[child_group].addMember(migrating_strategy)) {
-            if (_real_rand(_mt) < q) _splitGroup(child_group, groups);
+            if (_real_rand(_mt) < q) _splitGroup(child_group, groups, strategies);
             else { // in case we delete a random member, that strategy will diminish in the population
                 migrating_strategy = groups[child_group].deleteMember(_mt);
                 --strategies(migrating_strategy);
@@ -680,7 +680,7 @@ namespace EGTTools::SED {
  * @param groups : reference to a vector of groups
  */
     template<typename S>
-    void MLS<S>::_splitGroup(size_t parent_group, std::vector<S> &groups) {
+    void MLS<S>::_splitGroup(size_t parent_group, std::vector<S> &groups, VectorXui &strategies) {
         // First choose a group to die
         size_t child_group = _uint_rand(_mt);
         while (child_group == parent_group) child_group = _uint_rand(_mt);
@@ -688,6 +688,9 @@ namespace EGTTools::SED {
         // Now we split the group
         VectorXui &strategies_parent = groups[parent_group].strategies();
         VectorXui &strategies_child = groups[child_group].strategies();
+        // update strategies with the eliminated strategies from the child group
+        for (size_t i = 0; i < _nb_strategies; ++i)
+            strategies(i) -= strategies_child(i);
         strategies_child.setZero();
 
         // vector of binomial distributions for each strategy (this will be used to select the members
