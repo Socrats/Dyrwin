@@ -392,7 +392,7 @@ namespace EGTTools::SED {
 
         // This loop can be done in parallel
 #pragma omp parallel for shared(gradient)
-        for (size_t k = 0; k <= _pop_size; ++k) { // Loops over all population configurations
+        for (size_t k = 1; k < _pop_size; ++k) { // Loops over all population configurations
             VectorXui strategies = VectorXui::Zero(_nb_strategies);
             Group group(_nb_strategies, _group_size, w, strategies, _payoff_matrix);
             group.set_group_size(_group_size);
@@ -414,13 +414,19 @@ namespace EGTTools::SED {
             for (size_t i = 0; i < runs; ++i) {
                 // First we initialize a homogeneous population with the resident strategy
                 _setState(groups, pop_container);
-                _update(q, groups, strategies); // no group splitting
-                auto sum = static_cast<double>(strategies.sum());
-                double prop_invader_now = strategies(invader) / sum;
-                double prop_invader_before = k / _pop_size;
-                if (prop_invader_now > prop_invader_before) {
+                _update(q, groups, strategies);
+                if (strategies(invader) > k) {
                     ++t_plus;
-                } else if (prop_invader_now < prop_invader_before) {
+                } else if (strategies(invader) < k) {
+                    if (strategies(invader) > 0 && strategies(resident) < _pop_size - k) {
+                        // if the reduction in the resident is bigger than in the invader
+                        if ((static_cast<int64_t >(_pop_size) - static_cast<int64_t >(k) -
+                             static_cast<int64_t >(strategies(resident))) >
+                            (static_cast<int64_t >(k) - static_cast<int64_t >(strategies(invader)))) {
+                            ++t_minus;
+                            continue;
+                        }
+                    }
                     ++t_minus;
                 }
                 strategies(resident) = _pop_size - k;
@@ -491,13 +497,10 @@ namespace EGTTools::SED {
             for (size_t i = 0; i < runs; ++i) {
                 // First we initialize a homogeneous population with the resident strategy
                 _setState(groups, pop_container);
-                _update(q, groups, strategies); // no group splitting
-                auto sum = static_cast<double>(strategies.sum());
-                double prop_invader_now = strategies(invader) / sum;
-                double prop_invader_before = k / _pop_size;
-                if (prop_invader_now > prop_invader_before) {
+                _update(q, groups, strategies);
+                if (strategies(invader) > k) {
                     ++t_plus;
-                } else if (prop_invader_now < prop_invader_before) {
+                } else if (strategies(invader) < k) {
                     ++t_minus;
                 }
                 strategies.array() = init_state;
