@@ -126,7 +126,7 @@ endif ()
 if (MAKE_PYTHON)
     # Wrappers -- if unused macros will skip them
     set(PYTHON_FILES
-            src/SED/EGTtoolsWrapper.cpp
+            src/python/EGTtoolsWrapper.cpp
             )
     add_subdirectory(pybind11)
     pybind11_add_module(EGTtools SHARED ${PYTHON_FILES})

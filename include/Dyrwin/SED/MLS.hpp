@@ -54,20 +54,21 @@ namespace EGTTools::SED {
         double fixationProbability(size_t invader, size_t resident, size_t runs,
                                    double q, double lambda, double w);
 
-        double fixationProbability(size_t invader, size_t resident, size_t runs,
-                                   size_t t0, double q, double lambda, double w, double mu);
+//        double fixationProbability(size_t invader, size_t resident, size_t runs,
+//                                   size_t t0, double q, double lambda, double w, double mu);
 
         Vector
-        gradientOfSelection(size_t invader, size_t resident, size_t runs, double w);
+        gradientOfSelection(size_t invader, size_t resident, size_t runs, double w, double q = 0.0);
 
         Vector
-        gradientOfSelection(size_t invader, size_t reduce, const Eigen::Ref<const VectorXui> &init_state, size_t runs, double w);
+        gradientOfSelection(size_t invader, size_t reduce, const Eigen::Ref<const VectorXui> &init_state, size_t runs,
+                            double w, double q = 0.0);
 
         // To avoid memory explosion, we limit the call to this function for a maximum of 3 strategies
-        SparseMatrix2D transitionMatrix(size_t runs, size_t t0, double q, double lambda, double w);
-
-        SparseMatrix2D
-        transitionMatrix(size_t invader, size_t resident, size_t runs, size_t t0, double q, double lambda, double w);
+//        SparseMatrix2D transitionMatrix(size_t runs, size_t t0, double q, double lambda, double w);
+//
+//        SparseMatrix2D
+//        transitionMatrix(size_t invader, size_t resident, size_t runs, size_t t0, double q, double lambda, double w);
 
 
         // Getters
@@ -207,18 +208,18 @@ namespace EGTTools::SED {
 
     template<typename S>
     MLS<S>::MLS(size_t generations, size_t nb_strategies,
-                               size_t group_size, size_t nb_groups, double w,
-                               const Eigen::Ref<const EGTTools::Vector> &strategies_freq,
-                               const Eigen::Ref<const EGTTools::Matrix2D> &payoff_matrix) : _generations(generations),
-                                                                                            _nb_strategies(
-                                                                                                    nb_strategies),
-                                                                                            _group_size(group_size),
-                                                                                            _nb_groups(nb_groups),
-                                                                                            _w(w),
-                                                                                            _strategy_freq(
-                                                                                                    strategies_freq),
-                                                                                            _payoff_matrix(
-                                                                                                    payoff_matrix) {
+                size_t group_size, size_t nb_groups, double w,
+                const Eigen::Ref<const EGTTools::Vector> &strategies_freq,
+                const Eigen::Ref<const EGTTools::Matrix2D> &payoff_matrix) : _generations(generations),
+                                                                             _nb_strategies(
+                                                                                     nb_strategies),
+                                                                             _group_size(group_size),
+                                                                             _nb_groups(nb_groups),
+                                                                             _w(w),
+                                                                             _strategy_freq(
+                                                                                     strategies_freq),
+                                                                             _payoff_matrix(
+                                                                                     payoff_matrix) {
         if (static_cast<size_t>(_payoff_matrix.rows() * _payoff_matrix.cols()) != (_nb_strategies * _nb_strategies))
             throw std::invalid_argument(
                     "Payoff matrix has wrong dimensions it must have shape (nb_strategies, nb_strategies)");
@@ -261,7 +262,6 @@ namespace EGTTools::SED {
  * @param invader : index of the invading strategy
  * @param resident : index of the resident strategy
  * @param runs : number of runs (used to average the number of times the invading strategy has fixated)
- * @param t0 : transient period (number of generations considered transient)
  * @param q : splitting probability
  * @param w : intensity of selection
  * @return a real number (double) indicating the fixation probability
@@ -271,7 +271,8 @@ namespace EGTTools::SED {
     MLS<S>::fixationProbability(size_t invader, size_t resident, size_t runs, double q, double w) {
         if (invader > _nb_strategies || resident > _nb_strategies)
             throw std::invalid_argument(
-                    "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) + ")");
+                    "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
+                    ")");
 
         size_t r2m = 0; // resident to mutant count
         size_t r2r = 0; // resident to resident count
@@ -321,7 +322,6 @@ namespace EGTTools::SED {
  * @param invader : index of the invading strategy
  * @param resident : index of the resident strategy
  * @param runs : number of runs (used to average the number of times the invading strategy has fixated)
- * @param t0 : transient period (number of generations considered transient)
  * @param q : splitting probability
  * @param lambda : migration probability
  * @param w : intensity of selection
@@ -330,10 +330,11 @@ namespace EGTTools::SED {
     template<typename S>
     double
     MLS<S>::fixationProbability(size_t invader, size_t resident, size_t runs,
-                                               double q, double lambda, double w) {
+                                double q, double lambda, double w) {
         if (invader > _nb_strategies || resident > _nb_strategies)
             throw std::invalid_argument(
-                    "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) + ")");
+                    "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
+                    ")");
 
         size_t r2m = 0; // resident to mutant count
         size_t r2r = 0; // resident to resident count
@@ -386,14 +387,16 @@ namespace EGTTools::SED {
  * @param resident : index of the resident strategy
  * @param runs : number of runs (to average the results)
  * @param w : intensity of selection
+ * @param q : splitting probability
  * @return : an Eigen vector with the gradient of selection for each k/Z where k is the number of invaders.
  */
     template<typename S>
     Vector
-    MLS<S>::gradientOfSelection(size_t invader, size_t resident, size_t runs, double w) {
+    MLS<S>::gradientOfSelection(size_t invader, size_t resident, size_t runs, double w, double q) {
         if (invader > _nb_strategies || resident > _nb_strategies)
             throw std::invalid_argument(
-                    "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) + ")");
+                    "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
+                    ")");
 
         Vector gradient = Vector::Zero(_pop_size + 1);
 
@@ -421,7 +424,7 @@ namespace EGTTools::SED {
             for (size_t i = 0; i < runs; ++i) {
                 // First we initialize a homogeneous population with the resident strategy
                 _setState(groups, pop_container);
-                _update(0.0, groups, strategies); // no group splitting
+                _update(q, groups, strategies); // no group splitting
                 if (strategies(invader) > k) {
                     ++t_plus;
                 } else if (strategies(invader) < k) {
@@ -452,11 +455,13 @@ namespace EGTTools::SED {
     * @param init_state : vector indicating the initial state of the population (how many individuals of each strategy)
     * @param runs : number of runs (to average the results)
     * @param w : intensity of selection
+    * @param q : splitting probability
     * @return : an Eigen vector with the gradient of selection for each k/Z where k is the number of invaders.
     */
     template<typename S>
     Vector
-    MLS<S>::gradientOfSelection(size_t invader, size_t reduce, const Eigen::Ref<const VectorXui> &init_state, size_t runs, double w) {
+    MLS<S>::gradientOfSelection(size_t invader, size_t reduce, const Eigen::Ref<const VectorXui> &init_state,
+                                size_t runs, double w, double q) {
         if (invader > _nb_strategies)
             throw std::invalid_argument(
                     "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
@@ -493,7 +498,7 @@ namespace EGTTools::SED {
             for (size_t i = 0; i < runs; ++i) {
                 // First we initialize a homogeneous population with the resident strategy
                 _setState(groups, pop_container);
-                _update(0.0, groups, strategies); // no group splitting
+                _update(q, groups, strategies); // no group splitting
                 if (strategies(invader) > k) {
                     ++t_plus;
                 } else if (strategies(invader) < k) {
@@ -509,18 +514,6 @@ namespace EGTTools::SED {
 
         return gradient;
     }
-
-//template<typename S>
-//SparseMatrix2D SED::MLS<S>::transitionMatrix(size_t runs, size_t t0, double q, double lambda, double w) {
-//    return EGTTools::SparseMatrix2D();
-//}
-//
-//template<typename S>
-//SparseMatrix2D
-//SED::MLS<S>::transitionMatrix(size_t invader, size_t resident, size_t runs, size_t t0, double q, double lambda,
-//                              double w) {
-//    return EGTTools::SparseMatrix2D();
-//}
 
     template<typename S>
     void MLS<S>::_update(double q, std::vector<S> &groups, VectorXui &strategies) {
@@ -564,10 +557,11 @@ namespace EGTTools::SED {
     template<typename S>
     void
     MLS<S>::_speedUpdate(double q, double lambda, double mu, std::vector<S> &groups,
-                                        VectorXui &strategies) {
+                         VectorXui &strategies) {
         if (!_pseudoStationary(groups)) {
             _reproduce(groups, strategies, q);
             if (_real_rand(_mt) < lambda) _migrate(q, groups, strategies);
+            if (_real_rand(_mt) < mu) _mutate(groups, strategies);
         } else { // If the groups have reached maximum size and the population is monomorphic
             double p = _real_rand(_mt) * (q + lambda + mu);
             if (p <= q) _reproduce(groups, strategies);
@@ -584,7 +578,7 @@ namespace EGTTools::SED {
 
     template<typename S>
     void MLS<S>::_updateFullPopulationFrequencies(size_t increase, size_t decrease,
-                                                                 EGTTools::VectorXui &strategies) {
+                                                  EGTTools::VectorXui &strategies) {
         ++strategies(increase);
         --strategies(decrease);
     }
