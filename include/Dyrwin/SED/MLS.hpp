@@ -44,9 +44,9 @@ namespace EGTTools::SED {
         MLS(size_t generations, size_t nb_strategies, size_t group_size, size_t nb_groups, double w,
             const Eigen::Ref<const Vector> &strategies_freq, const Eigen::Ref<const Matrix2D> &payoff_matrix);
 
-        Vector evolve(double w);
-
-        Vector evolve(size_t runs, double w);
+//        Vector evolve(double w);
+//
+//        Vector evolve(size_t runs, double w);
 
         double fixationProbability(size_t invader, size_t resident, size_t runs,
                                    double q, double w);
@@ -240,16 +240,6 @@ namespace EGTTools::SED {
         _real_rand = std::uniform_real_distribution<double>(0.0, 1.0);
     }
 
-//template<typename S>
-//Vector SED::MLS<S>::evolve(double w) {
-//    return EGTTools::Vector();
-//}
-//
-//template<typename S>
-//Vector SED::MLS<S>::evolve(size_t runs, double w) {
-//    return EGTTools::Vector();
-//}
-
 /**
  * @brief estimates the fixation probability of the invading strategy over the resident strategy.
  *
@@ -425,9 +415,12 @@ namespace EGTTools::SED {
                 // First we initialize a homogeneous population with the resident strategy
                 _setState(groups, pop_container);
                 _update(q, groups, strategies); // no group splitting
-                if (strategies(invader) > k) {
+                auto sum = static_cast<double>(strategies.sum());
+                double prop_invader_now = strategies(invader) / sum;
+                double prop_invader_before = k / sum;
+                if (prop_invader_now > prop_invader_before) {
                     ++t_plus;
-                } else if (strategies(invader) < k) {
+                } else if (prop_invader_now < prop_invader_before) {
                     ++t_minus;
                 }
                 strategies(resident) = _pop_size - k;
@@ -499,9 +492,12 @@ namespace EGTTools::SED {
                 // First we initialize a homogeneous population with the resident strategy
                 _setState(groups, pop_container);
                 _update(q, groups, strategies); // no group splitting
-                if (strategies(invader) > k) {
+                auto sum = static_cast<double>(strategies.sum());
+                double prop_invader_now = strategies(invader) / sum;
+                double prop_invader_before = k / sum;
+                if (prop_invader_now > prop_invader_before) {
                     ++t_plus;
-                } else if (strategies(invader) < k) {
+                } else if (prop_invader_now < prop_invader_before) {
                     ++t_minus;
                 }
                 strategies.array() = init_state;
