@@ -701,8 +701,10 @@ namespace EGTTools::SED {
         size_t sum = strategies_child.sum();
         while ((sum == 0) || (sum == groups[parent_group].group_size())) {
             for (size_t i = 0; i < _nb_strategies; ++i) {
-                binomial.param(std::binomial_distribution<size_t>::param_type(strategies_parent(i), 0.5));
-                strategies_child(i) = binomial(_mt);
+                if (strategies_parent(i) > 0) {
+                    binomial.param(std::binomial_distribution<size_t>::param_type(strategies_parent(i), 0.5));
+                    strategies_child(i) = binomial(_mt);
+                }
             }
             sum = strategies_child.sum();
         }
@@ -712,7 +714,7 @@ namespace EGTTools::SED {
         groups[parent_group].set_group_size(groups[parent_group].group_size() - sum);
         // reset parent group strategies
         for (size_t i = 0; i < _nb_strategies; ++i)
-            strategies_parent(i) = strategies_parent(i) - strategies_child(i);
+            if (strategies_child(i) > 0) strategies_parent(i) = strategies_parent(i) - strategies_child(i);
 
     }
 
