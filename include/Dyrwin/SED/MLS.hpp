@@ -417,7 +417,7 @@ namespace EGTTools::SED {
                 _update(q, groups, strategies); // no group splitting
                 auto sum = static_cast<double>(strategies.sum());
                 double prop_invader_now = strategies(invader) / sum;
-                double prop_invader_before = k / sum;
+                double prop_invader_before = k / _pop_size;
                 if (prop_invader_now > prop_invader_before) {
                     ++t_plus;
                 } else if (prop_invader_now < prop_invader_before) {
@@ -494,7 +494,7 @@ namespace EGTTools::SED {
                 _update(q, groups, strategies); // no group splitting
                 auto sum = static_cast<double>(strategies.sum());
                 double prop_invader_now = strategies(invader) / sum;
-                double prop_invader_before = k / sum;
+                double prop_invader_before = k / _pop_size;
                 if (prop_invader_now > prop_invader_before) {
                     ++t_plus;
                 } else if (prop_invader_now < prop_invader_before) {
