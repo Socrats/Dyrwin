@@ -415,9 +415,10 @@ namespace EGTTools::SED {
                 // First we initialize a homogeneous population with the resident strategy
                 _setState(groups, pop_container);
                 _update(q, groups, strategies);
-                if (strategies(invader) > k) {
+                auto sum = static_cast<double>(strategies.sum());
+                if (strategies(invader) / sum > k / static_cast<double>(_pop_size)) {
                     ++t_plus;
-                } else if (strategies(invader) < k) {
+                } else if (strategies(invader) / sum < k / static_cast<double>(_pop_size)) {
                     ++t_minus;
                 }
                 strategies(resident) = _pop_size - k;
