@@ -399,7 +399,7 @@ namespace EGTTools::SED {
         Vector gradient = Vector::Zero(_pop_size + 1);
 
         // This loop can be done in parallel
-//#pragma omp parallel for shared(gradient)
+#pragma omp parallel for shared(gradient)
         for (size_t k = 1; k < _pop_size; ++k) { // Loops over all population configurations
             VectorXui strategies = VectorXui::Zero(_nb_strategies);
             Group group(_nb_strategies, _group_size, w, strategies, _payoff_matrix);
