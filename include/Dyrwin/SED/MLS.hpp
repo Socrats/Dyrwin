@@ -55,6 +55,9 @@ namespace EGTTools::SED {
         double fixationProbability(size_t invader, size_t resident, size_t runs,
                                    double q, double lambda, double w);
 
+        Vector fixationProbability(size_t invader, const Eigen::Ref<const VectorXui> &init_state, size_t runs,
+                                   double q, double w);
+
 //        double fixationProbability(size_t invader, size_t resident, size_t runs,
 //                                   size_t t0, double q, double lambda, double w, double mu);
 
@@ -181,6 +184,8 @@ namespace EGTTools::SED {
         inline void _speedUpdate(double q, double lambda, double mu, std::vector<S> &groups, VectorXui &strategies);
 
         inline void _createMutant(size_t invader, size_t resident, std::vector<S> &groups);
+
+        inline void _createRandomMutant(size_t invader, std::vector<S> &groups, VectorXui &strategies);
 
         inline void _updateFullPopulationFrequencies(size_t increase, size_t decrease, VectorXui &strategies);
 
@@ -366,6 +371,80 @@ namespace EGTTools::SED {
         } // end runs loop
 
         return static_cast<double>(r2m) / static_cast<double>(r2m + r2r);
+    }
+
+    /**
+     * @brief estimates the fixation probability of the invading strategy over the resident strategy.
+    *
+     * This function will estimate numerically (by running simulations) the fixation probability of
+     * a certain strategy in the population of 1 resident strategy.
+     *
+     * This implementation specializes on the EGTTools::SED::Group class
+     * @tparam S : container for the structure of the population (group)
+     * @param invader : index of the invading strategy
+     * @param init_state : vector containing the initial state of the population (number of individuals of each strategy)
+     * @param runs : number of runs (used to average the number of times the invading strategy has fixated)
+     * @param q : splitting probability
+     * @param w : intensity of selection
+     * @return a vector of doubles indicating the probability that each strategy fixates from the initial state
+     */
+    template<typename S>
+    Vector MLS<S>::fixationProbability(size_t invader, const Eigen::Ref<const VectorXui> &init_state, size_t runs,
+                                       double q, double w) {
+        if (invader > _nb_strategies)
+            throw std::invalid_argument(
+                    "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
+                    ")");
+        if ((_nb_groups == 1) && q != 0.)
+            throw std::invalid_argument(
+                    "The splitting probability must be zero when there is only 1 group in the population");
+        if (init_state.size() != _nb_strategies)
+            throw std::invalid_argument(
+                    "you must specify the number of individuals of each " + std::to_string(_nb_strategies) +
+                    " strategies");
+        if (init_state.sum() != _pop_size)
+            throw std::invalid_argument(
+                    "the sum of individuals in the initial state must be equal to " + std::to_string(_pop_size));
+
+        Vector fixations = Vector::Zero(_nb_strategies);
+
+        // Initialize population with initial state
+        VectorXui group_strategies = VectorXui::Zero(_nb_strategies);
+        Group group(_nb_strategies, _group_size, w, group_strategies, _payoff_matrix);
+        group.set_group_size(_group_size);
+        std::vector<size_t> pop_container(_pop_size);
+        // initialize container
+        size_t z = 0;
+        for (size_t i = 0; i < _nb_strategies; ++i) {
+            for (size_t j = 0; j < init_state(i); ++j) {
+                pop_container[z++] = i;
+            }
+        }
+
+        // This loop can be done in parallel
+#pragma omp parallel for shared(fixations)
+        for (size_t i = 0; i < runs; ++i) {
+            // First we initialize a homogeneous population with the resident strategy
+            std::vector<Group> groups(_nb_groups, group);
+            VectorXui strategies = init_state;
+            _setState(groups, pop_container);
+
+            // Then we create a mutant of the invading strategy
+            _createRandomMutant(invader, groups, strategies);
+
+            // Then we run the Moran Process
+            for (size_t t = 0; t < _generations; ++t) {
+                _speedUpdate(q, groups, strategies);
+                size_t sum = strategies.sum();
+                for (size_t s = 0; s < _nb_strategies; ++s)
+                    if (strategies(s) == sum) {
+                        fixations(s) += 1;
+                        break;
+                    }
+            } // end Moran process loop
+        } // end runs loop
+
+        return fixations / fixations.sum();
     }
 
 /**
@@ -577,6 +656,25 @@ namespace EGTTools::SED {
     void MLS<S>::_createMutant(size_t invader, size_t resident, std::vector<S> &groups) {
         auto mutate_group = _uint_rand(_mt);
         groups[mutate_group].createMutant(invader, resident);
+    }
+
+    /**
+     * @brief Adds a mutant of strategy invader to the population
+     *
+     * Eliminates a randmo strategy from the population and adds a mutant of strategy invader.
+     *
+     * @tparam S : container for population structur
+     * @param invader : index of the invader strategy
+     * @param groups : vector of groups
+     * @param strategies : vector of strategies
+     */
+    template<typename S>
+    void MLS<S>::_createRandomMutant(size_t invader, std::vector<S> &groups, EGTTools::VectorXui &strategies) {
+        auto mutate_group = _uint_rand(_mt);
+        size_t mutating_strategy = groups[mutate_group].deleteMember(_mt);
+        groups[mutate_group].addMember(invader);
+        --strategies(mutating_strategy);
+        ++strategies(invader);
     }
 
     template<typename S>
@@ -806,6 +904,16 @@ namespace EGTTools::SED {
         return size;
     }
 
+    /**
+     * @brief Sets randomly the state of the population given a vector which contains the strategie sin the population.
+     *
+     * This method shuffles a vector containing the population of strategies and then assigns each _group_size
+     * of strategies to a group.
+     *
+     * @tparam S : container for the groups
+     * @param groups : vector of groups
+     * @param container : vector of strategies
+     */
     template<typename S>
     void MLS<S>::_setState(std::vector<S> &groups, std::vector<size_t> &container) {
         // Then we shuffle it randomly the contianer
