@@ -11,6 +11,7 @@
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/Types.h>
 #include <Dyrwin/SED/structure/Group.hpp>
+#include <Dyrwin/SED/Utils.hpp>
 
 namespace EGTTools::SED {
     template<typename S = Group>
@@ -104,6 +105,7 @@ namespace EGTTools::SED {
 
         void set_nb_groups(size_t nb_groups) {
             _nb_groups = nb_groups;
+            _uint_rand.param(std::uniform_int_distribution<size_t>::param_type(0, _nb_groups - 1));
             _pop_size = _nb_groups * _group_size;
         }
 
@@ -133,6 +135,7 @@ namespace EGTTools::SED {
             if (payoff_matrix.rows() != payoff_matrix.cols())
                 throw std::invalid_argument("Payoff matrix must be a square Matrix (n,n)");
             _nb_strategies = payoff_matrix.rows();
+            _uint_rand_strategy.param(std::uniform_int_distribution<size_t>::param_type(0, _nb_strategies - 1));
             _payoff_matrix.array() = payoff_matrix;
         }
 
@@ -189,7 +192,7 @@ namespace EGTTools::SED {
 
         void _mutate(std::vector<S> &groups, VectorXui &strategies);
 
-        void _splitGroup(size_t parent_group, std::vector<S> &groups);
+        void _splitGroup(size_t parent_group, std::vector<S> &groups, VectorXui &strategies);
 
         size_t _payoffProportionalSelection(std::vector<S> &groups);
 
@@ -211,15 +214,12 @@ namespace EGTTools::SED {
                 size_t group_size, size_t nb_groups, double w,
                 const Eigen::Ref<const EGTTools::Vector> &strategies_freq,
                 const Eigen::Ref<const EGTTools::Matrix2D> &payoff_matrix) : _generations(generations),
-                                                                             _nb_strategies(
-                                                                                     nb_strategies),
+                                                                             _nb_strategies(nb_strategies),
                                                                              _group_size(group_size),
                                                                              _nb_groups(nb_groups),
                                                                              _w(w),
-                                                                             _strategy_freq(
-                                                                                     strategies_freq),
-                                                                             _payoff_matrix(
-                                                                                     payoff_matrix) {
+                                                                             _strategy_freq(strategies_freq),
+                                                                             _payoff_matrix(payoff_matrix) {
         if (static_cast<size_t>(_payoff_matrix.rows() * _payoff_matrix.cols()) != (_nb_strategies * _nb_strategies))
             throw std::invalid_argument(
                     "Payoff matrix has wrong dimensions it must have shape (nb_strategies, nb_strategies)");
@@ -263,6 +263,9 @@ namespace EGTTools::SED {
             throw std::invalid_argument(
                     "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
                     ")");
+        if ((_nb_groups == 1) && q != 0.)
+            throw std::invalid_argument(
+                    "The splitting probability must be zero when there is only 1 group in the population");
 
         size_t r2m = 0; // resident to mutant count
         size_t r2r = 0; // resident to resident count
@@ -325,6 +328,9 @@ namespace EGTTools::SED {
             throw std::invalid_argument(
                     "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
                     ")");
+        if ((_nb_groups == 1) && q != 0.)
+            throw std::invalid_argument(
+                    "The splitting probability must be zero when there is only 1 group in the population");
 
         size_t r2m = 0; // resident to mutant count
         size_t r2r = 0; // resident to resident count
@@ -387,6 +393,10 @@ namespace EGTTools::SED {
             throw std::invalid_argument(
                     "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
                     ")");
+        if ((_nb_groups == 1) && q != 0.)
+            throw std::invalid_argument(
+                    "The splitting probability must be zero when there is only 1 group in the population");
+
 
         Vector gradient = Vector::Zero(_pop_size + 1);
 
@@ -403,30 +413,20 @@ namespace EGTTools::SED {
             strategies(resident) = _pop_size - k;
             strategies(invader) = k;
             // initialize container
-            size_t z = 0;
-            for (size_t i = 0; i < _nb_strategies; ++i) {
-                for (size_t j = 0; j < strategies(i); ++j) {
-                    pop_container[z++] = i;
-                }
-            }
+            for (size_t i = 0; i < k; ++i) pop_container[i] = invader;
+            for (size_t i = k; i < _pop_size; ++i) pop_container[i] = resident;
 
             // Calculate T+ and T-
             for (size_t i = 0; i < runs; ++i) {
                 // First we initialize a homogeneous population with the resident strategy
                 _setState(groups, pop_container);
                 _update(q, groups, strategies);
-                if (strategies(invader) > k) {
+                auto sum = static_cast<double>(strategies(invader) + strategies(resident));
+                if (static_cast<double>(strategies(invader)) / sum >
+                    static_cast<double>(k) / static_cast<double>(_pop_size)) {
                     ++t_plus;
-                } else if (strategies(invader) < k) {
-                    if (strategies(invader) > 0 && strategies(resident) < _pop_size - k) {
-                        // if the reduction in the resident is bigger than in the invader
-                        if ((static_cast<int64_t >(_pop_size) - static_cast<int64_t >(k) -
-                             static_cast<int64_t >(strategies(resident))) >
-                            (static_cast<int64_t >(k) - static_cast<int64_t >(strategies(invader)))) {
-                            ++t_minus;
-                            continue;
-                        }
-                    }
+                } else if (static_cast<double>(strategies(invader)) / sum <
+                           static_cast<double>(k) / static_cast<double>(_pop_size)) {
                     ++t_minus;
                 }
                 strategies(resident) = _pop_size - k;
@@ -465,6 +465,9 @@ namespace EGTTools::SED {
             throw std::invalid_argument(
                     "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
                     ")");
+        if (_nb_groups == 1 && q > 0.0)
+            throw std::invalid_argument(
+                    "The splitting probability must be zero when there is only 1 group in the population");
 
         if (init_state.sum() != _pop_size)
             throw std::invalid_argument(
@@ -498,9 +501,10 @@ namespace EGTTools::SED {
                 // First we initialize a homogeneous population with the resident strategy
                 _setState(groups, pop_container);
                 _update(q, groups, strategies);
-                if (strategies(invader) > k) {
+                auto sum = static_cast<double>(strategies.sum());
+                if (strategies(invader) / sum > k / static_cast<double>(_pop_size)) {
                     ++t_plus;
-                } else if (strategies(invader) < k) {
+                } else if (strategies(invader) / sum < k / static_cast<double>(_pop_size)) {
                     ++t_minus;
                 }
                 strategies.array() = init_state;
@@ -594,7 +598,7 @@ namespace EGTTools::SED {
         auto parent_group = _payoffProportionalSelection(groups);
         auto[split, new_strategy] = groups[parent_group].createOffspring(_mt);
         ++strategies(new_strategy);
-        _splitGroup(parent_group, groups);
+        _splitGroup(parent_group, groups, strategies);
     }
 
 /**
@@ -614,7 +618,7 @@ namespace EGTTools::SED {
         ++strategies(new_strategy);
         if (split) {
             if (_real_rand(_mt) < q) { // split group
-                _splitGroup(parent_group, groups);
+                _splitGroup(parent_group, groups, strategies);
             } else { // remove individual
                 size_t deleted_strategy = groups[parent_group].deleteMember(_mt);
                 --strategies(deleted_strategy);
@@ -640,7 +644,7 @@ namespace EGTTools::SED {
         migrating_strategy = groups[parent_group].deleteMember(_mt);
         // Then add the member to the child group
         if (groups[child_group].addMember(migrating_strategy)) {
-            if (_real_rand(_mt) < q) _splitGroup(child_group, groups);
+            if (_real_rand(_mt) < q) _splitGroup(child_group, groups, strategies);
             else { // in case we delete a random member, that strategy will diminish in the population
                 migrating_strategy = groups[child_group].deleteMember(_mt);
                 --strategies(migrating_strategy);
@@ -680,40 +684,36 @@ namespace EGTTools::SED {
  * @param groups : reference to a vector of groups
  */
     template<typename S>
-    void MLS<S>::_splitGroup(size_t parent_group, std::vector<S> &groups) {
+    void MLS<S>::_splitGroup(size_t parent_group, std::vector<S> &groups, VectorXui &strategies) {
         // First choose a group to die
         size_t child_group = _uint_rand(_mt);
         while (child_group == parent_group) child_group = _uint_rand(_mt);
-
         // Now we split the group
         VectorXui &strategies_parent = groups[parent_group].strategies();
         VectorXui &strategies_child = groups[child_group].strategies();
-        strategies_child.setZero();
 
+        // update strategies with the eliminated strategies from the child group
+        strategies -= strategies_child;
+        strategies_child.setZero();
         // vector of binomial distributions for each strategy (this will be used to select the members
         // that go to the child group
         std::binomial_distribution<size_t> binomial(_group_size, 0.5);
-//    std::vector<std::binomial_distribution<size_t>> binomials;
-//    binomials.reserve(_nb_strategies);
-//    for (size_t i = 0; i < _nb_strategies; ++i)
-//        binomials.emplace_back(strategies_parent(i), 0.5);
-
-        size_t sum = strategies_child.sum();
-        while ((sum == 0) || (sum == groups[parent_group].group_size())) {
+        size_t sum = 0;
+        while ((sum == 0) || (sum > _group_size)) {
+            sum = 0;
             for (size_t i = 0; i < _nb_strategies; ++i) {
-                binomial.param(std::binomial_distribution<size_t>::param_type(strategies_parent(i), 0.5));
-                strategies_child(i) = binomial(_mt);
+                if (strategies_parent(i) > 0) {
+                    binomial.param(std::binomial_distribution<size_t>::param_type(strategies_parent(i), 0.5));
+                    strategies_child(i) = binomial(_mt);
+                    sum += strategies_child(i);
+                }
             }
-            sum = strategies_child.sum();
         }
-
         // reset group size
         groups[child_group].set_group_size(sum);
         groups[parent_group].set_group_size(groups[parent_group].group_size() - sum);
         // reset parent group strategies
-        for (size_t i = 0; i < _nb_strategies; ++i)
-            strategies_parent(i) = strategies_parent(i) - strategies_child(i);
-
+        strategies_parent -= strategies_child;
     }
 
 /**
@@ -813,6 +813,7 @@ namespace EGTTools::SED {
 
         // Now we randomly initialize the groups with the population configuration from strategies
         for (size_t i = 0; i < _nb_groups; ++i) {
+            groups[i].set_group_size(_group_size);
             VectorXui &group_strategies = groups[i].strategies();
             group_strategies.setZero();
             for (size_t j = 0; j < _group_size; ++j) {

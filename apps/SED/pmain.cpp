@@ -15,8 +15,9 @@ using namespace EGTTools;
 int main(int argc, char *argv[]) {
 
     // First initialize population and global parameters
-    unsigned int pop_size = 100, nb_betas = 7, group_size = 50, nb_groups = 1;
-    double split_prob = 0.1;
+    unsigned int pop_size = 100, nb_betas = 7;
+    size_t group_size, nb_groups, runs_grad;
+    double split_prob;
     float mu = 1e-3;
     float coop_freq = 0.5;
     Eigen::Matrix2d payoff_matrix;
@@ -32,11 +33,15 @@ int main(int argc, char *argv[]) {
     Options options;
 
     options.push_back(makeDefaultedOption("generations,g", &generations, "set the number of generations", 1000u));
-    options.push_back(makeDefaultedOption("popSize,N", &pop_size, "set the size of the population", 100u));
-    options.push_back(makeDefaultedOption("mu,m", &mu, "set mutation rate", 1e-3f));
-    options.push_back(makeDefaultedOption("beta,b", &mu, "set intensity of selection", 1e-4f));
+    options.push_back(makeDefaultedOption("popSize,Z", &pop_size, "set the size of the population", 100u));
+    options.push_back(makeDefaultedOption("mu,u", &mu, "set mutation rate", 1e-3f));
+    options.push_back(makeDefaultedOption("beta,b", &beta, "set intensity of selection", 1e-4f));
     options.push_back(makeDefaultedOption("runs,R", &runs, "set the number of runs", 100u));
+    options.push_back(makeDefaultedOption<size_t>("runsGrad,i", &runs_grad, "set the number of runs", 100));
     options.push_back(makeDefaultedOption("test,t", &test, "test StochDynamics", false));
+    options.push_back(makeDefaultedOption("splitProb,q", &split_prob, "split probability", 0.0));
+    options.push_back(makeDefaultedOption<size_t>("groupSize,n", &group_size, "split probability", 50));
+    options.push_back(makeDefaultedOption<size_t>("nbGroups,m", &nb_groups, "split probability", 1));
 
     if (!parseCommandLine(argc, argv, options))
         return 1;
@@ -44,7 +49,7 @@ int main(int argc, char *argv[]) {
     PDImitation pd(generations, pop_size, beta, mu, coop_freq, payoff_matrix);
     TraulsenMoran ts(generations, group_size, nb_groups, beta, mu, coop_freq, split_prob, payoff_matrix);
     MoranProcess mp(generations, 2, pop_size, beta, strategy_freq, payoff_matrix);
-    SED::MLS<> multi_sel(10000000, 2, 100, 1, 0.1, strategy_freq, payoff_matrix);
+    SED::MLS<> multi_sel(10000000, 2, group_size, nb_groups, 0.1, strategy_freq, payoff_matrix);
 
     clock_t tStart = clock();
     betas[0] = beta;
@@ -54,8 +59,15 @@ int main(int argc, char *argv[]) {
 
     std::vector<float> result = pd.evolve(betas, runs);
     std::vector<double> result2 = ts.evolve(std::vector<double>(betas.begin(), betas.end()), runs);
-    double fix_prob = multi_sel.fixationProbability(1, 0, 10000, 0.0, 0.1);
-    EGTTools::Vector gradient = multi_sel.gradientOfSelection(1, 0, 1000, 1.0);
+    double fix_prob = 0;
+    EGTTools::Vector gradient;
+    try {
+        fix_prob = multi_sel.fixationProbability(1, 0, 10000, split_prob, 0.1);
+        gradient = multi_sel.gradientOfSelection(1, 0, runs_grad, 0.1, split_prob);
+    } catch (const std::invalid_argument& ia) {
+        cerr << "\033[1;31m[EXCEPTION] Invalid argument: " << ia.what() << "\033[0m" << endl;
+        return -1;
+    }
     Vector result3 = mp.evolve(runs, 0.1);
 
     cout << "===========" << endl;
@@ -82,7 +94,8 @@ int main(int argc, char *argv[]) {
     cout << "===========" << endl;
     cout << "fixation probability = " << fix_prob << endl;
     cout << "gradient of selection = " << endl;
-    for (size_t i = 0; i < 100; i++) {
+    cout.precision(5);
+    for (size_t i = 0; i < (group_size * nb_groups) + 1; i++) {
         cout << "[k = " << i << "] gradient: " << gradient(i) << endl;
     }
 
