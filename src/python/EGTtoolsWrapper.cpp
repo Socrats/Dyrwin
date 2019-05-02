@@ -123,6 +123,12 @@ PYBIND11_MODULE(EGTtools, m) {
                                                               double)>( &SED::MLS<SED::Group>::fixationProbability),
                  py::call_guard<py::gil_scoped_release>(),
                  "Calculates the fixation probability given a beta and lambda.")
+            .def("fixation_probability",
+                 static_cast<Vector (SED::MLS<SED::Group>::*)(size_t, const Eigen::Ref<const VectorXui> &, size_t,
+                                                              double,
+                                                              double)>( &SED::MLS<SED::Group>::fixationProbability),
+                 py::call_guard<py::gil_scoped_release>(),
+                 "Calculates the fixation probability given a beta and an initial state.")
 //            .def("fixation_probability",
 //                 static_cast<double (SED::MLS<SED::Group>::*)(size_t, size_t, size_t, size_t, double, double, double,
 //                                                              double)>(&SED::MLS<SED::Group>::fixationProbability),
