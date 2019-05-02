@@ -39,9 +39,9 @@ int main(int argc, char *argv[]) {
     options.push_back(makeDefaultedOption("runs,R", &runs, "set the number of runs", 100u));
     options.push_back(makeDefaultedOption<size_t>("runsGrad,i", &runs_grad, "set the number of runs", 100));
     options.push_back(makeDefaultedOption("test,t", &test, "test StochDynamics", false));
-    options.push_back(makeDefaultedOption("splitProb,q", &split_prob, "split probability", 1.0));
-    options.push_back(makeDefaultedOption<size_t>("groupSize,n", &group_size, "split probability", 5));
-    options.push_back(makeDefaultedOption<size_t>("nbGroups,m", &nb_groups, "split probability", 10));
+    options.push_back(makeDefaultedOption("splitProb,q", &split_prob, "split probability", 0.0));
+    options.push_back(makeDefaultedOption<size_t>("groupSize,n", &group_size, "split probability", 50));
+    options.push_back(makeDefaultedOption<size_t>("nbGroups,m", &nb_groups, "split probability", 1));
 
     if (!parseCommandLine(argc, argv, options))
         return 1;

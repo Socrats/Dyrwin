@@ -105,6 +105,7 @@ namespace EGTTools::SED {
 
         void set_nb_groups(size_t nb_groups) {
             _nb_groups = nb_groups;
+            _uint_rand.param(std::uniform_int_distribution<size_t>::param_type(0, _nb_groups - 1));
             _pop_size = _nb_groups * _group_size;
         }
 
@@ -134,6 +135,7 @@ namespace EGTTools::SED {
             if (payoff_matrix.rows() != payoff_matrix.cols())
                 throw std::invalid_argument("Payoff matrix must be a square Matrix (n,n)");
             _nb_strategies = payoff_matrix.rows();
+            _uint_rand_strategy.param(std::uniform_int_distribution<size_t>::param_type(0, _nb_strategies - 1));
             _payoff_matrix.array() = payoff_matrix;
         }
 
@@ -411,19 +413,15 @@ namespace EGTTools::SED {
             strategies(resident) = _pop_size - k;
             strategies(invader) = k;
             // initialize container
-            size_t z = 0;
-            for (size_t i = 0; i < _nb_strategies; ++i) {
-                for (size_t j = 0; j < strategies(i); ++j) {
-                    pop_container[z++] = i;
-                }
-            }
+            for (size_t i = 0; i < k; ++i) pop_container[i] = invader;
+            for (size_t i = k; i < _pop_size; ++i) pop_container[i] = resident;
 
             // Calculate T+ and T-
             for (size_t i = 0; i < runs; ++i) {
                 // First we initialize a homogeneous population with the resident strategy
                 _setState(groups, pop_container);
                 _update(q, groups, strategies);
-                auto sum = static_cast<double>(strategies.sum());
+                auto sum = static_cast<double>(strategies(invader) + strategies(resident));
                 if (static_cast<double>(strategies(invader)) / sum >
                     static_cast<double>(k) / static_cast<double>(_pop_size)) {
                     ++t_plus;
@@ -697,7 +695,6 @@ namespace EGTTools::SED {
         // update strategies with the eliminated strategies from the child group
         strategies -= strategies_child;
         strategies_child.setZero();
-
         // vector of binomial distributions for each strategy (this will be used to select the members
         // that go to the child group
         std::binomial_distribution<size_t> binomial(_group_size, 0.5);

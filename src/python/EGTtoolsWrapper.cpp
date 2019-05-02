@@ -110,6 +110,7 @@ PYBIND11_MODULE(EGTtools, m) {
             .def_property("init_state", &SED::MLS<SED::Group>::init_strategy_count,
                           &SED::MLS<SED::Group>::set_strategy_count)
             .def_property_readonly("payoff_matrix", &SED::MLS<SED::Group>::payoff_matrix)
+            .def_property_readonly("max_pop_size", &SED::MLS<SED::Group>::max_pop_size)
             .def("update_payoff_matrix", &SED::MLS<SED::Group>::set_payoff_matrix,
                  py::return_value_policy::reference_internal)
             .def("fixation_probability",
