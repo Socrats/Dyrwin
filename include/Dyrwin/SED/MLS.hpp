@@ -399,7 +399,7 @@ namespace EGTTools::SED {
         Vector gradient = Vector::Zero(_pop_size + 1);
 
         // This loop can be done in parallel
-#pragma omp parallel for shared(gradient)
+//#pragma omp parallel for shared(gradient)
         for (size_t k = 1; k < _pop_size; ++k) { // Loops over all population configurations
             VectorXui strategies = VectorXui::Zero(_nb_strategies);
             Group group(_nb_strategies, _group_size, w, strategies, _payoff_matrix);
@@ -702,7 +702,7 @@ namespace EGTTools::SED {
         // that go to the child group
         std::binomial_distribution<size_t> binomial(_group_size, 0.5);
         size_t sum = 0;
-        while ((sum == 0) || (sum == groups[parent_group].group_size())) {
+        while ((sum == 0) || (sum > _group_size)) {
             sum = 0;
             for (size_t i = 0; i < _nb_strategies; ++i) {
                 if (strategies_parent(i) > 0) {
@@ -816,6 +816,7 @@ namespace EGTTools::SED {
 
         // Now we randomly initialize the groups with the population configuration from strategies
         for (size_t i = 0; i < _nb_groups; ++i) {
+            groups[i].set_group_size(_group_size);
             VectorXui &group_strategies = groups[i].strategies();
             group_strategies.setZero();
             for (size_t j = 0; j < _group_size; ++j) {
