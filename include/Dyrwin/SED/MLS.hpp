@@ -398,7 +398,7 @@ namespace EGTTools::SED {
         if ((_nb_groups == 1) && q != 0.)
             throw std::invalid_argument(
                     "The splitting probability must be zero when there is only 1 group in the population");
-        if (init_state.size() != _nb_strategies)
+        if (static_cast<size_t>(init_state.size()) != _nb_strategies)
             throw std::invalid_argument(
                     "you must specify the number of individuals of each " + std::to_string(_nb_strategies) +
                     " strategies");
