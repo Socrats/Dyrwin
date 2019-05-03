@@ -2,8 +2,8 @@
 // Created by Elias Fernandez on 2019-03-11.
 //
 
-#ifndef DYRWIN_RL_CRDGAME_H
-#define DYRWIN_RL_CRDGAME_H
+#ifndef DYRWIN_RL_CRDCONDITIONAL_H
+#define DYRWIN_RL_CRDCONDITIONAL_H
 
 #include <random>
 #include <vector>
@@ -13,6 +13,7 @@
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/RL/Agent.h>
 #include <Dyrwin/RL/TimingUncertainty.hpp>
+#include <Dyrwin/RL/Utils.h>
 
 
 namespace EGTTools::RL {
@@ -22,12 +23,10 @@ namespace EGTTools::RL {
      * @tparam A. Container for the agents.
      */
     template<typename A = Agent, typename R = void>
-    class CRDGame {
+    class CRDConditional {
 
     public:
-        CRDGame() = default;
-
-        ~CRDGame() = default;
+        explicit CRDConditional(FlattenState & flatten) : _flatten(flatten) {}
 
         /**
          * @brief Model of the Collective-Risk dillemma game.
@@ -170,18 +169,16 @@ namespace EGTTools::RL {
         }
 
     private:
-
+        FlattenState _flatten;
         // Random generators
         std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
     };
 
     template<typename A>
-    class CRDGame<A, void> {
+    class CRDConditional<A, void> {
 
     public:
-        CRDGame() = default;
-
-        ~CRDGame() = default;
+        explicit CRDConditional(FlattenState & flatten) : _flatten(flatten) {}
 
         /**
          * @brief Model of the Collective-Risk dillemma game.
@@ -312,7 +309,7 @@ namespace EGTTools::RL {
         }
 
     private:
-
+        FlattenState _flatten;
         // Random generators
         std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
     };

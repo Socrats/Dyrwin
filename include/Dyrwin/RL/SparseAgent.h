@@ -2,8 +2,8 @@
 // Created by Elias Fernandez on 2019-03-11.
 //
 
-#ifndef DYRWIN_AGENT_H
-#define DYRWIN_AGENT_H
+#ifndef DYRWIN_RL_SPARSEAGENT_H
+#define DYRWIN_RL_SPARSEAGENT_H
 
 #include <string>
 #include <cmath>
@@ -113,4 +113,4 @@ namespace EGTTools::RL {
 }
 
 
-#endif //DYRWIN_AGENT_H
+#endif //DYRWIN_RL_SPARSEAGENT_H

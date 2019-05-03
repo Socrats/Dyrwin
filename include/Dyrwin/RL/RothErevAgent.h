@@ -2,10 +2,10 @@
 // Created by Elias Fernandez on 2019-04-10.
 //
 
-#ifndef DYRWIN_ROTHEREVAGENT_H
-#define DYRWIN_ROTHEREVAGENT_H
+#ifndef DYRWIN_RL_ROTHEREVAGENT_H
+#define DYRWIN_RL_ROTHEREVAGENT_H
 
-#include <math.h>
+#include <cmath>
 #include <Dyrwin/RL/Agent.h>
 
 namespace EGTTools::RL {
@@ -53,7 +53,7 @@ namespace EGTTools::RL {
                 double total = 0.;
                 unsigned nb_infs = 0;
                 for (j = 0; j < _nb_actions; j++) {
-                    _policy(i, j) = exp(_q_values(i, j) * _temperature);
+                    _policy(i, j) = std::exp(_q_values(i, j) * _temperature);
                     if (std::isinf(_policy(i, j))) _buffer[nb_infs++] = j;
                     total += _policy(i, j);
                 }
@@ -101,4 +101,4 @@ namespace EGTTools::RL {
     };
 }
 
-#endif //DYRWIN_ROTHEREVAGENT_H
+#endif //DYRWIN_RL_ROTHEREVAGENT_H

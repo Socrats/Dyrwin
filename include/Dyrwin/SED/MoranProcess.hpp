@@ -2,12 +2,12 @@
 // Created by Elias Fernandez on 2019-04-18.
 //
 
-#ifndef DYRWIN_MORANPROCESS_HPP
-#define DYRWIN_MORANPROCESS_HPP
+#ifndef DYRWIN_SED_MORANPROCESS_HPP
+#define DYRWIN_SED_MORANPROCESS_HPP
 
 #include <random>
 #include <algorithm>
-#include <math.h>
+#include <cmath>
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/Types.h>
 
@@ -97,7 +97,7 @@ namespace EGTTools {
             // Recompute strategies
             size_t tmp = 0;
             for (size_t i = 0; i < (_nb_strategies - 1); ++i) {
-                _strategies(i) = (size_t) floor(_strategy_freq(i) * _pop_size);
+                _strategies(i) = (size_t) std::floor(_strategy_freq(i) * _pop_size);
                 tmp += _strategies(i);
             }
             _strategies(_nb_strategies - 1) = _pop_size - tmp;
@@ -153,4 +153,4 @@ namespace EGTTools {
     };
 }
 
-#endif //DYRWIN_MORANPROCESS_HPP
+#endif //DYRWIN_SED_MORANPROCESS_HPP

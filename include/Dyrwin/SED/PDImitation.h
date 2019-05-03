@@ -4,8 +4,8 @@
 // Created by Elias Fernandez on 2019-02-11.
 //
 
-#ifndef DYRWIN_PDIMITATION_H
-#define DYRWIN_PDIMITATION_H
+#ifndef DYRWIN_SED_PDIMITATION_H
+#define DYRWIN_SED_PDIMITATION_H
 
 #include <random>
 #include <algorithm>
@@ -90,4 +90,4 @@ namespace EGTTools {
     };
 }
 
-#endif //DYRWIN_PDIMITATION_H
+#endif //DYRWIN_SED_PDIMITATION_H

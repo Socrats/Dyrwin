@@ -2,8 +2,8 @@
 // Created by Elias Fernandez on 2019-04-02.
 //
 
-#ifndef DYRWIN_TRAULSENMORAN_H
-#define DYRWIN_TRAULSENMORAN_H
+#ifndef DYRWIN_SED_TRAULSENMORAN_H
+#define DYRWIN_SED_TRAULSENMORAN_H
 
 #include <random>
 #include <algorithm>
@@ -140,4 +140,4 @@ namespace EGTTools {
     };
 }
 
-#endif //DYRWIN_TRAULSENMORAN_H
+#endif //DYRWIN_SED_TRAULSENMORAN_H

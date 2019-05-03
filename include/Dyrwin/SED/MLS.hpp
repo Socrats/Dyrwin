@@ -2,8 +2,8 @@
 // Created by Elias Fernandez on 2019-04-25.
 //
 
-#ifndef DYRWIN_MLS_HPP
-#define DYRWIN_MLS_HPP
+#ifndef DYRWIN_SED_MLS_HPP
+#define DYRWIN_SED_MLS_HPP
 
 #include <random>
 #include <algorithm>
@@ -990,4 +990,4 @@ namespace EGTTools::SED {
     }
 }
 
-#endif //DYRWIN_MLS_HPP
+#endif //DYRWIN_SED_MLS_HPP

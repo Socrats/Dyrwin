@@ -2,10 +2,10 @@
 // Created by Elias Fernandez on 2019-04-10.
 //
 
-#ifndef DYRWIN_BATCHQLEARNINGAGENT_H
-#define DYRWIN_BATCHQLEARNINGAGENT_H
+#ifndef DYRWIN_RL_BATCHQLEARNINGAGENT_H
+#define DYRWIN_RL_BATCHQLEARNINGAGENT_H
 
-#include <math.h>
+#include <cmath>
 #include <Dyrwin/RL/Agent.h>
 
 namespace EGTTools::RL {
@@ -55,4 +55,4 @@ namespace EGTTools::RL {
     };
 }
 
-#endif //DYRWIN_BATCHQLEARNINGAGENT_H
+#endif //DYRWIN_RL_BATCHQLEARNINGAGENT_H

@@ -2,8 +2,8 @@
 // Created by Elias Fernandez on 2019-04-17.
 //
 
-#ifndef DYRWIN_TIMINGUNCERTAINTY_HPP
-#define DYRWIN_TIMINGUNCERTAINTY_HPP
+#ifndef DYRWIN_RL_TIMINGUNCERTAINTY_HPP
+#define DYRWIN_RL_TIMINGUNCERTAINTY_HPP
 
 #include <random>
 
@@ -41,4 +41,4 @@ namespace EGTTools {
     };
 }
 
-#endif //DYRWIN_TIMINGUNCERTAINTY_HPP
+#endif //DYRWIN_RL_TIMINGUNCERTAINTY_HPP

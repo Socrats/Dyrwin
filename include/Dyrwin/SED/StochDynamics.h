@@ -2,8 +2,8 @@
 // Created by Elias Fernandez on 2019-02-27.
 //
 
-#ifndef DYRWIN_STOCHDYNAMICS_H
-#define DYRWIN_STOCHDYNAMICS_H
+#ifndef DYRWIN_SED_STOCHDYNAMICS_H
+#define DYRWIN_SED_STOCHDYNAMICS_H
 
 #include <random>
 #include <vector>
@@ -50,7 +50,7 @@ namespace EGTTools {
 
         void set_nb_strategies(unsigned int nb_strategies) { _nb_strategies = nb_strategies; }
 
-        void set_payoff_matrix(Eigen::Ref<const MatrixXd> payoff_matrix) {
+        void set_payoff_matrix(const Eigen::Ref<const MatrixXd> &payoff_matrix) {
             _payoff_matrix = payoff_matrix;
         }
 
@@ -62,6 +62,6 @@ namespace EGTTools {
         std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 
     };
-};
+}
 
-#endif //DYRWIN_STOCHDYNAMICS_H
+#endif //DYRWIN_SED_STOCHDYNAMICS_H
