@@ -45,7 +45,7 @@ namespace EGTTools::SED {
         MLS(size_t generations, size_t nb_strategies, size_t group_size, size_t nb_groups, double w,
             const Eigen::Ref<const Vector> &strategies_freq, const Eigen::Ref<const Matrix2D> &payoff_matrix);
 
-//        Vector evolve(double w);
+        Vector evolve(double q, double w, const Eigen::Ref<const VectorXui> &init_state);
 //
 //        Vector evolve(size_t runs, double w);
 
@@ -243,6 +243,56 @@ namespace EGTTools::SED {
         _uint_rand = std::uniform_int_distribution<size_t>(0, _nb_groups - 1);
         _uint_rand_strategy = std::uniform_int_distribution<size_t>(0, _nb_strategies - 1);
         _real_rand = std::uniform_real_distribution<double>(0.0, 1.0);
+    }
+
+    /**
+     * Runs the moran process with multi-level selection for a given number of generations
+     * or until it reaches a monomorphic state.
+     *
+     * @tparam S : container for a group
+     * @param q : splitting probability
+     * @param w : intensity of selection
+     * @param init_state : vector with the initial state of the population
+     * @return a vector with the final state of the population
+     */
+    template<typename S>
+    Vector MLS<S>::evolve(double q, double w, const Eigen::Ref<const VectorXui> &init_state) {
+        if ((_nb_groups == 1) && q != 0.)
+            throw std::invalid_argument(
+                    "The splitting probability must be zero when there is only 1 group in the population");
+        if (static_cast<size_t>(init_state.size()) != _nb_strategies)
+            throw std::invalid_argument(
+                    "you must specify the number of individuals of each " + std::to_string(_nb_strategies) +
+                    " strategies");
+        if (init_state.sum() != _pop_size)
+            throw std::invalid_argument(
+                    "the sum of individuals in the initial state must be equal to " + std::to_string(_pop_size));
+
+        _strategies = init_state;
+        // Initialize population with initial state
+        VectorXui group_strategies = VectorXui::Zero(_nb_strategies);
+        Group group(_nb_strategies, _group_size, w, group_strategies, _payoff_matrix);
+        group.set_group_size(_group_size);
+        std::vector<size_t> pop_container(_pop_size);
+        // initialize container
+        size_t z = 0, sum = 1;
+        for (size_t i = 0; i < _nb_strategies; ++i) {
+            for (size_t j = 0; j < init_state(i); ++j) {
+                pop_container[z++] = i;
+            }
+        }
+        std::vector<Group> groups(_nb_groups, group);
+        _setState(groups, pop_container);
+
+
+        // Then we run the Moran Process
+        for (size_t t = 0; t < _generations; ++t) {
+            _speedUpdate(q, groups, _strategies);
+            sum = _strategies.sum();
+            if ((_strategies.array() == sum).any()) break;
+        } // end Moran process loop
+        return _strategies.cast<double>() / static_cast<double>(sum);
+
     }
 
 /**

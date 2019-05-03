@@ -113,6 +113,7 @@ PYBIND11_MODULE(EGTtools, m) {
             .def_property_readonly("max_pop_size", &SED::MLS<SED::Group>::max_pop_size)
             .def("update_payoff_matrix", &SED::MLS<SED::Group>::set_payoff_matrix,
                  py::return_value_policy::reference_internal)
+            .def("evolve", &SED::MLS<SED::Group>::evolve)
             .def("fixation_probability",
                  static_cast<double (SED::MLS<SED::Group>::*)(size_t, size_t, size_t, double,
                                                               double)>( &SED::MLS<SED::Group>::fixationProbability),
