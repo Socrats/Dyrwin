@@ -428,7 +428,8 @@ namespace EGTTools::SED {
             bool fixated = false;
             std::vector<Group> groups(_nb_groups, group);
             VectorXui strategies = init_state;
-            _setState(groups, pop_container);
+            std::vector<size_t> container(pop_container);
+            _setState(groups, container);
 
             // Then we create a mutant of the invading strategy
             _createRandomMutant(invader, groups, strategies);
@@ -875,7 +876,7 @@ namespace EGTTools::SED {
  */
     template<typename S>
     bool MLS<S>::_pseudoStationary(std::vector<S> &groups) {
-        if (_current_pop_size(groups) < _group_size * _nb_groups) return false;
+        if (_current_pop_size(groups) < _pop_size) return false;
         for (auto &group: groups)
             if (!group.isPopulationMonomorphic())
                 return false;

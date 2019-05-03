@@ -72,21 +72,21 @@ namespace EGTTools::SED {
         void setPopulationHomogeneous(size_t strategy);
 
         // Getters
-        size_t nb_strategies() { return _nb_strategies; }
+        size_t nb_strategies() const { return _nb_strategies; }
 
-        size_t max_group_size() { return _max_group_size; }
+        size_t max_group_size() const { return _max_group_size; }
 
-        size_t group_size() { return _group_size; }
+        size_t group_size() const { return _group_size; }
 
-        double group_fitness() { return _group_fitness; }
+        double group_fitness() const { return _group_fitness; }
 
-        double selection_intensity() { return _w; }
+        double selection_intensity() const { return _w; }
 
         VectorXui &strategies() { return _strategies; }
 
         const VectorXui &strategies() const { return _strategies; }
 
-        const Matrix2D &payoff_matrix() { return _payoff_matrix; }
+        const Matrix2D &payoff_matrix() const { return _payoff_matrix; }
 
         // Setters
         void set_group_size(size_t group_size) { _group_size = group_size; }
@@ -141,6 +141,7 @@ namespace EGTTools::SED {
         std::uniform_int_distribution<size_t> dist(0, _group_size - 1);
         size_t die = dist(generator);
         for (selected_strategy = 0; selected_strategy < _nb_strategies; ++selected_strategy) {
+            if (_strategies(selected_strategy) == 0) continue;
             sum += _strategies(selected_strategy);
             if (die < sum) break;
         }
