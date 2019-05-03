@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
     EGTTools::Vector gradient;
     try {
         fix_prob = multi_sel.fixationProbability(1, 0, 10000, split_prob, 0.1);
+        multi_sel.fixationProbability(1, (EGTTools::VectorXui(2) << 25, 25).finished(), 10000, split_prob, 0.1);
         gradient = multi_sel.gradientOfSelection(1, 0, runs_grad, 0.1, split_prob);
     } catch (const std::invalid_argument& ia) {
         cerr << "\033[1;31m[EXCEPTION] Invalid argument: " << ia.what() << "\033[0m" << endl;

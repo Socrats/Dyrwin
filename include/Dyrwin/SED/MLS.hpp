@@ -425,6 +425,7 @@ namespace EGTTools::SED {
 #pragma omp parallel for shared(fixations)
         for (size_t i = 0; i < runs; ++i) {
             // First we initialize a homogeneous population with the resident strategy
+            bool fixated = false;
             std::vector<Group> groups(_nb_groups, group);
             VectorXui strategies = init_state;
             _setState(groups, pop_container);
@@ -438,13 +439,20 @@ namespace EGTTools::SED {
                 size_t sum = strategies.sum();
                 for (size_t s = 0; s < _nb_strategies; ++s)
                     if (strategies(s) == sum) {
-                        fixations(s) += 1;
+                        fixations(s) += 1.0;
+                        fixated = true;
                         break;
                     }
+                if (fixated) break;
             } // end Moran process loop
         } // end runs loop
 
-        return fixations / fixations.sum();
+        double tmp = fixations.sum();
+
+        if (tmp > 0.0)
+            return fixations.array() / tmp;
+
+        return fixations.array();
     }
 
 /**
