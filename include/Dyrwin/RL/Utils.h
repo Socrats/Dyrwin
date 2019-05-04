@@ -51,9 +51,9 @@ namespace EGTTools::RL {
     }
 
     struct FlattenState {
-        explicit FlattenState(Factors &space) : space(space) {
+        explicit FlattenState(const Factors& space) : space(space) {
             assert(space.size() > 1);
-            factor_space = factorSpace(space);
+            factor_space = EGTTools::RL::factorSpace(space);
         }
 
         Factors space;

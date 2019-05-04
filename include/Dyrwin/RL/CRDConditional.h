@@ -1,3 +1,9 @@
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
 //
 // Created by Elias Fernandez on 2019-03-11.
 //
@@ -26,7 +32,9 @@ namespace EGTTools::RL {
     class CRDConditional {
 
     public:
-        explicit CRDConditional(FlattenState & flatten) : _flatten(flatten) {}
+        explicit CRDConditional(FlattenState  flatten) : _flatten(std::move(flatten)) {
+            _state = EGTTools::RL::Factors(2);
+        }
 
         /**
          * @brief Model of the Collective-Risk dillemma game.
@@ -45,17 +53,20 @@ namespace EGTTools::RL {
 
             auto final_round = gen_round.calculateEnd(rounds, _mt);
 
-            double total = 0.0;
+            double total = 0.0, partial = 0.0;
             for (auto &player : players) {
                 player.resetPayoff();
             }
-            for (unsigned i = 0; i < final_round; i++) {
+            for (size_t i = 0; i < final_round; ++i) {
+                _state[0] = i, _state[1] = static_cast<size_t>(partial);
+                partial = 0.0;
 #pragma omp parallel for shared(total)
                 for (size_t j = 0; j < players.size(); ++j) {
-                    unsigned idx = players[j].selectAction(i);
+                    unsigned idx = players[j].selectAction(_flatten.toIndex(_state));
                     players[j].decrease(actions[idx]);
-                    total += actions[idx];
+                    partial += actions[idx];
                 }
+                total += partial;
             }
             return std::make_tuple(total, final_round);
         }
@@ -65,17 +76,20 @@ namespace EGTTools::RL {
 
             auto final_round = gen_round.calculateEnd(rounds, _mt);
 
-            double total = 0.0;
+            double total = 0.0, partial = 0.0;
             for (auto &player : players) {
                 player->resetPayoff();
             }
-            for (unsigned i = 0; i < final_round; i++) {
+            for (size_t i = 0; i < final_round; i++) {
+                _state[0] = i, _state[1] = static_cast<size_t>(partial);
+                partial = 0.0;
 #pragma omp parallel for shared(total)
                 for (size_t j = 0; j < players.size(); ++j) {
-                    unsigned idx = players[j]->selectAction(i);
+                    unsigned idx = players[j]->selectAction(_flatten.toIndex(_state));
                     players[j]->decrease(actions[idx]);
-                    total += actions[idx];
+                    partial += actions[idx];
                 }
+                total += partial;
             }
             return std::make_tuple(total, final_round);
         }
@@ -168,8 +182,11 @@ namespace EGTTools::RL {
             }
         }
 
+        FlattenState& flatten() { return _flatten; }
+
     private:
         FlattenState _flatten;
+        EGTTools::RL::Factors _state;
         // Random generators
         std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
     };
@@ -178,7 +195,9 @@ namespace EGTTools::RL {
     class CRDConditional<A, void> {
 
     public:
-        explicit CRDConditional(FlattenState & flatten) : _flatten(flatten) {}
+        explicit CRDConditional(FlattenState  flatten) : _flatten(std::move(flatten)) {
+            _state = EGTTools::RL::Factors(2);
+        }
 
         /**
          * @brief Model of the Collective-Risk dillemma game.
@@ -194,32 +213,38 @@ namespace EGTTools::RL {
          */
         std::tuple<double, unsigned>
         playGame(std::vector<A> &players, std::vector<size_t> &actions, size_t rounds) {
-            double total = 0.0;
+            double total = 0.0, partial = 0.0;
             for (auto &player : players) {
                 player.resetPayoff();
             }
-            for (unsigned i = 0; i < rounds; i++) {
+            for (unsigned i = 0; i < rounds; ++i) {
+                _state[0] = i, _state[1] = static_cast<size_t>(partial);
+                partial = 0.0;
                 for (auto a : players) {
-                    unsigned idx = a.selectAction(i);
+                    unsigned idx = a.selectAction(_flatten.toIndex(_state));
                     a.decrease(actions[idx]);
-                    total += actions[idx];
+                    partial += actions[idx];
                 }
+                total += partial;
             }
             return std::make_tuple(total, rounds);
         }
 
         std::tuple<double, unsigned>
         playGame(std::vector<A *> &players, std::vector<size_t> &actions, size_t rounds) {
-            double total = 0.0;
+            double total = 0.0, partial = 0.0;
             for (auto &player : players) {
                 player->resetPayoff();
             }
-            for (unsigned i = 0; i < rounds; i++) {
+            for (size_t i = 0; i < rounds; ++i) {
+                _state[0] = i, _state[1] = static_cast<size_t>(partial);
+                partial = 0.0;
                 for (auto &a : players) {
-                    unsigned idx = a->selectAction(i);
+                    unsigned idx = a->selectAction(_flatten.toIndex(_state));
                     a->decrease(actions[idx]);
-                    total += actions[idx];
+                    partial += actions[idx];
                 }
+                total += partial;
             }
             return std::make_tuple(total, rounds);
         }
@@ -308,8 +333,11 @@ namespace EGTTools::RL {
             }
         }
 
+        FlattenState& flatten() { return _flatten; }
+
     private:
         FlattenState _flatten;
+        EGTTools::RL::Factors _state;
         // Random generators
         std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
     };

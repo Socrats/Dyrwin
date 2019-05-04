@@ -18,7 +18,7 @@ using namespace EGTTools::RL;
 
 template<typename A>
 void reinforceRothErev(double &pool, unsigned &success, double rnd_value, double &cataclysm, double &threshold,
-                       CRDGame<A> &Game, std::vector<A *> &group) {
+                       CRDConditional<A> &Game, std::vector<A *> &group) {
     if (pool >= threshold) {
         Game.reinforcePath(group);
         success++;
@@ -28,7 +28,7 @@ void reinforceRothErev(double &pool, unsigned &success, double rnd_value, double
 
 template<typename A>
 void reinforceBatchQLearning(double &pool, unsigned &success, double rnd_value, double &cataclysm, double &threshold,
-                             CRDGame<A> &Game, std::vector<A *> &group) {
+                             CRDConditional<A> &Game, std::vector<A *> &group) {
 
     if (pool >= threshold) success++;
     else if (rnd_value < cataclysm) Game.setPayoffs(group, 0);
@@ -50,7 +50,6 @@ int main(int argc, char *argv[]) {
     std::string filename;
     std::string agent_type;
     Options options;
-    CRDGame<Agent> Game;
     // Random generators
     std::mt19937_64 generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 
@@ -77,39 +76,41 @@ int main(int argc, char *argv[]) {
     auto threshold = static_cast<double>(rounds * group_size);
     auto donations = std::vector<size_t>(actions);
     for (unsigned i = 0; i < actions; i++) donations[i] = i;
-    void (*reinforce)(double &, unsigned &, double, double &, double &, CRDGame<Agent> &,
+    void (*reinforce)(double &, unsigned &, double, double &, double &, CRDConditional<Agent> &,
                       std::vector<Agent *> &);
+    FlattenState flatten(Factors{rounds, (group_size * donations[actions - 1]) + 1});
+    CRDConditional<Agent> Game(flatten);
 
     // Initialize agents depending on command option
     std::vector<Agent *> group;
     if (agent_type == "rothErev") {
         reinforce = &reinforceRothErev;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new Agent(rounds, actions, endowment);
+            auto a = new Agent(Game.flatten().factor_space, actions, endowment);
             group.push_back(a);
         }
     } else if (agent_type == "rothErevLambda") {
         reinforce = &reinforceBatchQLearning;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new RothErevAgent(rounds, actions, endowment, lambda, temperature);
+            auto a = new RothErevAgent(Game.flatten().factor_space, actions, endowment, lambda, temperature);
             group.push_back(a);
         }
     } else if (agent_type == "QLearning") {
         reinforce = &reinforceBatchQLearning;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new QLearningAgent(rounds, actions, endowment, alpha, lambda, temperature);
+            auto a = new QLearningAgent(Game.flatten().factor_space, actions, endowment, alpha, lambda, temperature);
             group.push_back(a);
         }
     } else if (agent_type == "HistericQLearning") {
         reinforce = &reinforceBatchQLearning;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new HistericQLearningAgent(rounds, actions, endowment, alpha, beta, temperature);
+            auto a = new HistericQLearningAgent(Game.flatten().factor_space, actions, endowment, alpha, beta, temperature);
             group.push_back(a);
         }
     } else {
         reinforce = &reinforceBatchQLearning;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new BatchQLearningAgent(rounds, actions, endowment, alpha, temperature);
+            auto a = new BatchQLearningAgent(Game.flatten().factor_space, actions, endowment, alpha, temperature);
             group.push_back(a);
         }
     }
