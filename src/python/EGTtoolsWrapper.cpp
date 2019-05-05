@@ -10,6 +10,7 @@
 #include <Dyrwin/SED/TraulsenMoran.h>
 #include <Dyrwin/SED/MoranProcess.hpp>
 #include <Dyrwin/SED/MLS.hpp>
+#include <Dyrwin/SeedGenerator.h>
 
 namespace py = pybind11;
 using namespace EGTTools;
@@ -24,6 +25,28 @@ PYBIND11_MODULE(EGTtools, m) {
            add
            subtract
     )pbdoc";
+
+    // Use this function to get access to the singleton
+//    m.def("get_seed_generator_instance",
+//          &Random::SeedGenerator::getInstance,
+//          py::return_value_policy::reference,
+//          "Get reference to the seed generator singleton");
+
+    py::class_<Random::SeedGenerator>(m, "Random")
+            .def("init", []() {
+                return std::unique_ptr<Random::SeedGenerator, py::nodelete>(&Random::SeedGenerator::getInstance());
+            })
+            .def("getSeed",
+                 &Random::SeedGenerator::getMainSeed, "seed",
+                 "Returns current seed"
+            )
+            .def("seed", &Random::SeedGenerator::getMainSeed,
+                 "Set main seed");
+
+//    py::class_<Random::SeedGenerator>(m, "Random")
+//    .def("init", [](){
+//        return std::unique_ptr<Random::SeedGenerator, py::nodelete>(&Random::SeedGenerator::getInstance());
+//    });
 
     py::class_<PDImitation>(m, "PDImitation")
             .def(py::init<unsigned int, unsigned int, float, float, float, Eigen::Ref<const MatrixXd>>())

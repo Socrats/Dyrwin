@@ -21,6 +21,10 @@ namespace EGTTools::Random {
 
         /**
          * @brief This function generates a random number to seed other generators
+         *
+         * You can use this function to generate a random seed to seed other random generators
+         * in you project. This avoids concurrency problems when doing parallel execution.
+         *
          * @return A random unsigned long number
          */
         unsigned long int getSeed();
@@ -32,7 +36,16 @@ namespace EGTTools::Random {
          *
          * @param seed The seed for the random generator used to generate new seeds
          */
-        void setMainSeed(unsigned long int seed);
+        void setMainSeed(unsigned long int seed) { _rng_seed = seed; }
+
+        /**
+         * @brief This function sets the seed for the seed generator
+         *
+         * By default the generator is seeded either from a seed.in file or from random_device
+         *
+         * @return main seed (unsigned long int)
+         */
+        unsigned long int getMainSeed() { return _rng_seed; }
 
     private:
         // Random generator

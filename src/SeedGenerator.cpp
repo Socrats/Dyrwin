@@ -20,10 +20,6 @@ unsigned long int SeedGenerator::getSeed() {
     return distribution(rng_engine);
 }
 
-void SeedGenerator::setMainSeed(unsigned long int seed) {
-    _rng_seed = seed;
-}
-
 void SeedGenerator::_initSeed() {
     std::ifstream filein;
     std::ofstream fileout;
@@ -39,14 +35,11 @@ void SeedGenerator::_initSeed() {
 
         fileout << _rng_seed << std::endl;
         fileout.close();
-//        std::cout << "#seed.in not found. Creating a new seed: " << _rng_seed << std::endl;
     } else {
-//        std::cout << "#reading seed.in" << std::endl;
         filein >> _rng_seed;
         fileout << _rng_seed << std::endl;
 
-        //srandom(seed);
-        rng_engine.seed(_rng_seed); //seed RNGengine
+        rng_engine.seed(_rng_seed); //seed rndEngine
         fileout.close();
         filein.close();
     }
