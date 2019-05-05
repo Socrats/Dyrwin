@@ -120,31 +120,31 @@ int main(int argc, char *argv[]) {
     if (agent_type == "rothErev") {
         reinforce = &reinforceRothErev;
         for (unsigned i = 0; i < pop_size; i++) {
-            auto a = new Agent(rounds, actions, endowment);
+            auto a = new Agent(rounds, actions, rounds, endowment);
             population.push_back(a);
         }
     } else if (agent_type == "rothErevLambda") {
         reinforce = &reinforceBatchQLearning;
         for (unsigned i = 0; i < pop_size; i++) {
-            auto a = new RothErevAgent(rounds, actions, endowment, lambda, temperature);
+            auto a = new RothErevAgent(rounds, actions, rounds, endowment, lambda, temperature);
             population.push_back(a);
         }
     } else if (agent_type == "QLearning") {
         reinforce = &reinforceBatchQLearning;
         for (unsigned i = 0; i < pop_size; i++) {
-            auto a = new QLearningAgent(rounds, actions, endowment, alpha, lambda, temperature);
+            auto a = new QLearningAgent(rounds, actions, rounds, endowment, alpha, lambda, temperature);
             population.push_back(a);
         }
     } else if (agent_type == "HistericQLearning") {
         reinforce = &reinforceBatchQLearning;
         for (unsigned i = 0; i < pop_size; i++) {
-            auto a = new HistericQLearningAgent(rounds, actions, endowment, alpha, beta, temperature);
+            auto a = new HistericQLearningAgent(rounds, actions, rounds, endowment, alpha, beta, temperature);
             population.push_back(a);
         }
     } else {
         reinforce = &reinforceBatchQLearning;
         for (unsigned i = 0; i < pop_size; i++) {
-            auto a = new BatchQLearningAgent(rounds, actions, endowment, alpha, temperature);
+            auto a = new BatchQLearningAgent(rounds, actions, rounds endowment, alpha, temperature);
             population.push_back(a);
         }
     }

@@ -48,7 +48,7 @@ namespace EGTTools::RL {
          * @param rounds
          * @return std::tuple (donations, rounds)
          */
-        std::tuple<double, unsigned>
+        std::pair<double, unsigned>
         playGame(std::vector<A> &players, std::vector<size_t> &actions, size_t rounds, R &gen_round) {
 
             auto final_round = gen_round.calculateEnd(rounds, _mt);
@@ -62,16 +62,16 @@ namespace EGTTools::RL {
                 partial = 0.0;
 #pragma omp parallel for shared(total)
                 for (size_t j = 0; j < players.size(); ++j) {
-                    unsigned idx = players[j].selectAction(_flatten.toIndex(_state));
+                    unsigned idx = players[j].selectAction(i, _flatten.toIndex(_state));
                     players[j].decrease(actions[idx]);
                     partial += actions[idx];
                 }
                 total += partial;
             }
-            return std::make_tuple(total, final_round);
+            return std::make_pair(total, final_round);
         }
 
-        std::tuple<double, unsigned>
+        std::pair<double, unsigned>
         playGame(std::vector<A *> &players, std::vector<size_t> &actions, size_t rounds, R &gen_round) {
 
             auto final_round = gen_round.calculateEnd(rounds, _mt);
@@ -85,13 +85,13 @@ namespace EGTTools::RL {
                 partial = 0.0;
 #pragma omp parallel for shared(total)
                 for (size_t j = 0; j < players.size(); ++j) {
-                    unsigned idx = players[j]->selectAction(_flatten.toIndex(_state));
+                    unsigned idx = players[j]->selectAction(i, _flatten.toIndex(_state));
                     players[j]->decrease(actions[idx]);
                     partial += actions[idx];
                 }
                 total += partial;
             }
-            return std::make_tuple(total, final_round);
+            return std::make_pair(total, final_round);
         }
 
         bool reinforcePath(std::vector<A> &players) {
@@ -102,10 +102,26 @@ namespace EGTTools::RL {
             return true;
         }
 
+        bool reinforcePath(std::vector<A> &players, size_t final_round) {
+#pragma omp parallel
+            for (size_t j = 0; j < players.size(); ++j) {
+                players[j].reinforceTrajectory(final_round);
+            }
+            return true;
+        }
+
         bool reinforcePath(std::vector<A *> &players) {
 #pragma omp parallel
             for (size_t j = 0; j < players.size(); ++j) {
                 players[j]->reinforceTrajectory();
+            }
+            return true;
+        }
+
+        bool reinforcePath(std::vector<A *> &players, size_t final_round) {
+#pragma omp parallel
+            for (size_t j = 0; j < players.size(); ++j) {
+                players[j]->reinforceTrajectory(final_round);
             }
             return true;
         }
@@ -221,7 +237,7 @@ namespace EGTTools::RL {
                 _state[0] = i, _state[1] = static_cast<size_t>(partial);
                 partial = 0.0;
                 for (auto a : players) {
-                    unsigned idx = a.selectAction(_flatten.toIndex(_state));
+                    unsigned idx = a.selectAction(i, _flatten.toIndex(_state));
                     a.decrease(actions[idx]);
                     partial += actions[idx];
                 }
@@ -240,7 +256,7 @@ namespace EGTTools::RL {
                 _state[0] = i, _state[1] = static_cast<size_t>(partial);
                 partial = 0.0;
                 for (auto &a : players) {
-                    unsigned idx = a->selectAction(_flatten.toIndex(_state));
+                    unsigned idx = a->selectAction(i, _flatten.toIndex(_state));
                     a->decrease(actions[idx]);
                     partial += actions[idx];
                 }

@@ -41,7 +41,7 @@ namespace EGTTools::RL {
          * @param rounds
          * @return std::tuple (donations, rounds)
          */
-        std::tuple<double, unsigned>
+        std::pair<double, size_t>
         playGame(std::vector<A> &players, std::vector<size_t> &actions, size_t rounds, R &gen_round) {
 
             auto final_round = gen_round.calculateEnd(rounds, _mt);
@@ -50,7 +50,7 @@ namespace EGTTools::RL {
             for (auto &player : players) {
                 player.resetPayoff();
             }
-            for (unsigned i = 0; i < final_round; i++) {
+            for (size_t i = 0; i < final_round; ++i) {
 #pragma omp parallel for shared(total)
                 for (size_t j = 0; j < players.size(); ++j) {
                     unsigned idx = players[j].selectAction(i);
@@ -58,10 +58,10 @@ namespace EGTTools::RL {
                     total += actions[idx];
                 }
             }
-            return std::make_tuple(total, final_round);
+            return std::make_pair(total, final_round);
         }
 
-        std::tuple<double, unsigned>
+        std::pair<double, size_t>
         playGame(std::vector<A *> &players, std::vector<size_t> &actions, size_t rounds, R &gen_round) {
 
             auto final_round = gen_round.calculateEnd(rounds, _mt);
@@ -70,7 +70,7 @@ namespace EGTTools::RL {
             for (auto &player : players) {
                 player->resetPayoff();
             }
-            for (unsigned i = 0; i < final_round; i++) {
+            for (size_t i = 0; i < final_round; ++i) {
 #pragma omp parallel for shared(total)
                 for (size_t j = 0; j < players.size(); ++j) {
                     unsigned idx = players[j]->selectAction(i);
@@ -78,7 +78,7 @@ namespace EGTTools::RL {
                     total += actions[idx];
                 }
             }
-            return std::make_tuple(total, final_round);
+            return std::make_pair(total, final_round);
         }
 
         bool reinforcePath(std::vector<A> &players) {
@@ -89,10 +89,26 @@ namespace EGTTools::RL {
             return true;
         }
 
+        bool reinforcePath(std::vector<A> &players, size_t final_round) {
+#pragma omp parallel
+            for (size_t j = 0; j < players.size(); ++j) {
+                players[j].reinforceTrajectory(final_round);
+            }
+            return true;
+        }
+
         bool reinforcePath(std::vector<A *> &players) {
 #pragma omp parallel
             for (size_t j = 0; j < players.size(); ++j) {
                 players[j]->reinforceTrajectory();
+            }
+            return true;
+        }
+
+        bool reinforcePath(std::vector<A *> &players, size_t final_round) {
+#pragma omp parallel
+            for (size_t j = 0; j < players.size(); ++j) {
+                players[j]->reinforceTrajectory(final_round);
             }
             return true;
         }
@@ -195,36 +211,36 @@ namespace EGTTools::RL {
          * @param rounds
          * @return std::tuple (donations, rounds)
          */
-        std::tuple<double, unsigned>
+        std::pair<double, size_t>
         playGame(std::vector<A> &players, std::vector<size_t> &actions, size_t rounds) {
             double total = 0.0;
             for (auto &player : players) {
                 player.resetPayoff();
             }
-            for (unsigned i = 0; i < rounds; i++) {
+            for (size_t i = 0; i < rounds; i++) {
                 for (auto a : players) {
                     unsigned idx = a.selectAction(i);
                     a.decrease(actions[idx]);
                     total += actions[idx];
                 }
             }
-            return std::make_tuple(total, rounds);
+            return std::make_pair(total, rounds);
         }
 
-        std::tuple<double, unsigned>
+        std::pair<double, size_t>
         playGame(std::vector<A *> &players, std::vector<size_t> &actions, size_t rounds) {
             double total = 0.0;
             for (auto &player : players) {
                 player->resetPayoff();
             }
-            for (unsigned i = 0; i < rounds; i++) {
+            for (size_t i = 0; i < rounds; i++) {
                 for (auto &a : players) {
                     unsigned idx = a->selectAction(i);
                     a->decrease(actions[idx]);
                     total += actions[idx];
                 }
             }
-            return std::make_tuple(total, rounds);
+            return std::make_pair(total, rounds);
         }
 
         bool reinforcePath(std::vector<A> &players) {

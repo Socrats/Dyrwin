@@ -85,31 +85,31 @@ int main(int argc, char *argv[]) {
     if (agent_type == "rothErev") {
         reinforce = &reinforceRothErev;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new Agent(rounds, actions, endowment);
+            auto a = new Agent(rounds, actions, rounds, endowment);
             group.push_back(a);
         }
     } else if (agent_type == "rothErevLambda") {
         reinforce = &reinforceBatchQLearning;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new RothErevAgent(rounds, actions, endowment, lambda, temperature);
+            auto a = new RothErevAgent(rounds, actions, rounds, endowment, lambda, temperature);
             group.push_back(a);
         }
     } else if (agent_type == "QLearning") {
         reinforce = &reinforceBatchQLearning;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new QLearningAgent(rounds, actions, endowment, alpha, lambda, temperature);
+            auto a = new QLearningAgent(rounds, actions, rounds, endowment, alpha, lambda, temperature);
             group.push_back(a);
         }
     } else if (agent_type == "HistericQLearning") {
         reinforce = &reinforceBatchQLearning;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new HistericQLearningAgent(rounds, actions, endowment, alpha, beta, temperature);
+            auto a = new HistericQLearningAgent(rounds, actions, rounds, endowment, alpha, beta, temperature);
             group.push_back(a);
         }
     } else {
         reinforce = &reinforceBatchQLearning;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new BatchQLearningAgent(rounds, actions, endowment, alpha, temperature);
+            auto a = new BatchQLearningAgent(rounds, actions, rounds, endowment, alpha, temperature);
             group.push_back(a);
         }
     }
@@ -118,16 +118,13 @@ int main(int argc, char *argv[]) {
     high_resolution_clock::time_point t1 = high_resolution_clock::now();
 
     //testing one group
-    double pool;
-    unsigned final_round;
-
     for (unsigned int step = 0; step < attempts; step++) {
         unsigned success = 0;
         double avgpayoff = 0.;
         double avg_rounds = 0.;
         for (unsigned int game = 0; game < games; game++) {
             // First we play the game
-            std::tie(pool, final_round) = Game.playGame(group, donations, rounds);
+            auto[pool, final_round] = Game.playGame(group, donations, rounds);
             avgpayoff += (Game.playersPayoff(group) / double(group_size));
             reinforce(pool, success, EGTTools::probabilityDistribution(generator), cataclysm, threshold, Game, group);
             avg_rounds += final_round;

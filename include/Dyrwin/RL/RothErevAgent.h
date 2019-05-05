@@ -14,11 +14,9 @@ namespace EGTTools::RL {
  * Implements the Roth-Erev reinforcement learning with discount factor algorithm
  */
     public:
-        RothErevAgent(unsigned nb_rounds, unsigned nb_actions, double endowment, double lambda, double temperature) :
-                Agent(nb_rounds, nb_actions, endowment), _lambda(lambda), _temperature(temperature) {};
-
-        RothErevAgent(const RothErevAgent &other) : Agent(other.nb_rounds(), other.nb_actions(), other.endowment()),
-                                                    _lambda(other.lambda()), _temperature(other.temperature()) {};
+        RothErevAgent(size_t nb_states, size_t nb_actions, size_t episode_length, double endowment, double lambda,
+                      double temperature) : Agent(nb_states, nb_actions, episode_length, endowment), _lambda(lambda),
+                                            _temperature(temperature) {};
 
         /**
          * @brief Reinforces a given strategy accoring to the accumulated payoffs.
@@ -32,8 +30,31 @@ namespace EGTTools::RL {
          */
         void reinforceTrajectory() override {
             _q_values.array() *= _lambda;
-            for (size_t i = 0; i < _nb_rounds; ++i) {
-                _q_values(i, _trajectory(i)) += _payoff;
+            for (size_t i = 0; i < _episode_length; ++i) {
+                _q_values(_trajectory_states(i), _trajectory_actions(i)) += _payoff;
+                _trajectory_states(i) = 0;
+                _trajectory_actions(i) = 0;
+            }
+        }
+
+        /**
+         * @brief Reinforces a given strategy accoring to the accumulated payoffs.
+         *
+         * Reinforces the propensity matrix given a trajectory (a set of actions taken in
+         * a window of states) and the accumulated payoff over that window.
+         *
+         * This function updates the propensity in a batch.
+         *
+         * lambda is the forgetting rate
+         *
+         * @param episode_length : length of the episode to reinforce
+         */
+        void reinforceTrajectory(size_t episode_length) override {
+            _q_values.array() *= _lambda;
+            for (size_t i = 0; i < episode_length; ++i) {
+                _q_values(_trajectory_states(i), _trajectory_actions(i)) += _payoff;
+                _trajectory_states(i) = 0;
+                _trajectory_actions(i) = 0;
             }
         }
 
@@ -48,7 +69,7 @@ namespace EGTTools::RL {
         bool inferPolicy() override {
             unsigned int j;
 
-            for (unsigned i = 0; i < _nb_rounds; i++) {
+            for (unsigned i = 0; i < _nb_states; i++) {
                 // We calculate the sum of exponential(s) of q values for each state
                 double total = 0.;
                 unsigned nb_infs = 0;
@@ -62,8 +83,7 @@ namespace EGTTools::RL {
                     unsigned selection = dist(_mt);
                     _policy.row(i).setZero();
                     _policy(i, _buffer[selection]) = 1.0;
-                }
-                else {
+                } else {
                     _policy.row(i).array() /= total;
                 }
             }

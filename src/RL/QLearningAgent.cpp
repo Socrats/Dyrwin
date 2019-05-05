@@ -8,19 +8,42 @@ using namespace EGTTools::RL;
 
 void QLearningAgent::reinforceTrajectory() {
     size_t i;
-    for (i = 0; i < (_nb_rounds - 1); i++) {
-        _q_values(i, _trajectory(i)) +=
-                _alpha * (_lambda * _q_values.row(i + 1).maxCoeff() - _q_values(i, _trajectory(i)));
+    for (i = 0; i < (_episode_length - 1); i++) {
+        _q_values(_trajectory_states(i), _trajectory_actions(i)) += _alpha *
+                                                                    (_lambda * _q_values.row(i + 1).maxCoeff() -
+                                                                     _q_values(_trajectory_states(i),
+                                                                               _trajectory_actions(i)));
+        _trajectory_states(i) = 0;
+        _trajectory_actions(i) = 0;
     }
-    i = _nb_rounds - 1;
-    _q_values(i, _trajectory(i)) += _alpha * (_payoff - _q_values(i, _trajectory(i)));
-    resetTrajectory();
+    i = _episode_length - 1;
+    _q_values(_trajectory_states(i), _trajectory_actions(i)) +=
+            _alpha * (_payoff - _q_values(_trajectory_states(i), _trajectory_actions(i)));
+    _trajectory_states(i) = 0;
+    _trajectory_actions(i) = 0;
+}
+
+void QLearningAgent::reinforceTrajectory(size_t episode_length) {
+    size_t i;
+    for (i = 0; i < (episode_length - 1); i++) {
+        _q_values(_trajectory_states(i), _trajectory_actions(i)) += _alpha *
+                                                                    (_lambda * _q_values.row(i + 1).maxCoeff() -
+                                                                     _q_values(_trajectory_states(i),
+                                                                               _trajectory_actions(i)));
+        _trajectory_states(i) = 0;
+        _trajectory_actions(i) = 0;
+    }
+    i = episode_length - 1;
+    _q_values(_trajectory_states(i), _trajectory_actions(i)) +=
+            _alpha * (_payoff - _q_values(_trajectory_states(i), _trajectory_actions(i)));
+    _trajectory_states(i) = 0;
+    _trajectory_actions(i) = 0;
 }
 
 bool QLearningAgent::inferPolicy() {
     unsigned int j;
 
-    for (unsigned i = 0; i < _nb_rounds; i++) {
+    for (unsigned i = 0; i < _nb_states; i++) {
         // We calculate the sum of exponential(s) of q values for each state
         double total = 0.;
         unsigned nb_infs = 0;

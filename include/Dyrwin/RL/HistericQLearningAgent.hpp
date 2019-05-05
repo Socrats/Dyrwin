@@ -10,32 +10,45 @@
 namespace EGTTools::RL {
     class HistericQLearningAgent : public Agent {
     public:
-        HistericQLearningAgent(unsigned int nb_rounds, unsigned int nb_actions, double endowment, double alpha,
-                               double beta, double temperature) : Agent(nb_rounds, nb_actions, endowment),
-                                                                  _alpha(alpha), _beta(beta),
-                                                                  _temperature(temperature) {}
-
-        HistericQLearningAgent(const HistericQLearningAgent &other) :
-                Agent(other.nb_rounds(), other.nb_actions(), other.endowment()), _alpha(other.alpha()),
-                _beta(other.beta()), _temperature(other.temperature()) {}
+        HistericQLearningAgent(size_t nb_states, size_t nb_actions, size_t episode_length, double endowment,
+                               double alpha, double beta, double temperature) : Agent(nb_states, nb_actions,
+                                                                                      episode_length, endowment),
+                                                                                _alpha(alpha), _beta(beta),
+                                                                                _temperature(temperature) {}
 
 
         void reinforceTrajectory() override {
-            for (unsigned i = 0; i < _nb_rounds; i++) {
-                const auto delta = _payoff - _q_values(i, _trajectory(i));
+            for (unsigned i = 0; i < _episode_length; i++) {
+                const auto delta = _payoff - _q_values(_trajectory_states(i), _trajectory_actions(i));
                 if (delta >= 0) {
-                    _q_values(i, _trajectory(i)) += _alpha * delta;
+                    _q_values(_trajectory_states(i), _trajectory_actions(i)) += _alpha * delta;
                 } else {
-                    _q_values(i, _trajectory(i)) += _beta * delta;
+                    _q_values(_trajectory_states(i), _trajectory_actions(i)) += _beta * delta;
                 }
+                // reset trace
+                _trajectory_states(i) = 0;
+                _trajectory_actions(i) = 0;
             }
-            resetTrajectory();
+        }
+
+        void reinforceTrajectory(size_t episode_length) override {
+            for (unsigned i = 0; i < episode_length; i++) {
+                const auto delta = _payoff - _q_values(_trajectory_states(i), _trajectory_actions(i));
+                if (delta >= 0) {
+                    _q_values(_trajectory_states(i), _trajectory_actions(i)) += _alpha * delta;
+                } else {
+                    _q_values(_trajectory_states(i), _trajectory_actions(i)) += _beta * delta;
+                }
+                // reset trace
+                _trajectory_states(i) = 0;
+                _trajectory_actions(i) = 0;
+            }
         }
 
         bool inferPolicy() override {
             unsigned int j;
 
-            for (unsigned i = 0; i < _nb_rounds; i++) {
+            for (unsigned i = 0; i < _nb_states; i++) {
                 // We calculate the sum of exponential(s) of q values for each state
                 double total = 0.;
                 unsigned nb_infs = 0;

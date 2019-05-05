@@ -11,16 +11,14 @@
 namespace EGTTools::RL {
     class QLearningAgent : public Agent {
     public:
-        QLearningAgent(unsigned nb_rounds, unsigned nb_actions, double endowment, double alpha,
-                            double lambda, double temperature)
-                : Agent(
-                nb_rounds, nb_actions, endowment), _alpha(alpha), _lambda(lambda), _temperature(temperature) {};
-
-        QLearningAgent(const QLearningAgent &other) :
-                Agent(other.nb_rounds(), other.nb_actions(), other.endowment()), _alpha(other.alpha()),
-                _lambda(other.lambda()), _temperature(other.temperature()) {}
+        QLearningAgent(size_t nb_states, size_t nb_actions, size_t episode_length, double endowment, double alpha,
+                       double lambda, double temperature) : Agent(nb_states, nb_actions, episode_length, endowment),
+                                                            _alpha(alpha), _lambda(lambda),
+                                                            _temperature(temperature) {};
 
         void reinforceTrajectory() override;
+
+        void reinforceTrajectory(size_t episode_length) override;
 
         bool inferPolicy() override;
 

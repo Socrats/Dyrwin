@@ -22,21 +22,22 @@ namespace EGTTools::RL {
      * that lead to achieving the target is reinforced with 1.0.
      */
     public:
-        Agent(unsigned int nb_rounds, unsigned int nb_actions, double endowment) : _nb_rounds(nb_rounds),
-                                                                                   _nb_actions(nb_actions),
-                                                                                   _endowment(endowment),
-                                                                                   _payoff(endowment) {
+        Agent(size_t nb_states, size_t nb_actions, size_t episode_length, double endowment) : _nb_states(nb_states),
+                                                                                              _nb_actions(nb_actions),
+                                                                                              _episode_length(
+                                                                                                      episode_length),
+                                                                                              _endowment(endowment),
+                                                                                              _payoff(endowment) {
 
-            _q_values = Matrix2D::Random(_nb_rounds, _nb_actions);
+            _q_values = Matrix2D::Random(nb_states, _nb_actions);
             // Initialise all actions with equal probability
-            _policy = Matrix2D::Constant(_nb_rounds, _nb_actions, 1.0 / static_cast<double>(_nb_actions));
+            _policy = Matrix2D::Constant(nb_states, _nb_actions, 1.0 / static_cast<double>(_nb_actions));
             // Initialise trajectory (the actions taken at each round)
-            _trajectory = VectorXui::Zero(_nb_rounds);
+            _trajectory_states = VectorXui::Zero(_episode_length);
+            _trajectory_actions = VectorXui::Zero(_episode_length);
             _buffer = std::vector<size_t>(_nb_actions);
 
         };
-
-        Agent(const Agent &other);
 
         virtual ~Agent() = default;
 
@@ -52,27 +53,39 @@ namespace EGTTools::RL {
 
         virtual void reinforceTrajectory();
 
+        virtual void reinforceTrajectory(size_t episode_length);
+
         virtual size_t selectAction(size_t round);
+
+        virtual size_t selectAction(size_t round, size_t state);
 
         virtual void resetQValues();
 
         // Getters
-        unsigned int nb_rounds() const { return _nb_rounds; }
+        size_t nb_states() const { return _nb_states; }
 
-        unsigned int nb_actions() const { return _nb_actions; }
+        size_t nb_actions() const { return _nb_actions; }
+
+        size_t episode_length() const { return _episode_length; }
 
         double endowment() const { return _endowment; }
 
         double payoff() const { return _payoff; }
 
-        Matrix2D policy() const { return _policy; }
+        const VectorXui& trajectoryStates() const { return _trajectory_states; };
 
-        Matrix2D qValues() const { return _q_values; }
+        const VectorXui& trajectoryActions() const { return _trajectory_actions; };
+
+        const Matrix2D& policy() const { return _policy; }
+
+        const Matrix2D& qValues() const { return _q_values; }
 
         // Setters
-        void set_nb_rounds(unsigned nb_rounds) { _nb_rounds = nb_rounds; }
+        void set_nb_states(size_t nb_states) { _nb_states = nb_states; }
 
-        void set_nb_actions(unsigned nb_actions) { _nb_actions = nb_actions; }
+        void set_nb_actions(size_t nb_actions) { _nb_actions = nb_actions; }
+
+        void set_episode_length(size_t episode_length) { _episode_length = episode_length; }
 
         void set_endowment(double endowment) { _endowment = endowment; }
 
@@ -88,12 +101,12 @@ namespace EGTTools::RL {
     protected:
         virtual std::ostream &display(std::ostream &os) const;
 
-        unsigned int _nb_rounds, _nb_actions;
+        size_t _nb_states, _nb_actions, _episode_length;
         double _endowment, _payoff;
 
         Matrix2D _policy;
         Matrix2D _q_values;
-        VectorXui _trajectory;
+        VectorXui _trajectory_states, _trajectory_actions;
         std::vector<size_t> _buffer;
 
         // Random generators

@@ -11,16 +11,13 @@
 namespace EGTTools::RL {
     class BatchQLearningAgent : public Agent {
     public:
-        BatchQLearningAgent(unsigned nb_rounds, unsigned nb_actions, unsigned endowment, double alpha,
+        BatchQLearningAgent(size_t nb_states, size_t nb_actions, size_t episode_length, double endowment, double alpha,
                             double temperature)
-                : Agent(
-                nb_rounds, nb_actions, endowment), _alpha(alpha), _temperature(temperature) {};
-
-        BatchQLearningAgent(const BatchQLearningAgent &other) :
-                Agent(other.nb_rounds(), other.nb_actions(), other.endowment()), _alpha(other.alpha()),
-                _temperature(other.temperature()) {}
+                : Agent(nb_states, nb_actions, episode_length, endowment), _alpha(alpha), _temperature(temperature) {};
 
         void reinforceTrajectory() override;
+
+        void reinforceTrajectory(size_t episode_length) override;
 
         bool inferPolicy() override;
 

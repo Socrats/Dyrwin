@@ -18,23 +18,23 @@ using namespace std::chrono;
 using namespace EGTTools::RL;
 
 template<typename A, typename B = void>
-void reinforceRothErev(double &pool, unsigned &success, double rnd_value, double &cataclysm, double &threshold,
-                       CRDGame<A, B> &Game, std::vector<A *> &group) {
+void reinforceRothErev(double &pool, size_t &success, double rnd_value, double &cataclysm, double &threshold,
+                       size_t &final_round, CRDGame<A, B> &Game, std::vector<A *> &group) {
     if (pool >= threshold) {
-        Game.reinforcePath(group);
-        success++;
-    } else if (rnd_value > cataclysm) Game.reinforcePath(group);
+        Game.reinforcePath(group, final_round);
+        ++success;
+    } else if (rnd_value > cataclysm) Game.reinforcePath(group, final_round);
     else Game.setPayoffs(group, 0);
 }
 
 template<typename A, typename B = void>
-void reinforceBatchQLearning(double &pool, unsigned &success, double rnd_value, double &cataclysm, double &threshold,
-                             CRDGame<A, B> &Game, std::vector<A *> &group) {
+void reinforceBatchQLearning(double &pool, size_t &success, double rnd_value, double &cataclysm, double &threshold,
+                             size_t &final_round, CRDGame<A, B> &Game, std::vector<A *> &group) {
 
-    if (pool >= threshold) success++;
+    if (pool >= threshold) ++success;
     else if (rnd_value < cataclysm) Game.setPayoffs(group, 0);
 
-    Game.reinforcePath(group);
+    Game.reinforcePath(group, final_round);
 }
 
 int main(int argc, char *argv[]) {
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
     std::string filename;
     std::string agent_type;
     Options options;
-    CRDGame <Agent, EGTTools::TimingUncertainty<std::mt19937_64>> Game;
+    CRDGame<Agent, EGTTools::TimingUncertainty<std::mt19937_64>> Game;
     // Random generators
     std::mt19937_64 generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 
@@ -81,42 +81,42 @@ int main(int argc, char *argv[]) {
     unsigned endowment = 2 * mean_rounds; //per player
     auto threshold = static_cast<double>(mean_rounds * group_size);
     auto donations = std::vector<size_t>(actions);
-    double end_probability = static_cast<double>(1./(1 + (mean_rounds - min_rounds)));
+    auto end_probability = static_cast<double>(1. / (1 + (mean_rounds - min_rounds)));
     EGTTools::TimingUncertainty<std::mt19937_64> tu(end_probability, max_rounds);
     for (unsigned i = 0; i < actions; i++) donations[i] = i;
-    void (*reinforce)(double &, unsigned &, double, double &, double &,
-                      CRDGame <Agent, EGTTools::TimingUncertainty<std::mt19937_64>> &, std::vector<Agent *> &);
+    void (*reinforce)(double &, size_t &, double, double &, double &, size_t &,
+                      CRDGame<Agent, EGTTools::TimingUncertainty<std::mt19937_64>> &, std::vector<Agent *> &);
 
     // Initialize agents depending on command option
-    std::vector < Agent * > group;
+    std::vector<Agent *> group;
     if (agent_type == "rothErev") {
-        reinforce = &reinforceRothErev;
+        reinforce = &reinforceRothErev<Agent, EGTTools::TimingUncertainty<std::mt19937_64>>;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new Agent(max_rounds, actions, endowment);
+            auto a = new Agent(max_rounds, actions, max_rounds, endowment);
             group.push_back(a);
         }
     } else if (agent_type == "rothErevLambda") {
-        reinforce = &reinforceBatchQLearning;
+        reinforce = &reinforceBatchQLearning<Agent, EGTTools::TimingUncertainty<std::mt19937_64>>;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new RothErevAgent(max_rounds, actions, endowment, lambda, temperature);
+            auto a = new RothErevAgent(max_rounds, actions, max_rounds, endowment, lambda, temperature);
             group.push_back(a);
         }
     } else if (agent_type == "QLearning") {
-        reinforce = &reinforceBatchQLearning;
+        reinforce = &reinforceBatchQLearning<Agent, EGTTools::TimingUncertainty<std::mt19937_64>>;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new QLearningAgent(max_rounds, actions, endowment, alpha, lambda, temperature);
+            auto a = new QLearningAgent(max_rounds, actions, max_rounds, endowment, alpha, lambda, temperature);
             group.push_back(a);
         }
     } else if (agent_type == "HistericQLearning") {
-        reinforce = &reinforceBatchQLearning;
+        reinforce = &reinforceBatchQLearning<Agent, EGTTools::TimingUncertainty<std::mt19937_64>>;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new HistericQLearningAgent(max_rounds, actions, endowment, alpha, beta, temperature);
+            auto a = new HistericQLearningAgent(max_rounds, actions, max_rounds, endowment, alpha, beta, temperature);
             group.push_back(a);
         }
     } else {
-        reinforce = &reinforceBatchQLearning;
+        reinforce = &reinforceBatchQLearning<Agent, EGTTools::TimingUncertainty<std::mt19937_64>>;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new BatchQLearningAgent(max_rounds, actions, endowment, alpha, temperature);
+            auto a = new BatchQLearningAgent(max_rounds, actions, max_rounds, endowment, alpha, temperature);
             group.push_back(a);
         }
     }
@@ -125,18 +125,16 @@ int main(int argc, char *argv[]) {
     high_resolution_clock::time_point t1 = high_resolution_clock::now();
 
     //testing one group
-    double pool;
-    unsigned final_round;
-
     for (unsigned int step = 0; step < attempts; step++) {
-        unsigned success = 0;
+        size_t success = 0;
         double avgpayoff = 0.;
         double avg_rounds = 0.;
         for (unsigned int game = 0; game < games; game++) {
             // First we play the game
-            std::tie(pool, final_round) = Game.playGame(group, donations, min_rounds, tu);
+            auto[pool, final_round] = Game.playGame(group, donations, min_rounds, tu);
             avgpayoff += (Game.playersPayoff(group) / double(group_size));
-            reinforce(pool, success, EGTTools::probabilityDistribution(generator), cataclysm, threshold, Game, group);
+            reinforce(pool, success, EGTTools::probabilityDistribution(generator), cataclysm, threshold, final_round,
+                      Game, group);
             avg_rounds += final_round;
         }
         std::cout << (success / double(games)) << " " << (avgpayoff / double(games)) << " "
