@@ -10,8 +10,6 @@ void BatchQLearningAgent::reinforceTrajectory() {
     for (unsigned i = 0; i < _episode_length; ++i) {
         _q_values(_trajectory_states(i), _trajectory_actions(i)) +=
                 _alpha * (_payoff - _q_values(_trajectory_states(i), _trajectory_actions(i)));
-        _trajectory_states(i) = 0;
-        _trajectory_actions(i) = 0;
     }
 }
 
@@ -19,8 +17,6 @@ void BatchQLearningAgent::reinforceTrajectory(size_t episode_length) {
     for (unsigned i = 0; i < episode_length; ++i) {
         _q_values(_trajectory_states(i), _trajectory_actions(i)) +=
                 _alpha * (_payoff - _q_values(_trajectory_states(i), _trajectory_actions(i)));
-        _trajectory_states(i) = 0;
-        _trajectory_actions(i) = 0;
     }
 }
 
