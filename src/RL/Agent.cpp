@@ -8,23 +8,6 @@ using namespace EGTTools::RL;
 
 
 /**
- * Overloads = operator. Copies an agent into another already instantiated.
- * @param other
- * @return True if the agents are equal
- */
-Agent &Agent::operator=(const Agent &other) {
-    _nb_states = other.nb_states();
-    _nb_actions = other.nb_actions();
-    _episode_length = other.episode_length();
-    _endowment = other.endowment();
-    _payoff = other.payoff();
-    _policy = other.policy();
-    _q_values = other.qValues();
-
-    return *this;
-}
-
-/**
  * Decreases the payoff by @param amount if _payoff >= amount and returns true.
  * Otherwise returns false.
  * @param amount
@@ -136,4 +119,14 @@ size_t Agent::selectAction(size_t round, size_t state) {
 
 void Agent::resetQValues() {
     _q_values.setZero();
+}
+
+void Agent::reset() {
+    _q_values.setZero();
+    // Initialise all actions with equal probability
+    _policy.array() = 1.0 / static_cast<double>(_nb_actions);
+    // Initialise trajectory (the actions taken at each round)
+    _trajectory_states.setZero();
+    _trajectory_actions.setZero();
+    _payoff = _endowment;
 }

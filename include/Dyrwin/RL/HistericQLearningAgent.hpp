@@ -69,6 +69,8 @@ namespace EGTTools::RL {
             return true;
         }
 
+        virtual std::string type() const override { return "EGTTools::RL::HistericQLearningAgent"; }
+
         // Getters
         double alpha() const { return _alpha; }
 

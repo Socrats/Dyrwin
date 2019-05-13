@@ -12,6 +12,7 @@
 #include <Dyrwin/RL/HistericQLearningAgent.hpp>
 #include <Dyrwin/RL/CRDGame.h>
 #include <Dyrwin/RL/TimingUncertainty.hpp>
+#include <Dyrwin/RL/Utils.h>
 #include <Dyrwin/CommandLineParsing.h>
 
 using namespace std::chrono;
@@ -19,7 +20,7 @@ using namespace EGTTools::RL;
 
 template<typename A, typename B = void>
 void reinforceRothErev(double &pool, size_t &success, double rnd_value, double &cataclysm, double &threshold,
-                       size_t &final_round, CRDGame<A, B> &Game, std::vector<A *> &group) {
+                       size_t &final_round, CRDGame<A, B> &Game, EGTTools::RL::Population &group) {
     if (pool >= threshold) {
         Game.reinforcePath(group, final_round);
         ++success;
@@ -29,7 +30,7 @@ void reinforceRothErev(double &pool, size_t &success, double rnd_value, double &
 
 template<typename A, typename B = void>
 void reinforceBatchQLearning(double &pool, size_t &success, double rnd_value, double &cataclysm, double &threshold,
-                             size_t &final_round, CRDGame<A, B> &Game, std::vector<A *> &group) {
+                             size_t &final_round, CRDGame<A, B> &Game, EGTTools::RL::Population &group) {
 
     if (pool >= threshold) ++success;
     else if (rnd_value < cataclysm) Game.setPayoffs(group, 0);
@@ -85,39 +86,34 @@ int main(int argc, char *argv[]) {
     EGTTools::TimingUncertainty<std::mt19937_64> tu(end_probability, max_rounds);
     for (unsigned i = 0; i < actions; i++) donations[i] = i;
     void (*reinforce)(double &, size_t &, double, double &, double &, size_t &,
-                      CRDGame<Agent, EGTTools::TimingUncertainty<std::mt19937_64>> &, std::vector<Agent *> &);
+                      CRDGame<Agent, EGTTools::TimingUncertainty<std::mt19937_64>> &, EGTTools::RL::Population &);
 
     // Initialize agents depending on command option
-    std::vector<Agent *> group;
+    EGTTools::RL::Population group;
     if (agent_type == "rothErev") {
         reinforce = &reinforceRothErev<Agent, EGTTools::TimingUncertainty<std::mt19937_64>>;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new Agent(max_rounds, actions, max_rounds, endowment);
-            group.push_back(a);
+            group.push_back(std::make_unique<Agent>(max_rounds, actions, max_rounds, endowment));
         }
     } else if (agent_type == "rothErevLambda") {
         reinforce = &reinforceBatchQLearning<Agent, EGTTools::TimingUncertainty<std::mt19937_64>>;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new RothErevAgent(max_rounds, actions, max_rounds, endowment, lambda, temperature);
-            group.push_back(a);
+            group.push_back(std::make_unique<RothErevAgent>(max_rounds, actions, max_rounds, endowment, lambda, temperature));
         }
     } else if (agent_type == "QLearning") {
         reinforce = &reinforceBatchQLearning<Agent, EGTTools::TimingUncertainty<std::mt19937_64>>;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new QLearningAgent(max_rounds, actions, max_rounds, endowment, alpha, lambda, temperature);
-            group.push_back(a);
+            group.push_back(std::make_unique<QLearningAgent>(max_rounds, actions, max_rounds, endowment, alpha, lambda, temperature));
         }
     } else if (agent_type == "HistericQLearning") {
         reinforce = &reinforceBatchQLearning<Agent, EGTTools::TimingUncertainty<std::mt19937_64>>;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new HistericQLearningAgent(max_rounds, actions, max_rounds, endowment, alpha, beta, temperature);
-            group.push_back(a);
+            group.push_back(std::make_unique<HistericQLearningAgent>(max_rounds, actions, max_rounds, endowment, alpha, beta, temperature));
         }
     } else {
         reinforce = &reinforceBatchQLearning<Agent, EGTTools::TimingUncertainty<std::mt19937_64>>;
         for (unsigned i = 0; i < group_size; i++) {
-            auto a = new BatchQLearningAgent(max_rounds, actions, max_rounds, endowment, alpha, temperature);
-            group.push_back(a);
+            group.push_back(std::make_unique<BatchQLearningAgent>(max_rounds, actions, max_rounds, endowment, alpha, temperature));
         }
     }
 

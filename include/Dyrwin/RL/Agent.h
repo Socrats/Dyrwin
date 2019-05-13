@@ -41,9 +41,19 @@ namespace EGTTools::RL {
 
         virtual ~Agent() = default;
 
-        Agent &operator=(const Agent &other);
-
         friend std::ostream &operator<<(std::ostream &o, Agent &r) { return r.display(o); }
+
+        std::string toString() const {
+            std::stringstream ss;
+            Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+
+            ss << "[(" << _payoff << ")";
+            ss << _policy.format(CleanFmt);
+            ss << "]" << std::endl;
+            return ss.str();
+        }
+
+        virtual std::string type() const { return "EGTTools::RL::Agent"; }
 
         bool decrease(unsigned amount);
 
@@ -61,6 +71,8 @@ namespace EGTTools::RL {
 
         virtual void resetQValues();
 
+        virtual void reset();
+
         // Getters
         size_t nb_states() const { return _nb_states; }
 
@@ -72,13 +84,13 @@ namespace EGTTools::RL {
 
         double payoff() const { return _payoff; }
 
-        const VectorXui& trajectoryStates() const { return _trajectory_states; };
+        const VectorXui &trajectoryStates() const { return _trajectory_states; };
 
-        const VectorXui& trajectoryActions() const { return _trajectory_actions; };
+        const VectorXui &trajectoryActions() const { return _trajectory_actions; };
 
-        const Matrix2D& policy() const { return _policy; }
+        const Matrix2D &policy() const { return _policy; }
 
-        const Matrix2D& qValues() const { return _q_values; }
+        const Matrix2D &qValues() const { return _q_values; }
 
         // Setters
         void set_nb_states(size_t nb_states) { _nb_states = nb_states; }
@@ -93,9 +105,21 @@ namespace EGTTools::RL {
 
         void resetPayoff() { _payoff = _endowment; }
 
-        void set_policy(Matrix2D policy) { _policy = std::move(policy); }
+        void set_policy(const Eigen::Ref<const Matrix2D> &policy) {
+            if (static_cast<size_t>(policy.rows()) != _nb_states) throw std::invalid_argument(
+                        "Policy must have as many rows as states (" + std::to_string(_nb_states) + ")");
+            if (static_cast<size_t>(policy.cols()) != _nb_actions) throw std::invalid_argument(
+                        "Policy must have as many columns as actions (" + std::to_string(_nb_actions) + ")");
+            _policy.array() = policy;
+        }
 
-        void set_q_values(Matrix2D q_values) { _q_values = std::move(q_values); }
+        void set_q_values(const Eigen::Ref<const Matrix2D> &q_values) {
+            if (static_cast<size_t>(q_values.rows()) != _nb_states) throw std::invalid_argument(
+                        "Q-values must have as many rows as states (" + std::to_string(_nb_states) + ")");
+            if (static_cast<size_t>(q_values.cols()) != _nb_actions) throw std::invalid_argument(
+                        "Q-values must have as many columns as actions (" + std::to_string(_nb_actions) + ")");
+            _q_values.array() = q_values;
+        }
 
 
     protected:

@@ -18,6 +18,7 @@ namespace EGTTools::Random {
          * @return SeedGenerator
          */
         static SeedGenerator &getInstance();
+        ~SeedGenerator() = default;
 
         /**
          * @brief This function generates a random number to seed other generators

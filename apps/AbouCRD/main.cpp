@@ -2,7 +2,7 @@
 #include <fstream>
 #include <Dyrwin/crd/CRDSimulator.h>
 #include <Dyrwin/CommandLineParsing.h>
-#include <Dyrwin/Utils.h>
+#include <Dyrwin/crd/Utils.h>
 
 int main(int argc, char *argv[]) {
 

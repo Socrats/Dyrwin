@@ -11,6 +11,14 @@
 
 namespace EGTTools::RL {
     using Factors = std::vector<size_t>;
+    using ActionSpace = std::vector<size_t>;
+    using Individual = std::unique_ptr<Agent>;
+    using Population = std::vector<Individual>;
+    using RothErevPopulation = std::vector<Agent>;
+    using RothErevLambdaPopulation = std::vector<RothErevAgent>;
+    using QLearningPopulation = std::vector<QLearningAgent>;
+    using BatchQLearningPopulation = std::vector<BatchQLearningAgent>;
+    using HistericQLearningPopulation = std::vector<HistericQLearningAgent>;
 
     size_t factorSpace(const Factors &space) {
         size_t retval = 1;

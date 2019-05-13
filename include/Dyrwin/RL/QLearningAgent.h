@@ -30,6 +30,8 @@ namespace EGTTools::RL {
 
         }
 
+        virtual std::string type() const override { return "EGTTools::RL::QLearningAgent"; }
+
         // Getters
         double alpha() const { return _alpha; }
 

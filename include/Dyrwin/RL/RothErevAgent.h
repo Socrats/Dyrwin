@@ -98,6 +98,8 @@ namespace EGTTools::RL {
 
         }
 
+        virtual std::string type() const override { return "EGTTools::RL::RothErevAgent"; }
+
         // Getters
         double lambda() const { return _lambda; }
 
