@@ -99,6 +99,7 @@ namespace EGTTools::RL {
         Matrix2D _q_values;
         VectorXui _trajectory_states, _trajectory_actions;
         std::vector<size_t> _buffer;
+        std::uniform_real_distribution<double> _real_rand;
 
         // Random generators
         std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};

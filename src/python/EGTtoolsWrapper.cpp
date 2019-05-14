@@ -373,7 +373,8 @@ PYBIND11_MODULE(EGTtools, m) {
                  "different child classes) that can be passed to a game class.",
                  py::arg("agent_type"), py::arg("nb_agents"),
                  py::arg("nb_states"), py::arg("nb_actions"),
-                 py::arg("episode_length"), py::arg("endowment"), py::arg("*args"), py::return_value_policy::reference_internal)
+                 py::arg("episode_length"), py::arg("endowment"), py::arg("*args"),
+                 py::return_value_policy::reference_internal)
             .def("size", &RL::PopContainer::size, "returns the size of the contained vector")
             .def("reset", &RL::PopContainer::reset, "reset all individuals in the population")
             .def("__getitem__", [](RL::PopContainer &s, size_t i) -> RL::Agent & {
@@ -385,8 +386,8 @@ PYBIND11_MODULE(EGTtools, m) {
 
     py::class_<RL::CRDSim>(mRL, "CRDSim")
             .def(py::init<size_t, size_t, size_t, size_t, size_t, double, double,
-                    double, const EGTTools::RL::ActionSpace &,
-                    const std::string &, const std::vector<double> &>(),
+                         double, const EGTTools::RL::ActionSpace &,
+                         const std::string &, const std::vector<double> &>(),
                  "Performs a Collective-risk dilemma simulation similar to milinksi 2008 experiment.",
                  py::arg("nb_episodes"), py::arg("nb_games"),
                  py::arg("nb_rounds"), py::arg("nb_actions"),
@@ -394,10 +395,12 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("endowment"), py::arg("threshold"),
                  py::arg("available_actions"), py::arg("agent_type"), py::arg("*args"))
             .def("run", static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t)>(&RL::CRDSim::run),
-                    "Runs a CRD simulation for a single group", py::arg("nb_episodes"), py::arg("nb_games"))
-            .def("run", static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, size_t)>(&RL::CRDSim::run),
-                    "Runs a CRD simulation for nb_groups",
-                    py::arg("nb_episodes"), py::arg("nb_games"), py::arg("nb_groups"))
+                 "Runs a CRD simulation for a single group", py::arg("nb_episodes"), py::arg("nb_games"))
+            .def("run", static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, size_t, double,
+                                                                       const std::vector<double> &)>(&RL::CRDSim::run),
+                 "Runs a CRD simulation for nb_groups",
+                 py::arg("nb_episodes"), py::arg("nb_games"), py::arg("nb_groups"), py::arg("risk"),
+                 py::arg("*agent_args"))
             .def_readwrite("population", &RL::CRDSim::population, py::return_value_policy::reference_internal)
             .def("reset_population", &RL::CRDSim::resetPopulation)
             .def_property("nb_games", &RL::CRDSim::nb_games, &RL::CRDSim::set_nb_games)
@@ -408,5 +411,6 @@ PYBIND11_MODULE(EGTtools, m) {
             .def_property("threshold", &RL::CRDSim::threshold, &RL::CRDSim::set_threshold)
             .def_property("available_actions", &RL::CRDSim::available_actions, &RL::CRDSim::set_available_actions,
                           py::return_value_policy::reference_internal)
+            .def_property("agent_type", &RL::CRDSim::agent_type, &RL::CRDSim::set_agent_type)
             .def_property_readonly("endowment", &RL::CRDSim::endowment);
 }

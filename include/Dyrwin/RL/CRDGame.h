@@ -49,7 +49,7 @@ namespace EGTTools::RL {
                 player.resetPayoff();
             }
             for (size_t i = 0; i < final_round; ++i) {
-#pragma omp parallel for shared(total)
+//#pragma omp parallel for shared(total)
                 for (size_t j = 0; j < players.size(); ++j) {
                     unsigned idx = players[j].selectAction(i);
                     players[j].decrease(actions[idx]);
@@ -69,7 +69,7 @@ namespace EGTTools::RL {
                 player->resetPayoff();
             }
             for (size_t i = 0; i < final_round; ++i) {
-#pragma omp parallel for shared(total)
+//#pragma omp parallel for shared(total)
                 for (size_t j = 0; j < players.size(); ++j) {
                     unsigned idx = players[j]->selectAction(i);
                     players[j]->decrease(actions[idx]);
@@ -80,7 +80,7 @@ namespace EGTTools::RL {
         }
 
         bool reinforcePath(std::vector<A> &players) {
-#pragma omp parallel
+//#pragma omp parallel
             for (size_t j = 0; j < players.size(); ++j) {
                 players[j].reinforceTrajectory();
             }
@@ -88,7 +88,7 @@ namespace EGTTools::RL {
         }
 
         bool reinforcePath(std::vector<A> &players, size_t final_round) {
-#pragma omp parallel
+//#pragma omp parallel
             for (size_t j = 0; j < players.size(); ++j) {
                 players[j].reinforceTrajectory(final_round);
             }
@@ -96,7 +96,7 @@ namespace EGTTools::RL {
         }
 
         bool reinforcePath(std::vector<std::unique_ptr<A>> &players) {
-#pragma omp parallel
+//#pragma omp parallel
             for (size_t j = 0; j < players.size(); ++j) {
                 players[j]->reinforceTrajectory();
             }
@@ -104,7 +104,7 @@ namespace EGTTools::RL {
         }
 
         bool reinforcePath(std::vector<std::unique_ptr<A>> &players, size_t final_round) {
-#pragma omp parallel
+//#pragma omp parallel
             for (size_t j = 0; j < players.size(); ++j) {
                 players[j]->reinforceTrajectory(final_round);
             }
@@ -126,7 +126,7 @@ namespace EGTTools::RL {
         }
 
         bool calcProbabilities(std::vector<A> &players) {
-#pragma omp parallel
+//#pragma omp parallel
             for (size_t j = 0; j < players.size(); ++j) {
                 players[j].inferPolicy();
             }
@@ -134,7 +134,7 @@ namespace EGTTools::RL {
         }
 
         bool calcProbabilities(std::vector<std::unique_ptr<A>> &players) {
-#pragma omp parallel
+//#pragma omp parallel
             for (size_t j = 0; j < players.size(); ++j) {
                 players[j]->inferPolicy();
             }
@@ -379,14 +379,14 @@ namespace EGTTools::RL {
         std::pair<double, size_t>
         playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds) {
             double total = 0.0;
+            size_t idx;
             for (auto &player : players) {
                 player->resetPayoff();
             }
             for (size_t i = 0; i < rounds; i++) {
-#pragma omp parallel for shared(total)
-                for (size_t j = 0; j < players.size(); ++j) {
-                    unsigned idx = players[j].selectAction(i);
-                    players[j].decrease(actions[idx]);
+                for (auto& player : players) {
+                    idx = player->selectAction(i);
+                    player->decrease(actions[idx]);
                     total += actions[idx];
                 }
             }
@@ -394,9 +394,8 @@ namespace EGTTools::RL {
         }
 
         bool reinforcePath(PopContainer &players) {
-#pragma omp parallel
-            for (size_t i = 0; i < players.size(); ++i)
-                players[i].reinforceTrajectory();
+            for (auto& player : players)
+                player->reinforceTrajectory();
             return true;
         }
 
@@ -408,9 +407,8 @@ namespace EGTTools::RL {
         }
 
         bool calcProbabilities(PopContainer &players) {
-//#pragma omp parallel
-            for (size_t i = 0; i < players.size(); ++i)
-                players[i].inferPolicy();
+            for (auto& player : players)
+                player->inferPolicy();
             return true;
         }
 
@@ -423,9 +421,8 @@ namespace EGTTools::RL {
 
         double playersPayoff(PopContainer &players) {
             double total = 0;
-#pragma omp parallel for shared(total)
-            for (size_t i = 0; i < players.size(); ++i)
-                total += players[i].payoff();
+            for (auto& player : players)
+                total += player->payoff();
 
             return total;
         }
@@ -438,9 +435,8 @@ namespace EGTTools::RL {
 
         double playersContribution(PopContainer &players) {
             double total = 0;
-#pragma omp parallel for shared(total)
-            for (size_t i = 0; i < players.size(); ++i)
-                total += players[i].endowment() - players[i].payoff();
+            for (auto& player : players)
+                total += player->endowment() - player->payoff();
 
             return total;
         }

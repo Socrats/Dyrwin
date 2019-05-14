@@ -82,6 +82,7 @@ int main(int argc, char *argv[]) {
         CRDSim sim(attempts, games, rounds, actions, group_size, cataclysm, endowment, threshold, available_actions, agent_type, args);
         EGTTools::Matrix2D results = sim.run(attempts, games);
         std::cout << "success: " << results.row(0) << std::endl;
+        std::cout << "avg_contrib: " << results.row(1) << std::endl;
         sim.Game.printGroup(sim.population);
     } catch (std::invalid_argument &e) {
         std::cerr << "\033[1;31m[EXCEPTION] Invalid argument: " << e.what() << "\033[0m" << std::endl;

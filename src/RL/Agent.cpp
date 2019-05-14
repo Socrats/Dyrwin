@@ -21,6 +21,7 @@ Agent::Agent(size_t nb_states, size_t nb_actions, size_t episode_length, double 
     _trajectory_states = VectorXui::Zero(_episode_length);
     _trajectory_actions = VectorXui::Zero(_episode_length);
     _buffer = std::vector<size_t>(_nb_actions);
+    _real_rand = std::uniform_real_distribution<double>(0.0, 1.0);
 
 }
 
@@ -129,7 +130,7 @@ void Agent::reinforceTrajectory(size_t episode_length) {
 size_t Agent::selectAction(size_t round) {
     assert(round >= 0 && round < _episode_length);
     _trajectory_states(round) = round;
-    _trajectory_actions(round) = EGTTools::choice(_nb_actions, _policy.row(round), _mt);
+    _trajectory_actions(round) = EGTTools::choice(_nb_actions, _policy.row(round), _real_rand, _mt);
     return _trajectory_actions(round);
 }
 
@@ -141,7 +142,7 @@ size_t Agent::selectAction(size_t round) {
 size_t Agent::selectAction(size_t round, size_t state) {
     assert(round >= 0 && round < _episode_length);
     _trajectory_states(round) = state;
-    _trajectory_actions(round) = EGTTools::choice(_nb_actions, _policy.row(state), _mt);
+    _trajectory_actions(round) = EGTTools::choice(_nb_actions, _policy.row(state), _real_rand, _mt);
     return _trajectory_actions(round);
 }
 
@@ -174,9 +175,9 @@ double Agent::endowment() const { return _endowment; }
 
 double Agent::payoff() const { return _payoff; }
 
-const EGTTools::VectorXui & Agent::trajectoryStates() const { return _trajectory_states; };
+const EGTTools::VectorXui & Agent::trajectoryStates() const { return _trajectory_states; }
 
-const EGTTools::VectorXui & Agent::trajectoryActions() const { return _trajectory_actions; };
+const EGTTools::VectorXui & Agent::trajectoryActions() const { return _trajectory_actions; }
 
 const EGTTools::Matrix2D & Agent::policy() const { return _policy; }
 

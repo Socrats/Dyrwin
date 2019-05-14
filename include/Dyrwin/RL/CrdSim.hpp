@@ -43,7 +43,7 @@ namespace EGTTools::RL {
                double threshold,
                const ActionSpace &available_actions,
                const std::string &agent_type,
-               const std::vector<double> &args);
+               const std::vector<double> &args = {});
 
         /**
          * @brief Runs a simulation of the CRD for only 1 group.
@@ -74,15 +74,19 @@ namespace EGTTools::RL {
          * @return EGTTools::Matrix2D containing the group achievement and average contribution
          *         for each episode.
          */
-        Matrix2D run(size_t nb_episodes, size_t nb_games, size_t nb_groups);
+        Matrix2D
+        run(size_t nb_episodes, size_t nb_games, size_t nb_groups, double risk, const std::vector<double> &args = {});
 
         void resetPopulation();
 
-        void reinforceOnlyPositive(double &pool, size_t &success);
+        void reinforceOnlyPositive(double &pool, size_t &success, double &risk, PopContainer &pop,
+                                   CRDGame<PopContainer> &game);
 
-        void reinforceAll(double &pool, size_t &success);
+        void reinforceAll(double &pool, size_t &success, double &risk, PopContainer &pop,
+                          CRDGame<PopContainer> &game);
 
-        void reinforceXico(double &pool, size_t &success);
+        void reinforceXico(double &pool, size_t &success, double &risk, PopContainer &pop,
+                           CRDGame<PopContainer> &game);
 
         size_t nb_games() const;
 
@@ -100,6 +104,8 @@ namespace EGTTools::RL {
 
         const ActionSpace &available_actions() const;
 
+        const std::string &agent_type() const;
+
         void set_nb_games(size_t nb_games);
 
         void set_nb_episodes(size_t nb_episodes);
@@ -114,15 +120,21 @@ namespace EGTTools::RL {
 
         void set_available_actions(const ActionSpace &available_actions);
 
+        void set_agent_type(const std::string &agent_type);
+
         CRDGame<PopContainer> Game;
         PopContainer population;
 
     private:
         size_t _nb_episodes, _nb_games, _nb_rounds, _nb_actions, _group_size;
-        double _risk, _threshold, _endowment;
+        double _risk, _endowment, _threshold;
         ActionSpace _available_actions;
+        std::string _agent_type;
 
-        void (EGTTools::RL::CRDSim::* _reinforce)(double &, size_t &) = nullptr;
+        std::uniform_real_distribution<double> _real_rand;
+
+        void (EGTTools::RL::CRDSim::* _reinforce)(double &, size_t &, double &, PopContainer &,
+                                                  CRDGame<PopContainer> &) = nullptr;
 
         // Random generators
         std::mt19937_64 _generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};

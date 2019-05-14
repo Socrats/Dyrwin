@@ -3,6 +3,7 @@
 //
 
 #include <Dyrwin/RL/CrdSim.hpp>
+//#include <omp.h>
 
 EGTTools::RL::CRDSim::CRDSim(size_t nb_episodes, size_t nb_games, size_t nb_rounds,
                              size_t nb_actions, size_t group_size,
@@ -16,8 +17,9 @@ EGTTools::RL::CRDSim::CRDSim(size_t nb_episodes, size_t nb_games, size_t nb_roun
                                                                 _nb_actions(nb_actions),
                                                                 _group_size(group_size),
                                                                 _risk(risk),
+                                                                _endowment(endowment),
                                                                 _threshold(threshold),
-                                                                _endowment(endowment) {
+                                                                _agent_type(agent_type) {
     if (available_actions.size() != _nb_actions)
         throw std::invalid_argument("you can't specify more actions than " + std::to_string(_nb_actions));
 
@@ -30,6 +32,8 @@ EGTTools::RL::CRDSim::CRDSim(size_t nb_episodes, size_t nb_games, size_t nb_roun
     }
     if (agent_type == "rothErev") _reinforce = &EGTTools::RL::CRDSim::reinforceOnlyPositive;
     else _reinforce = &EGTTools::RL::CRDSim::reinforceAll;
+
+    _real_rand = std::uniform_real_distribution<double>(0.0, 1.0);
 }
 
 EGTTools::Matrix2D EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games) {
@@ -43,7 +47,7 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games
             // First we play the game
             auto[pool, final_round] = Game.playGame(population, _available_actions, _nb_rounds);
             avg_contribution += (Game.playersContribution(population) / double(_group_size));
-            (this->*_reinforce)(pool, success);
+            (this->*_reinforce)(pool, success, _risk, population, Game);
             avg_rounds += final_round;
         }
         results(0, step) = static_cast<double>(success) / static_cast<double>(nb_games);
@@ -56,64 +60,84 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games
     return results;
 }
 
-EGTTools::Matrix2D EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups) {
-    Matrix2D results = Matrix2D::Zero(2, nb_episodes);
+EGTTools::Matrix2D
+EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups, double risk, const std::vector<double> &args) {
+    EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_groups);
+    size_t convergence = nb_episodes > 100 ? nb_episodes - 100 :  0;
 
-    for (size_t group = 0; group < nb_groups; ++group) {
-        // First reset population
-        population.reset();
+    // Create a vector of groups
+    std::vector<PopContainer> groups;
 
-        for (size_t step = 0; step < nb_episodes; ++step) {
-            size_t success = 0;
-            double avg_contribution = 0.;
-            double avg_rounds = 0.;
-            for (unsigned int game = 0; game < nb_games; ++game) {
-                // First we play the game
-                auto[pool, final_round] = Game.playGame(population, _available_actions, _nb_rounds);
-                avg_contribution += (Game.playersContribution(population) / double(_group_size));
-                (this->*_reinforce)(pool, success);
-                avg_rounds += final_round;
-            }
-            results(0, step) += static_cast<double>(success) / static_cast<double>(nb_games);
-            results(1, step) += static_cast<double>(avg_contribution) / static_cast<double>(nb_games);
-
-            Game.calcProbabilities(population);
-            Game.resetEpisode(population);
+    for (size_t i = 0; i < nb_groups; ++i) {
+        try {
+            groups.emplace_back(_agent_type, _group_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
+        } catch (std::invalid_argument &e) {
+            throw e;
         }
     }
 
-    return results / nb_groups;
+#pragma omp parallel for shared(results)
+    for (size_t group = 0; group < nb_groups; ++group) {
+        size_t success;
+        double avg_contribution;
+        double avg_rounds;
+        CRDGame<PopContainer> game;
+
+        for (size_t step = 0; step < nb_episodes; ++step) {
+            success = 0;
+            avg_contribution = 0.;
+            avg_rounds = 0.;
+            for (unsigned int i = 0; i < nb_games; ++i) {
+                // First we play the game
+                auto[pool, final_round] = game.playGame(groups[group], _available_actions, _nb_rounds);
+                avg_contribution += (game.playersContribution(groups[group]) / double(_group_size));
+                (this->*_reinforce)(pool, success, risk, groups[group], game);
+                avg_rounds += final_round;
+            }
+            if (step >= convergence) {
+                results(0, group) += static_cast<double>(success) / static_cast<double>(nb_games);
+                results(1, group) += avg_contribution / static_cast<double>(nb_games);
+            }
+
+            game.calcProbabilities(groups[group]);
+            game.resetEpisode(groups[group]);
+        }
+
+        results.col(group) = results.col(group) / 100.0;
+    }
+
+    return results;
 
 }
 
 void EGTTools::RL::CRDSim::resetPopulation() { population.reset(); }
 
-void EGTTools::RL::CRDSim::reinforceOnlyPositive(double &pool, size_t &success) {
+void EGTTools::RL::CRDSim::reinforceOnlyPositive(double &pool, size_t &success, double &risk, PopContainer & pop, CRDGame<PopContainer> & game) {
     if (pool >= _threshold) {
-        Game.reinforcePath(population);
+        game.reinforcePath(pop);
         success++;
-    } else if (EGTTools::probabilityDistribution(_generator) > _risk) Game.reinforcePath(population);
-    else Game.setPayoffs(population, 0);
+    } else if (_real_rand(_generator) > risk) game.reinforcePath(pop);
+    else game.setPayoffs(pop, 0);
 }
 
-void EGTTools::RL::CRDSim::reinforceAll(double &pool, size_t &success) {
+void EGTTools::RL::CRDSim::reinforceAll(double &pool, size_t &success, double &risk, PopContainer & pop, CRDGame<PopContainer> & game) {
 
     if (pool >= _threshold) success++;
-    else if (EGTTools::probabilityDistribution(_generator) < _risk) Game.setPayoffs(population, 0);
+    else if (_real_rand(_generator) < risk) game.setPayoffs(pop, 0);
 
-    Game.reinforcePath(population);
+    game.reinforcePath(pop);
 }
 
-void EGTTools::RL::CRDSim::reinforceXico(double &pool, size_t &success) {
+void EGTTools::RL::CRDSim::reinforceXico(double &pool, size_t &success, double &risk, PopContainer & pop, CRDGame<PopContainer> & game) {
 
     if (pool >= _threshold) success++;
-    else if (EGTTools::probabilityDistribution(_generator) < _risk) {
-        for (auto &player: population) {
+    else if (_real_rand(_generator) < risk) {
+        for (auto &player: pop) {
             player->set_payoff(-player->payoff());
         }
     }
 
-    Game.reinforcePath(population);
+    game.reinforcePath(pop);
 }
 
 size_t EGTTools::RL::CRDSim::nb_games() const { return _nb_games; }
@@ -130,7 +154,9 @@ double EGTTools::RL::CRDSim::risk() const { return _risk; }
 
 double EGTTools::RL::CRDSim::threshold() const { return _threshold; }
 
-const EGTTools::RL::ActionSpace & EGTTools::RL::CRDSim::available_actions() const { return _available_actions; }
+const EGTTools::RL::ActionSpace &EGTTools::RL::CRDSim::available_actions() const { return _available_actions; }
+
+const std::string &EGTTools::RL::CRDSim::agent_type() const { return _agent_type; }
 
 void EGTTools::RL::CRDSim::set_nb_games(size_t nb_games) { _nb_games = nb_games; }
 
@@ -155,4 +181,8 @@ void EGTTools::RL::CRDSim::set_available_actions(const EGTTools::RL::ActionSpace
     _available_actions.resize(available_actions.size());
     for (size_t i = 0; i < available_actions.size(); ++i)
         _available_actions[i] = available_actions[i];
+}
+
+void EGTTools::RL::CRDSim::set_agent_type(const std::string &agent_type) {
+    _agent_type = agent_type;
 }
