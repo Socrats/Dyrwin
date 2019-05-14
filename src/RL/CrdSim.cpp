@@ -110,6 +110,69 @@ EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups,
 
 }
 
+EGTTools::Matrix2D
+EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_t nb_groups, double risk, const std::vector<double> &args) {
+    EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_generations);
+    size_t pop_size = _group_size * nb_groups;
+    size_t success;
+    double avg_contribution;
+    double avg_rounds;
+    CRDGame<PopContainer> game;
+
+    std::mt19937_64 mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+
+    // Create a population of _group_size * nb_groups
+    PopContainer wmPop(_agent_type, pop_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
+    PopContainer group;
+    std::vector<size_t > groups(pop_size);
+    std::iota(groups.begin(), groups.end(), 0);
+    for (size_t i = 0; i < _group_size; ++i)
+        group.push_back(wmPop(i));
+
+    for (size_t generation = 0; generation < nb_generations; ++generation) {
+        // First we select random groups and let them play nb_games
+        success = 0;
+        avg_contribution = 0.;
+        avg_rounds = 0.;
+        for (size_t i = 0; i < nb_games; ++i) {
+            std::shuffle(groups.begin(), groups.end(), mt);
+            for (size_t j = 0; i < _group_size; ++i)
+                group(j) = wmPop(groups[j]);
+            // First we play the game
+            auto[pool, final_round] = game.playGame(group, _available_actions, _nb_rounds);
+            avg_contribution += (game.playersContribution(group) / double(_group_size));
+            (this->*_reinforce)(pool, success, risk, group, game);
+            avg_rounds += final_round;
+        }
+        results(0, generation) += static_cast<double>(success) / static_cast<double>(nb_games);
+        results(1, generation) += avg_contribution / static_cast<double>(nb_games);
+
+        game.calcProbabilities(wmPop);
+        game.resetEpisode(wmPop);
+    }
+
+    return results;
+
+}
+
+EGTTools::Matrix2D
+EGTTools::RL::CRDSim::runWellMixed(size_t nb_runs, size_t nb_generations, size_t nb_games, size_t nb_groups, double risk, const std::vector<double> &args) {
+    EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_runs);
+    size_t convergence = nb_generations > 100 ? nb_generations - 100 :  0;
+
+#pragma omp parallel for shared(results)
+    for (size_t run = 0; run < nb_runs; ++run) {
+        EGTTools::Matrix2D tmp = runWellMixed(nb_generations, nb_games, nb_groups, risk, args);
+        auto avg = tmp.block<2, 100>(0, convergence);
+
+        results(0, run) = avg.row(0).mean();
+        results(1, run) = avg.row(1).mean();
+    }
+
+    return results;
+
+}
+
 void EGTTools::RL::CRDSim::resetPopulation() { population.reset(); }
 
 void EGTTools::RL::CRDSim::reinforceOnlyPositive(double &pool, size_t &success, double &risk, PopContainer & pop, CRDGame<PopContainer> & game) {

@@ -7,6 +7,7 @@
 #ifndef DYRWIN_RL_CRDSIM_HPP
 #define DYRWIN_RL_CRDSIM_HPP
 
+#include <random>
 #include <Dyrwin/RL/BatchQLearningAgent.h>
 #include <Dyrwin/RL/QLearningAgent.h>
 #include <Dyrwin/RL/RothErevAgent.h>
@@ -76,6 +77,31 @@ namespace EGTTools::RL {
          */
         Matrix2D
         run(size_t nb_episodes, size_t nb_games, size_t nb_groups, double risk, const std::vector<double> &args = {});
+
+        /**
+         *
+         * @param nb_generations
+         * @param nb_games
+         * @param nb_groups
+         * @param risk
+         * @param args
+         * @return
+         */
+        Matrix2D runWellMixed(size_t nb_generations, size_t nb_games, size_t nb_groups, double risk,
+                              const std::vector<double> &args = {});
+
+        /**
+         *
+         * @param nb_runs
+         * @param nb_generations
+         * @param nb_games
+         * @param nb_groups
+         * @param risk
+         * @param args
+         * @return
+         */
+        Matrix2D runWellMixed(size_t nb_runs, size_t nb_generations, size_t nb_games, size_t nb_groups, double risk,
+                              const std::vector<double> &args = {});
 
         void resetPopulation();
 

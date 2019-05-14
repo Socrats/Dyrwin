@@ -46,6 +46,8 @@ namespace EGTTools::RL {
 
         void clear();
 
+        void push_back(const RL::Individual& new_individual);
+
         void reset();
 
         std::string toString() const;

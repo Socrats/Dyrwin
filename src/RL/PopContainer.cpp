@@ -76,6 +76,10 @@ size_t EGTTools::RL::PopContainer::size() const { return _agents.size(); }
 
 void EGTTools::RL::PopContainer::clear() { _agents.clear(); }
 
+void EGTTools::RL::PopContainer::push_back(const RL::Individual& new_individual) {
+    _agents.push_back(new_individual);
+}
+
 void EGTTools::RL::PopContainer::reset() {
     for (auto& agent: _agents) agent->reset();
 }
