@@ -14,7 +14,7 @@ add_library(EGTTools
         RL/RothErevAgent.cpp
         RL/CrdSim.cpp
         RL/Utils.cpp
-        )
+        RL/PopContainer.cpp)
 set_target_properties(EGTTools PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(EGTTools Eigen3::Eigen)
 if (OPENMP_FOUND)
