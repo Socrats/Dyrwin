@@ -6,6 +6,10 @@
 
 using namespace EGTTools::RL;
 
+BatchQLearningAgent::BatchQLearningAgent(size_t nb_states, size_t nb_actions, size_t episode_length, double endowment,
+                                         double alpha, double temperature)
+        : Agent(nb_states, nb_actions, episode_length, endowment), _alpha(alpha), _temperature(temperature) {}
+
 void BatchQLearningAgent::reinforceTrajectory() {
     for (unsigned i = 0; i < _episode_length; ++i) {
         _q_values(_trajectory_states(i), _trajectory_actions(i)) +=
@@ -42,4 +46,32 @@ bool BatchQLearningAgent::inferPolicy() {
         }
     }
     return true;
+}
+
+/**
+       * Roth-Erev already has a discount factor, so it's not necessary to reinitialize
+       * the weights.
+       */
+void BatchQLearningAgent::resetQValues() {
+
+}
+
+std::string BatchQLearningAgent::type() const {
+    return "EGTTools::RL::BatchQLearningAgent";
+}
+
+// Getters
+double BatchQLearningAgent::alpha() const { return _alpha; }
+
+double BatchQLearningAgent::temperature() const { return _temperature; }
+
+// Setters
+void BatchQLearningAgent::setAlpha(double alpha) {
+    if (alpha <= 0.0 || alpha > 1.0) throw std::invalid_argument("Learning rate parameter must be in (0,1]");
+    _alpha = alpha;
+}
+
+void BatchQLearningAgent::setTemperature(double temperature) {
+    if (temperature < 0.0) throw std::invalid_argument("temperature must be > 0");
+    _temperature = temperature;
 }

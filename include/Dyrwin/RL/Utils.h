@@ -8,70 +8,73 @@
 #define DYRWIN_RL_UTILS_H
 
 #include <vector>
+#include <Dyrwin/RL/Agent.h>
+#include <Dyrwin/RL/RothErevAgent.h>
+#include <Dyrwin/RL/QLearningAgent.h>
+#include <Dyrwin/RL/BatchQLearningAgent.h>
+#include <Dyrwin/RL/HistericQLearningAgent.hpp>
 
 namespace EGTTools::RL {
     using Factors = std::vector<size_t>;
-    using ActionSpace = std::vector<size_t>;
-    using Individual = std::unique_ptr<Agent>;
+    using ActionSpace = std::vector<double>;
+    using Individual = std::shared_ptr<EGTTools::RL::Agent>;
     using Population = std::vector<Individual>;
-    using RothErevPopulation = std::vector<Agent>;
-    using RothErevLambdaPopulation = std::vector<RothErevAgent>;
-    using QLearningPopulation = std::vector<QLearningAgent>;
-    using BatchQLearningPopulation = std::vector<BatchQLearningAgent>;
-    using HistericQLearningPopulation = std::vector<HistericQLearningAgent>;
+    using RothErevPopulation = std::vector<EGTTools::RL::Agent>;
+    using RothErevLambdaPopulation = std::vector<EGTTools::RL::RothErevAgent>;
+    using QLearningPopulation = std::vector<EGTTools::RL::QLearningAgent>;
+    using BatchQLearningPopulation = std::vector<EGTTools::RL::BatchQLearningAgent>;
+    using HistericQLearningPopulation = std::vector<EGTTools::RL::HistericQLearningAgent>;
 
-    size_t factorSpace(const Factors &space) {
-        size_t retval = 1;
-        for (const auto f : space) {
-            // Detect wraparound
-            if (std::numeric_limits<size_t>::max() / f < retval)
-                return std::numeric_limits<size_t>::max();
-            retval *= f;
-        }
-        return retval;
-    }
+    /**
+     * @brief Calculates the size of a flattened multi-dimensional space.
+     * @param space Vector of containing the sizes of each dimension of the space.
+     * @return size of the multi-dimensional space
+     */
+    size_t factorSpace(const Factors &space);
 
-    void toFactors(const Factors &space, size_t id, Factors *out) {
-        assert(out);
+    /**
+     * @brief Tranforms an index to the flattened space into a multi-dimensional vector.
+     *
+     * Calculates the multi-demensional vector that refers to the point indicated by
+     * @param id in the flattened space.
+     *
+     * @param space dimentions of the space
+     * @param id index to the flattened space
+     * @param out pointer for a vector that will contain the multi-dimensional pointer
+     */
+    void toFactors(const Factors &space, size_t id, Factors *out);
 
-        auto &f = *out;
+    /**
+     *
+     * @param space
+     * @param id
+     * @return
+     */
+    Factors toFactors(const Factors &space, size_t id);
 
-        for (size_t i = 0; i < space.size(); ++i) {
-            f[i] = id % space[i];
-            id /= space[i];
-        }
-    }
-
-    Factors toFactors(const Factors &space, size_t id) {
-        Factors f(space.size());
-        EGTTools::RL::toFactors(space, id, &f);
-        return f;
-    }
-
-    size_t toIndex(const Factors &space, const Factors &f) {
-        size_t result = 0;
-        size_t multiplier = 1;
-        for (size_t i = 0; i < f.size(); ++i) {
-            result += multiplier * f[i];
-            multiplier *= space[i];
-        }
-        return result;
-    }
+    /**
+     *
+     * @param space
+     * @param f
+     * @return
+     */
+    size_t toIndex(const Factors &space, const Factors &f);
 
     struct FlattenState {
-        explicit FlattenState(const Factors& space) : space(space) {
-            assert(space.size() > 1);
-            factor_space = EGTTools::RL::factorSpace(space);
-        }
+        /**
+         *
+         * @param space
+         */
+        explicit FlattenState(const Factors& space);
 
         Factors space;
         size_t factor_space;
 
-        Factors toFactors(size_t id) { return EGTTools::RL::toFactors(space, id); }
+        Factors toFactors(size_t id);
 
-        void toFactors(size_t id, Factors *out) { EGTTools::RL::toFactors(space, id, out); }
+        void toFactors(size_t id, Factors *out);
 
-        size_t toIndex(const Factors &f) { return EGTTools::RL::toIndex(space, f); }
+        size_t toIndex(const Factors &f);
     };
 }
 

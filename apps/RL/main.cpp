@@ -10,14 +10,8 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
-#include <Dyrwin/RL/BatchQLearningAgent.h>
-#include <Dyrwin/RL/QLearningAgent.h>
-#include <Dyrwin/RL/RothErevAgent.h>
-#include <Dyrwin/RL/HistericQLearningAgent.hpp>
-#include <Dyrwin/RL/CRDGame.h>
-#include <Dyrwin/CommandLineParsing.h>
-#include <Dyrwin/RL/Utils.h>
 #include <Dyrwin/RL/CrdSim.hpp>
+#include <Dyrwin/CommandLineParsing.h>
 
 using namespace std::chrono;
 using namespace EGTTools::RL;
@@ -33,6 +27,8 @@ int main(int argc, char *argv[]) {
     double alpha, beta;
     double temperature;
     double lambda;
+    double threshold;
+    double endowment;
     std::string filename;
     std::string agent_type;
     Options options;
@@ -77,10 +73,15 @@ int main(int argc, char *argv[]) {
         args.push_back(temperature);
     }
 
+    endowment = 2 * rounds;
+    threshold = group_size * rounds;
+    ActionSpace available_actions = ActionSpace(actions);
+    for (size_t i = 0; i < actions; ++i) available_actions[i] = i;
+
     try {
-        CRDSim sim(attempts, games, rounds, actions, group_size, agent_type, cataclysm, args);
+        CRDSim sim(attempts, games, rounds, actions, group_size, cataclysm, endowment, threshold, available_actions, agent_type, args);
         EGTTools::Matrix2D results = sim.run(attempts, games);
-        std::cout << results << std::endl;
+        std::cout << "success: " << results.row(0) << std::endl;
         sim.Game.printGroup(sim.population);
     } catch (std::invalid_argument &e) {
         std::cerr << "\033[1;31m[EXCEPTION] Invalid argument: " << e.what() << "\033[0m" << std::endl;

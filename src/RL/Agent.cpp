@@ -7,14 +7,42 @@
 using namespace EGTTools::RL;
 
 
+Agent::Agent(size_t nb_states, size_t nb_actions, size_t episode_length, double endowment) : _nb_states(nb_states),
+                                                                                             _nb_actions(nb_actions),
+                                                                                             _episode_length(
+                                                                                                     episode_length),
+                                                                                             _endowment(endowment),
+                                                                                             _payoff(endowment) {
+
+    _q_values = Matrix2D::Random(nb_states, _nb_actions);
+    // Initialise all actions with equal probability
+    _policy = Matrix2D::Constant(nb_states, _nb_actions, 1.0 / static_cast<double>(_nb_actions));
+    // Initialise trajectory (the actions taken at each round)
+    _trajectory_states = VectorXui::Zero(_episode_length);
+    _trajectory_actions = VectorXui::Zero(_episode_length);
+    _buffer = std::vector<size_t>(_nb_actions);
+
+}
+
+std::string Agent::toString() const {
+    std::stringstream ss;
+    Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+
+    ss << "[(" << _payoff << ")";
+    ss << _policy.format(CleanFmt);
+    ss << "]" << std::endl;
+    return ss.str();
+}
+
+
 /**
  * Decreases the payoff by @param amount if _payoff >= amount and returns true.
  * Otherwise returns false.
  * @param amount
  * @return bool
  */
-bool Agent::decrease(unsigned amount) {
-    if ((double(_payoff) - amount) >= 0) {
+bool Agent::decrease(double amount) {
+    if ((_payoff - amount) >= 0) {
         _payoff -= amount;
         return true;
     }
@@ -122,11 +150,73 @@ void Agent::resetQValues() {
 }
 
 void Agent::reset() {
-    _q_values.setZero();
+    _q_values.setRandom();
     // Initialise all actions with equal probability
-    _policy.array() = 1.0 / static_cast<double>(_nb_actions);
+    _policy.setConstant(1.0 / static_cast<double>(_nb_actions));
     // Initialise trajectory (the actions taken at each round)
     _trajectory_states.setZero();
     _trajectory_actions.setZero();
     _payoff = _endowment;
+}
+
+void Agent::add2payoff(double value) {
+    _payoff += value;
+}
+
+// Getters
+size_t Agent::nb_states() const { return _nb_states; }
+
+size_t Agent::nb_actions() const { return _nb_actions; }
+
+size_t Agent::episode_length() const { return _episode_length; }
+
+double Agent::endowment() const { return _endowment; }
+
+double Agent::payoff() const { return _payoff; }
+
+const EGTTools::VectorXui & Agent::trajectoryStates() const { return _trajectory_states; };
+
+const EGTTools::VectorXui & Agent::trajectoryActions() const { return _trajectory_actions; };
+
+const EGTTools::Matrix2D & Agent::policy() const { return _policy; }
+
+const EGTTools::Matrix2D & Agent::qValues() const { return _q_values; }
+
+// Setters
+void Agent::set_nb_states(size_t nb_states) {
+    _nb_states = nb_states;
+    _q_values.conservativeResizeLike(Matrix2D::Random(nb_states, _nb_actions));
+    _policy.conservativeResizeLike(
+            Matrix2D::Constant(nb_states, _nb_actions, 1.0 / static_cast<double>(_nb_actions)));
+}
+
+void Agent::set_nb_actions(size_t nb_actions) { _nb_actions = nb_actions; }
+
+void Agent::set_episode_length(size_t episode_length) { _episode_length = episode_length; }
+
+void Agent::set_endowment(double endowment) { _endowment = endowment; }
+
+void Agent::set_payoff(double payoff) { _payoff = payoff; }
+
+void Agent::resetPayoff() { _payoff = _endowment; }
+
+void Agent::set_policy(const Eigen::Ref<const Matrix2D> &policy) {
+    if (static_cast<size_t>(policy.rows()) != _nb_states)
+        throw std::invalid_argument(
+                "Policy must have as many rows as states (" + std::to_string(_nb_states) + ")");
+    if (static_cast<size_t>(policy.cols()) != _nb_actions)
+        throw std::invalid_argument(
+                "Policy must have as many columns as actions (" + std::to_string(_nb_actions) + ")");
+    _policy.array() = policy;
+}
+
+void Agent::set_q_values(const Eigen::Ref<const Matrix2D> &q_values) {
+    if (static_cast<size_t>(q_values.rows()) != _nb_states)
+        throw std::invalid_argument(
+                "Q-values must have as many rows as states (" + std::to_string(_nb_states) + ")");
+    if (static_cast<size_t>(q_values.cols()) != _nb_actions)
+        throw std::invalid_argument(
+                "Q-values must have as many columns as actions (" + std::to_string(_nb_actions) + ")");
+    _q_values.array() = q_values;
+    inferPolicy();
 }

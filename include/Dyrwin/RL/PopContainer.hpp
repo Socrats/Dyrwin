@@ -2,8 +2,8 @@
 // Created by Elias Fernandez on 2019-05-10.
 //
 
-#ifndef DYRWIN_POPCONTAINER_HPP
-#define DYRWIN_POPCONTAINER_HPP
+#ifndef DYRWIN_RL_POPCONTAINER_HPP
+#define DYRWIN_RL_POPCONTAINER_HPP
 
 #include <typeinfo>
 #include <Dyrwin/RL/Agent.h>
@@ -24,14 +24,14 @@ namespace EGTTools::RL {
                      size_t episode_length, double endowment, std::vector<double> args = {}) {
             if (agent_type == "rothErev") {
                 for (unsigned i = 0; i < nb_agents; i++) {
-                    _agents.push_back(std::make_unique<Agent>(nb_states, nb_actions, episode_length, endowment));
+                    _agents.push_back(std::make_shared<Agent>(nb_states, nb_actions, episode_length, endowment));
                 }
             } else if (agent_type == "rothErevLambda") {
                 if (args.size() < 2)
                     throw std::invalid_argument("You must specify lambda and temperature as arguments");
                 for (unsigned i = 0; i < nb_agents; i++) {
                     _agents.push_back(
-                            std::make_unique<RothErevAgent>(nb_states, nb_actions, episode_length, endowment, args[0],
+                            std::make_shared<RothErevAgent>(nb_states, nb_actions, episode_length, endowment, args[0],
                                                             args[1]));
                 }
             } else if (agent_type == "QLearning") {
@@ -39,7 +39,7 @@ namespace EGTTools::RL {
                     throw std::invalid_argument("You must specify alpha, lambda and temperature as arguments");
                 for (unsigned i = 0; i < nb_agents; i++) {
                     _agents.push_back(
-                            std::make_unique<QLearningAgent>(nb_states, nb_actions, episode_length, endowment, args[0],
+                            std::make_shared<QLearningAgent>(nb_states, nb_actions, episode_length, endowment, args[0],
                                                              args[1],
                                                              args[2]));
                 }
@@ -48,15 +48,15 @@ namespace EGTTools::RL {
                     throw std::invalid_argument("You must specify alpha, beta and temperature as arguments");
                 for (unsigned i = 0; i < nb_agents; i++) {
                     _agents.push_back(
-                            std::make_unique<HistericQLearningAgent>(nb_states, nb_actions, episode_length, endowment,
+                            std::make_shared<HistericQLearningAgent>(nb_states, nb_actions, episode_length, endowment,
                                                                      args[0], args[1],
-                                                                     args[3]));
+                                                                     args[2]));
                 }
             } else if (agent_type == "BatchQLearning") {
                 if (args.size() < 2) throw std::invalid_argument("You must specify alpha and temperature as arguments");
                 for (unsigned i = 0; i < nb_agents; i++) {
                     _agents.push_back(
-                            std::make_unique<BatchQLearningAgent>(nb_states, nb_actions, episode_length, endowment,
+                            std::make_shared<BatchQLearningAgent>(nb_states, nb_actions, episode_length, endowment,
                                                                   args[0], args[1]));
                 }
             } else {
@@ -65,35 +65,19 @@ namespace EGTTools::RL {
         }
 
         Agent &operator[](size_t index) {
-            try {
-                return *_agents[index];
-            } catch (const std::out_of_range& oor) {
-                throw oor;
-            }
+            return *_agents[index];
         };
 
         const Agent &operator[](size_t index) const {
-            try {
-                return *_agents[index];
-            } catch (const std::out_of_range& oor) {
-                throw oor;
-            }
+            return *_agents[index];
         };
 
         Individual &operator()(size_t index) {
-            try {
-                return _agents[index];
-            } catch (const std::out_of_range& oor) {
-                throw oor;
-            }
+            return _agents[index];
         }
 
         const Individual &operator()(size_t index) const {
-            try {
-                return _agents[index];
-            } catch (const std::out_of_range& oor) {
-                throw oor;
-            }
+            return _agents[index];
         }
 
         typedef RL::Population::iterator iterator;
@@ -129,4 +113,4 @@ namespace EGTTools::RL {
     };
 }
 
-#endif //DYRWIN_POPCONTAINER_HPP
+#endif //DYRWIN_RL_POPCONTAINER_HPP

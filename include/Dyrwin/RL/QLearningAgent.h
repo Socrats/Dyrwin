@@ -12,9 +12,7 @@ namespace EGTTools::RL {
     class QLearningAgent : public Agent {
     public:
         QLearningAgent(size_t nb_states, size_t nb_actions, size_t episode_length, double endowment, double alpha,
-                       double lambda, double temperature) : Agent(nb_states, nb_actions, episode_length, endowment),
-                                                            _alpha(alpha), _lambda(lambda),
-                                                            _temperature(temperature) {};
+                       double lambda, double temperature);
 
         void reinforceTrajectory() override;
 
@@ -30,31 +28,21 @@ namespace EGTTools::RL {
 
         }
 
-        virtual std::string type() const override { return "EGTTools::RL::QLearningAgent"; }
+        std::string type() const override;
 
         // Getters
-        double alpha() const { return _alpha; }
+        double alpha() const;
 
-        double lambda() const { return _lambda; }
+        double lambda() const;
 
-        double temperature() const { return _temperature; }
+        double temperature() const;
 
         // Setters
-        void setAlpha(const double alpha) {
-            if (alpha <= 0.0 || alpha > 1.0) throw std::invalid_argument("Learning rate parameter must be in (0,1]");
-            _alpha = alpha;
-        }
+        void setAlpha(double alpha);
 
-        void setLambda(const double lambda) {
-            if (lambda <= 0.0 || lambda > 1.0)
-                throw std::invalid_argument("Forgetting rate parameter must be in (0,1]");
-            _lambda = lambda;
-        }
+        void setLambda(double lambda);
 
-        void setTemperature(const double temperature) {
-            if (temperature < 0.0) throw std::invalid_argument("temperature must be > 0");
-            _temperature = temperature;
-        }
+        void setTemperature(double temperature);
 
     private:
         double _alpha; // learning rate

@@ -6,6 +6,12 @@
 
 using namespace EGTTools::RL;
 
+QLearningAgent::QLearningAgent(size_t nb_states, size_t nb_actions, size_t episode_length, double endowment,
+                               double alpha, double lambda, double temperature) : Agent(nb_states, nb_actions,
+                                                                                        episode_length, endowment),
+                                                                                  _alpha(alpha), _lambda(lambda),
+                                                                                  _temperature(temperature) {}
+
 void QLearningAgent::reinforceTrajectory() {
     size_t i;
     for (i = 0; i < (_episode_length - 1); i++) {
@@ -62,4 +68,30 @@ bool QLearningAgent::inferPolicy() {
         }
     }
     return true;
+}
+
+std::string QLearningAgent::type() const { return "EGTTools::RL::QLearningAgent"; }
+
+// Getters
+double QLearningAgent::alpha() const { return _alpha; }
+
+double QLearningAgent::lambda() const { return _lambda; }
+
+double QLearningAgent::temperature() const { return _temperature; }
+
+// Setters
+void QLearningAgent::setAlpha(double alpha) {
+    if (alpha <= 0.0 || alpha > 1.0) throw std::invalid_argument("Learning rate parameter must be in (0,1]");
+    _alpha = alpha;
+}
+
+void QLearningAgent::setLambda(double lambda) {
+    if (lambda <= 0.0 || lambda > 1.0)
+        throw std::invalid_argument("Forgetting rate parameter must be in (0,1]");
+    _lambda = lambda;
+}
+
+void QLearningAgent::setTemperature(double temperature) {
+    if (temperature < 0.0) throw std::invalid_argument("temperature must be > 0");
+    _temperature = temperature;
 }

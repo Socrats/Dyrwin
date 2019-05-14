@@ -318,7 +318,7 @@ PYBIND11_MODULE(EGTtools, m) {
     py::class_<RL::CRDGame<RL::Agent>>(mRL, "CRDGame")
             .def(py::init<>(), "Collective-risk dilemma without uncertainty")
             .def("play", static_cast<std::pair<double, size_t> (RL::CRDGame<RL::Agent>::*)(std::vector<RL::Agent> &,
-                                                                                           std::vector<size_t> &,
+                                                                                           EGTTools::RL::ActionSpace &,
                                                                                            size_t)>(&RL::CRDGame<RL::Agent>::playGame),
                  "plays the game for a fixed number of rounds",
                  py::arg("players"), py::arg("actions"), py::arg("rounds"))
@@ -334,6 +334,9 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("group_payoff", static_cast<double (RL::CRDGame<RL::Agent>::*)(
                          std::vector<RL::Agent> &)>(&RL::CRDGame<RL::Agent>::playersPayoff),
                  "returns the total payoff of the group", py::arg("players"))
+            .def("group_contributions", static_cast<double (RL::CRDGame<RL::Agent>::*)(
+                         std::vector<RL::Agent> &)>(&RL::CRDGame<RL::Agent>::playersContribution),
+                 "returns the total contribution of the group", py::arg("players"))
             .def("set_payoffs", static_cast<void (RL::CRDGame<RL::Agent>::*)(
                          std::vector<RL::Agent> &, unsigned int)>(&RL::CRDGame<RL::Agent>::setPayoffs),
                  "sets players payoffs", py::arg("players"), py::arg("payoff"));
@@ -341,7 +344,7 @@ PYBIND11_MODULE(EGTtools, m) {
     py::class_<RL::CRDGame<RL::PopContainer>>(mRL, "CRDGameGeneric")
             .def(py::init<>(), "Collective-risk dilemma without uncertainty")
             .def("play", static_cast<std::pair<double, size_t> (RL::CRDGame<RL::PopContainer>::*)(RL::PopContainer &,
-                                                                                                  std::vector<size_t> &,
+                                                                                                  EGTTools::RL::ActionSpace &,
                                                                                                   size_t)>(&RL::CRDGame<RL::PopContainer>::playGame),
                  "plays the game for a fixed number of rounds",
                  py::arg("players"), py::arg("actions"), py::arg("rounds"))
@@ -357,6 +360,9 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("group_payoff", static_cast<double (RL::CRDGame<RL::PopContainer>::*)(
                          RL::PopContainer &)>(&RL::CRDGame<RL::PopContainer>::playersPayoff),
                  "returns the total payoff of the group", py::arg("players"))
+            .def("group_contributions", static_cast<double (RL::CRDGame<RL::PopContainer>::*)(
+                         RL::PopContainer &)>(&RL::CRDGame<RL::PopContainer>::playersContribution),
+                 "returns the total contribution of the group", py::arg("players"))
             .def("set_payoffs", static_cast<void (RL::CRDGame<RL::PopContainer>::*)(
                          RL::PopContainer &, unsigned int)>(&RL::CRDGame<RL::PopContainer>::setPayoffs),
                  "sets players payoffs", py::arg("players"), py::arg("payoff"));
@@ -367,10 +373,10 @@ PYBIND11_MODULE(EGTtools, m) {
                  "different child classes) that can be passed to a game class.",
                  py::arg("agent_type"), py::arg("nb_agents"),
                  py::arg("nb_states"), py::arg("nb_actions"),
-                 py::arg("episode_length"), py::arg("endowment"), py::arg("*args"))
+                 py::arg("episode_length"), py::arg("endowment"), py::arg("*args"), py::return_value_policy::reference_internal)
             .def("size", &RL::PopContainer::size, "returns the size of the contained vector")
             .def("reset", &RL::PopContainer::reset, "reset all individuals in the population")
-            .def("__getitem__", [](const RL::PopContainer &s, size_t i) {
+            .def("__getitem__", [](RL::PopContainer &s, size_t i) -> RL::Agent & {
                 if (i >= s.size()) throw py::index_error();
                 return s[i];
             }, py::return_value_policy::reference_internal)
@@ -378,15 +384,25 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("__repr__", &RL::PopContainer::toString);
 
     py::class_<RL::CRDSim>(mRL, "CRDSim")
-            .def(py::init<size_t, size_t, size_t, size_t, size_t, const std::string &, double, const std::vector<double> &>(),
+            .def(py::init<size_t, size_t, size_t, size_t, size_t, double, double,
+                    double, const EGTTools::RL::ActionSpace &,
+                    const std::string &, const std::vector<double> &>(),
                  "Performs a Collective-risk dilemma simulation similar to milinksi 2008 experiment.",
-                 py::arg("nb_runs"), py::arg("nb_games"),
+                 py::arg("nb_episodes"), py::arg("nb_games"),
                  py::arg("nb_rounds"), py::arg("nb_actions"),
-                 py::arg("group_size"), py::arg("agent_type"), py::arg("risk"), py::arg("*args"))
-            .def("run", &RL::CRDSim::run)
+                 py::arg("group_size"), py::arg("risk"),
+                 py::arg("endowment"), py::arg("threshold"),
+                 py::arg("available_actions"), py::arg("agent_type"), py::arg("*args"))
+            .def("run", static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t)>(&RL::CRDSim::run),
+                    "Runs a CRD simulation for a single group", py::arg("nb_episodes"), py::arg("nb_games"))
+            .def("run", static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, size_t)>(&RL::CRDSim::run),
+                    "Runs a CRD simulation for nb_groups",
+                    py::arg("nb_episodes"), py::arg("nb_games"), py::arg("nb_groups"))
+            .def_readwrite("population", &RL::CRDSim::population, py::return_value_policy::reference_internal)
             .def("reset_population", &RL::CRDSim::resetPopulation)
             .def_property("nb_games", &RL::CRDSim::nb_games, &RL::CRDSim::set_nb_games)
-            .def_property("nb_runs", &RL::CRDSim::nb_runs, &RL::CRDSim::set_nb_runs)
+            .def_property("nb_episodes", &RL::CRDSim::nb_episodes, &RL::CRDSim::set_nb_episodes)
+            .def_property("nb_rounds", &RL::CRDSim::nb_rounds, &RL::CRDSim::set_nb_rounds)
             .def_property("nb_actions", &RL::CRDSim::nb_actions, &RL::CRDSim::set_nb_actions)
             .def_property("risk", &RL::CRDSim::risk, &RL::CRDSim::set_risk)
             .def_property("threshold", &RL::CRDSim::threshold, &RL::CRDSim::set_threshold)

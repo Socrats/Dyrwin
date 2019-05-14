@@ -59,16 +59,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules/
 ##############################
 
 # Default is to build everything
-if (NOT MAKE_ALL AND NOT MAKE_DYRWIN AND NOT MAKE_PMORAN AND NOT MAKE_PYTHON AND NOT MAKE_CRD AND NOT MAKE_CRD_UNCERTAINTY AND NOT MAKE_CRD_POP AND NOT MAKE_APPS)
+if (NOT MAKE_ALL AND NOT MAKE_APPS)
     set(MAKE_ALL 1)
 endif ()
 
 if (MAKE_ALL)
     set(MAKE_DYRWIN 1)
-    set(MAKE_PMORAN 1)
-    set(MAKE_CRD 1)
-    set(MAKE_CRD_UNCERTAINTY 1)
-    set(MAKE_CRD_POP 1)
     set(MAKE_APPS 1)
     set(MAKE_PYTHON 1)
 endif ()
@@ -86,7 +82,7 @@ endif ()
 ##############################
 ##       Dependencies       ##
 ##############################
-if (MAKE_ALL OR MAKE_DYRWIN OR MAKE_PMORAN OR MAKE_CRD OR MAKE_CRD_UNCERTAINTY OR MAKE_CRD_POP OR MAKE_APPS)
+if (MAKE_ALL OR MAKE_APPS)
     set(BOOST_VERSION_REQUIRED 1.62)
 endif ()
 set(EIGEN_VERSION_REQUIRED 3.3)
@@ -99,8 +95,10 @@ set(PYTHON_VERSION 3)
 
 set(PYBIND11_CPP_STANDARD -std=c++1z) # Experimental C++17 support
 
-find_package(Boost ${BOOST_VERSION_REQUIRED} REQUIRED program_options system)
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+if (MAKE_ALL OR MAKE_APPS)
+    find_package(Boost ${BOOST_VERSION_REQUIRED} REQUIRED program_options system)
+    include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+endif ()
 
 find_package(Eigen3 ${EIGEN_VERSION_REQUIRED} REQUIRED)
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})

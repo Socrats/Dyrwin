@@ -10,7 +10,10 @@ add_library(EGTTools
         RL/Agent.cpp
         RL/BatchQLearningAgent.cpp
         RL/QLearningAgent.cpp
-        ../include/Dyrwin/RL/PopContainer.hpp)
+        RL/HistericQLearningAgent.cpp
+        RL/RothErevAgent.cpp
+        RL/CrdSim.cpp
+        RL/Utils.cpp)
 set_target_properties(EGTTools PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(EGTTools Eigen3::Eigen)
 if (OPENMP_FOUND)

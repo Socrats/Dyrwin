@@ -27,10 +27,6 @@ namespace EGTTools::RL {
     class CRDGame {
 
     public:
-        CRDGame() = default;
-
-        ~CRDGame() = default;
-
         /**
          * @brief Model of the Collective-Risk dillemma game.
          *
@@ -44,7 +40,7 @@ namespace EGTTools::RL {
          * @return std::tuple (donations, rounds)
          */
         std::pair<double, size_t>
-        playGame(std::vector<A> &players, std::vector<size_t> &actions, size_t rounds, R &gen_round) {
+        playGame(std::vector<A> &players, EGTTools::RL::ActionSpace &actions, size_t rounds, R &gen_round) {
 
             auto final_round = gen_round.calculateEnd(rounds, _mt);
 
@@ -64,7 +60,7 @@ namespace EGTTools::RL {
         }
 
         std::pair<double, size_t>
-        playGame(std::vector<std::unique_ptr<A>> &players, std::vector<size_t> &actions, size_t rounds, R &gen_round) {
+        playGame(std::vector<std::unique_ptr<A>> &players, EGTTools::RL::ActionSpace &actions, size_t rounds, R &gen_round) {
 
             auto final_round = gen_round.calculateEnd(rounds, _mt);
 
@@ -175,6 +171,22 @@ namespace EGTTools::RL {
             return total;
         }
 
+        double playersContribution(std::vector<A> &players) {
+            double total = 0;
+            for (auto &player : players) {
+                total += player.endowment() - player.payoff();
+            }
+            return total;
+        }
+
+        double playersContribution(std::vector<std::unique_ptr<A>> &players) {
+            double total = 0;
+            for (auto &player : players) {
+                total += player->endowment() - player->payoff();
+            }
+            return total;
+        }
+
         void setPayoffs(std::vector<A> &players, unsigned int value) {
             for (auto &player: players) {
                 player.set_payoff(value);
@@ -197,9 +209,6 @@ namespace EGTTools::RL {
     class CRDGame<A, void> {
 
     public:
-        CRDGame() = default;
-
-        ~CRDGame() = default;
 
         /**
          * @brief Model of the Collective-Risk dillemma game.
@@ -214,7 +223,7 @@ namespace EGTTools::RL {
          * @return std::tuple (donations, rounds)
          */
         std::pair<double, size_t>
-        playGame(std::vector<A> &players, std::vector<size_t> &actions, size_t rounds) {
+        playGame(std::vector<A> &players, EGTTools::RL::ActionSpace &actions, size_t rounds) {
             double total = 0.0;
             for (auto &player : players) {
                 player.resetPayoff();
@@ -230,7 +239,7 @@ namespace EGTTools::RL {
         }
 
         std::pair<double, size_t>
-        playGame(std::vector<std::unique_ptr<A>> &players, std::vector<size_t> &actions, size_t rounds) {
+        playGame(std::vector<std::unique_ptr<A>> &players, EGTTools::RL::ActionSpace &actions, size_t rounds) {
             double total = 0.0;
             for (auto &player : players) {
                 player->resetPayoff();
@@ -317,6 +326,22 @@ namespace EGTTools::RL {
             return total;
         }
 
+        double playersContribution(std::vector<A> &players) {
+            double total = 0;
+            for (auto &player : players) {
+                total += player.endowment() - player.payoff();
+            }
+            return total;
+        }
+
+        double playersContribution(std::vector<std::unique_ptr<A>> &players) {
+            double total = 0;
+            for (auto &player : players) {
+                total += player->endowment() - player->payoff();
+            }
+            return total;
+        }
+
         void setPayoffs(std::vector<A> &players, unsigned int value) {
             for (auto &player: players) {
                 player.set_payoff(value);
@@ -339,10 +364,6 @@ namespace EGTTools::RL {
     class CRDGame<PopContainer, void> {
 
     public:
-        CRDGame() = default;
-
-        ~CRDGame() = default;
-
         /**
          * @brief Model of the Collective-Risk dillemma game.
          *
@@ -356,15 +377,16 @@ namespace EGTTools::RL {
          * @return std::tuple (donations, rounds)
          */
         std::pair<double, size_t>
-        playGame(PopContainer &players, std::vector<size_t> &actions, size_t rounds) {
+        playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds) {
             double total = 0.0;
             for (auto &player : players) {
                 player->resetPayoff();
             }
             for (size_t i = 0; i < rounds; i++) {
-                for (auto &a : players) {
-                    unsigned idx = a->selectAction(i);
-                    a->decrease(actions[idx]);
+#pragma omp parallel for shared(total)
+                for (size_t j = 0; j < players.size(); ++j) {
+                    unsigned idx = players[j].selectAction(i);
+                    players[j].decrease(actions[idx]);
                     total += actions[idx];
                 }
             }
@@ -372,9 +394,9 @@ namespace EGTTools::RL {
         }
 
         bool reinforcePath(PopContainer &players) {
-            for (auto &player : players) {
-                player->reinforceTrajectory();
-            }
+#pragma omp parallel
+            for (size_t i = 0; i < players.size(); ++i)
+                players[i].reinforceTrajectory();
             return true;
         }
 
@@ -386,9 +408,9 @@ namespace EGTTools::RL {
         }
 
         bool calcProbabilities(PopContainer &players) {
-            for (auto &player : players) {
-                player->inferPolicy();
-            }
+//#pragma omp parallel
+            for (size_t i = 0; i < players.size(); ++i)
+                players[i].inferPolicy();
             return true;
         }
 
@@ -401,9 +423,10 @@ namespace EGTTools::RL {
 
         double playersPayoff(PopContainer &players) {
             double total = 0;
-            for (auto &player : players) {
-                total += double(player->payoff());
-            }
+#pragma omp parallel for shared(total)
+            for (size_t i = 0; i < players.size(); ++i)
+                total += players[i].payoff();
+
             return total;
         }
 
@@ -411,6 +434,15 @@ namespace EGTTools::RL {
             for (auto &player: players) {
                 player->set_payoff(value);
             }
+        }
+
+        double playersContribution(PopContainer &players) {
+            double total = 0;
+#pragma omp parallel for shared(total)
+            for (size_t i = 0; i < players.size(); ++i)
+                total += players[i].endowment() - players[i].payoff();
+
+            return total;
         }
 
     private:

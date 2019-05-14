@@ -11,88 +11,30 @@ namespace EGTTools::RL {
     class HistericQLearningAgent : public Agent {
     public:
         HistericQLearningAgent(size_t nb_states, size_t nb_actions, size_t episode_length, double endowment,
-                               double alpha, double beta, double temperature) : Agent(nb_states, nb_actions,
-                                                                                      episode_length, endowment),
-                                                                                _alpha(alpha), _beta(beta),
-                                                                                _temperature(temperature) {}
+                               double alpha, double beta, double temperature);
 
 
-        void reinforceTrajectory() override {
-            for (unsigned i = 0; i < _episode_length; i++) {
-                const auto delta = _payoff - _q_values(_trajectory_states(i), _trajectory_actions(i));
-                if (delta >= 0) {
-                    _q_values(_trajectory_states(i), _trajectory_actions(i)) += _alpha * delta;
-                } else {
-                    _q_values(_trajectory_states(i), _trajectory_actions(i)) += _beta * delta;
-                }
-                // reset trace
-                _trajectory_states(i) = 0;
-                _trajectory_actions(i) = 0;
-            }
-        }
+        void reinforceTrajectory() override;
 
-        void reinforceTrajectory(size_t episode_length) override {
-            for (unsigned i = 0; i < episode_length; i++) {
-                const auto delta = _payoff - _q_values(_trajectory_states(i), _trajectory_actions(i));
-                if (delta >= 0) {
-                    _q_values(_trajectory_states(i), _trajectory_actions(i)) += _alpha * delta;
-                } else {
-                    _q_values(_trajectory_states(i), _trajectory_actions(i)) += _beta * delta;
-                }
-                // reset trace
-                _trajectory_states(i) = 0;
-                _trajectory_actions(i) = 0;
-            }
-        }
+        void reinforceTrajectory(size_t episode_length) override;
 
-        bool inferPolicy() override {
-            unsigned int j;
+        bool inferPolicy() override;
 
-            for (unsigned i = 0; i < _nb_states; i++) {
-                // We calculate the sum of exponential(s) of q values for each state
-                double total = 0.;
-                unsigned nb_infs = 0;
-                for (j = 0; j < _nb_actions; j++) {
-                    _policy(i, j) = exp(_q_values(i, j) * _temperature);
-                    if (std::isinf(_policy(i, j))) _buffer[nb_infs++] = j;
-                    total += _policy(i, j);
-                }
-                if (nb_infs) {
-                    auto dist = std::uniform_int_distribution<unsigned>(0, nb_infs - 1);
-                    unsigned selection = dist(_mt);
-                    _policy.row(i).setZero();
-                    _policy(i, _buffer[selection]) = 1.0;
-                } else {
-                    _policy.row(i).array() /= total;
-                }
-            }
-            return true;
-        }
-
-        virtual std::string type() const override { return "EGTTools::RL::HistericQLearningAgent"; }
+        std::string type() const override;
 
         // Getters
-        double alpha() const { return _alpha; }
+        double alpha() const;
 
-        double beta() const { return _beta; }
+        double beta() const;
 
-        double temperature() const { return _temperature; }
+        double temperature() const;
 
         // Setters
-        void setAlpha(const double alpha) {
-            if (alpha <= 0.0 || alpha > 1.0) throw std::invalid_argument("Learning rate parameter must be in (0,1]");
-            _alpha = alpha;
-        }
+        void setAlpha(double alpha);
 
-        void setBeta(const double beta) {
-            if (beta <= 0.0 || beta > 1.0) throw std::invalid_argument("Learning rate parameter must be in (0,1]");
-            _beta = beta;
-        }
+        void setBeta(double beta);
 
-        void setTemperature(const double temperature) {
-            if (temperature < 0.0) throw std::invalid_argument("temperature must be > 0");
-            _temperature = temperature;
-        }
+        void setTemperature(double temperature);
 
     private:
         double _alpha, _beta, _temperature;
