@@ -8,6 +8,7 @@
 #define DYRWIN_RL_UTILS_H
 
 #include <vector>
+#include <memory>
 #include <Dyrwin/RL/Agent.h>
 #include <Dyrwin/RL/RothErevAgent.h>
 #include <Dyrwin/RL/QLearningAgent.h>
