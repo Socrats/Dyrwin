@@ -59,6 +59,8 @@ namespace EGTTools::RL {
         */
         void resetQValues() override;
 
+        void reset() override ;
+
         std::string type() const override;
 
         // Getters
