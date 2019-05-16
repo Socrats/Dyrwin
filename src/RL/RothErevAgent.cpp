@@ -8,9 +8,7 @@ EGTTools::RL::RothErevAgent::RothErevAgent(size_t nb_states, size_t nb_actions, 
                                            double lambda,
                                            double temperature) : Agent(nb_states, nb_actions, episode_length,
                                                                        endowment), _lambda(lambda),
-                                                                 _temperature(temperature) {
-    _q_values.setZero();
-}
+                                                                 _temperature(temperature) {}
 
 /**
  * @brief Reinforces a given strategy accoring to the accumulated payoffs.
@@ -90,16 +88,6 @@ bool EGTTools::RL::RothErevAgent::inferPolicy() {
 */
 void EGTTools::RL::RothErevAgent::resetQValues() {
 
-}
-
-void EGTTools::RL::RothErevAgent::reset() {
-    _q_values.setZero();
-    // Initialise all actions with equal probability
-    _policy.setConstant(1.0 / static_cast<double>(_nb_actions));
-    // Initialise trajectory (the actions taken at each round)
-    _trajectory_states.setZero();
-    _trajectory_actions.setZero();
-    _payoff = _endowment;
 }
 
 std::string EGTTools::RL::RothErevAgent::type() const { return "EGTTools::RL::RothErevAgent"; }
