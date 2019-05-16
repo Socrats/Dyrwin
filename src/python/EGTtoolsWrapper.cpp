@@ -402,17 +402,18 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("nb_episodes"), py::arg("nb_games"), py::arg("nb_groups"), py::arg("risk"),
                  py::arg("*agent_args"))
             .def("runWellMixed", static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t,
-                                                                                size_t, double,
-                                                                                const std::vector<double> &)>(&RL::CRDSim::runWellMixed),
-                 "Runs a simulation with a well mixed population",
-                 py::arg("nb_generations"), py::arg("nb_games"), py::arg("nb_groups"), py::arg("risk"),
-                 py::arg("*agent_args"))
-            .def("runWellMixed", static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t,
                                                                                 size_t, size_t, double,
                                                                                 const std::vector<double> &)>(&RL::CRDSim::runWellMixed),
                  "Runs a simulation with a well mixed population",
+                 py::arg("nb_generations"), py::arg("nb_games"), py::arg("nb_groups"), py::arg("group_size"),
+                 py::arg("risk"),
+                 py::arg("*agent_args"))
+            .def("runWellMixed", static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t,
+                                                                                size_t, size_t, size_t, double,
+                                                                                const std::vector<double> &)>(&RL::CRDSim::runWellMixed),
+                 "Runs a simulation with a well mixed population",
                  py::arg("nb_runs"), py::arg("nb_generations"),
-                 py::arg("nb_games"), py::arg("nb_groups"), py::arg("risk"),
+                 py::arg("nb_games"), py::arg("nb_groups"), py::arg("group_size"), py::arg("risk"),
                  py::arg("*agent_args"))
             .def("runConditional",
                  static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, const std::vector<double> &,

@@ -25,7 +25,7 @@ EGTTools::RL::CRDSim::CRDSim(size_t nb_episodes, size_t nb_games, size_t nb_roun
     if (available_actions[0] != 0)
         throw std::invalid_argument("First action must always be 0! And actions must be in crescent order!");
     for (size_t i = 0; i < _nb_actions; ++i)
-        for (size_t j = i+1; j < _nb_actions - 1; ++j)
+        for (size_t j = i + 1; j < _nb_actions - 1; ++j)
             if (available_actions[i] >= available_actions[j])
                 throw std::invalid_argument(
                         "Actions must always be monotonically increasing! There can't be two equal actions!");
@@ -120,10 +120,11 @@ EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups,
 }
 
 EGTTools::Matrix2D
-EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_t nb_groups, double risk,
+EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_t nb_groups, size_t group_size,
+                                   double risk,
                                    const std::vector<double> &args) {
     EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_generations);
-    size_t pop_size = _group_size * nb_groups;
+    size_t pop_size = group_size * nb_groups;
     size_t success;
     double avg_contribution;
     double avg_rounds;
@@ -136,7 +137,7 @@ EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_
     PopContainer group;
     std::vector<size_t> groups(pop_size);
     std::iota(groups.begin(), groups.end(), 0);
-    for (size_t i = 0; i < _group_size; ++i)
+    for (size_t i = 0; i < group_size; ++i)
         group.push_back(wmPop(i));
 
     for (size_t generation = 0; generation < nb_generations; ++generation) {
@@ -146,11 +147,11 @@ EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_
         avg_rounds = 0.;
         for (size_t i = 0; i < nb_games; ++i) {
             std::shuffle(groups.begin(), groups.end(), mt);
-            for (size_t j = 0; i < _group_size; ++i)
+            for (size_t j = 0; i < group_size; ++i)
                 group(j) = wmPop(groups[j]);
             // First we play the game
             auto[pool, final_round] = game.playGame(group, _available_actions, _nb_rounds);
-            avg_contribution += (game.playersContribution(group) / double(_group_size));
+            avg_contribution += (game.playersContribution(group) / double(group_size));
             (this->*_reinforce)(pool, success, risk, group, game);
             avg_rounds += final_round;
         }
@@ -167,13 +168,14 @@ EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_
 
 EGTTools::Matrix2D
 EGTTools::RL::CRDSim::runWellMixed(size_t nb_runs, size_t nb_generations, size_t nb_games, size_t nb_groups,
+                                   size_t group_size,
                                    double risk, const std::vector<double> &args) {
     EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_runs);
     size_t convergence = nb_generations > 100 ? nb_generations - 100 : 0;
 
 #pragma omp parallel for shared(results)
     for (size_t run = 0; run < nb_runs; ++run) {
-        EGTTools::Matrix2D tmp = runWellMixed(nb_generations, nb_games, nb_groups, risk, args);
+        EGTTools::Matrix2D tmp = runWellMixed(nb_generations, nb_games, nb_groups, group_size, risk, args);
         auto avg = tmp.block<2, 100>(0, convergence);
 
         results(0, run) = avg.row(0).mean();

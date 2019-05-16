@@ -88,7 +88,7 @@ namespace EGTTools::RL {
          * @param args
          * @return
          */
-        Matrix2D runWellMixed(size_t nb_generations, size_t nb_games, size_t nb_groups, double risk,
+        Matrix2D runWellMixed(size_t nb_generations, size_t nb_games, size_t nb_groups, size_t group_size, double risk,
                               const std::vector<double> &args = {});
 
         /**
@@ -101,7 +101,8 @@ namespace EGTTools::RL {
          * @param args
          * @return
          */
-        Matrix2D runWellMixed(size_t nb_runs, size_t nb_generations, size_t nb_games, size_t nb_groups, double risk,
+        Matrix2D runWellMixed(size_t nb_runs, size_t nb_generations, size_t nb_games, size_t nb_groups,
+                              size_t group_size, double risk,
                               const std::vector<double> &args = {});
 
 

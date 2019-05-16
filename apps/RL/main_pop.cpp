@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
 
     try {
         CRDSim sim(attempts, games, rounds, actions, group_size, cataclysm, endowment, threshold, available_actions, agent_type, args);
-        EGTTools::Matrix2D results = sim.runWellMixed(attempts, games, nb_groups, cataclysm, args);
+        EGTTools::Matrix2D results = sim.runWellMixed(attempts, games, nb_groups, group_size, cataclysm, args);
         std::cout << "success: " << results.row(0) << std::endl;
         std::cout << "avg_contrib: " << results.row(1) << std::endl;
     } catch (std::invalid_argument &e) {
