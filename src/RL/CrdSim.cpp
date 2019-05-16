@@ -321,7 +321,7 @@ void EGTTools::RL::CRDSim::reinforceXico(double &pool, size_t &success, double &
     if (pool >= _threshold) success++;
     else if (_real_rand(_generator) < risk) {
         for (auto &player: pop) {
-            player->set_payoff(-player->payoff());
+            player->set_payoff(player->payoff() - player->endowment());
         }
     }
 
