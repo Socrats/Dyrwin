@@ -4,8 +4,7 @@ project(Dyrwin LANGUAGES CXX)
 # Help variables to select what to build
 #
 # MAKE_ALL:      Builds all project executable and python bindings
-# MAKE_DYRWIN:   Builds the Dyrwin library executables
-# MAKE_PMORAN:   Build the moran process executable
+# MAKE_APPS:     Builds the app executables
 # MAKE_PYTHON:   Builds Python bindings
 
 ##############################
@@ -59,12 +58,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules/
 ##############################
 
 # Default is to build everything
-if (NOT MAKE_ALL AND NOT MAKE_APPS)
+if (NOT MAKE_ALL AND NOT MAKE_PYTHON AND NOT MAKE_APPS)
     set(MAKE_ALL 1)
 endif ()
 
 if (MAKE_ALL)
-    set(MAKE_DYRWIN 1)
     set(MAKE_APPS 1)
     set(MAKE_PYTHON 1)
 endif ()

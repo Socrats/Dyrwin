@@ -414,8 +414,24 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("nb_runs"), py::arg("nb_generations"),
                  py::arg("nb_games"), py::arg("nb_groups"), py::arg("risk"),
                  py::arg("*agent_args"))
+            .def("runConditional",
+                 static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, const std::vector<double> &,
+                                                                const std::string &)>(&RL::CRDSim::runConditional),
+                 "Runs a CRD simulation for a single group with conditional agents", py::arg("nb_episodes"),
+                 py::arg("nb_games"),
+                 py::arg("*agent_args"), py::arg("crd_type"))
+            .def("runConditional",
+                 static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, size_t, double,
+                                                                const std::vector<double> &,
+                                                                const std::string &)>(&RL::CRDSim::runConditional),
+                 "Runs a CRD simulation for nb_groups with conditional agents", py::arg("nb_episodes"),
+                 py::arg("nb_games"),
+                 py::arg("nb_groups"), py::arg("risk"),
+                 py::arg("*agent_args"), py::arg("crd_type"))
             .def_readwrite("population", &RL::CRDSim::population, py::return_value_policy::reference_internal)
             .def("reset_population", &RL::CRDSim::resetPopulation)
+            .def("setGameType", &RL::CRDSim::setGameType, "sets the game to milinski or xico versions of the CRD",
+                 py::arg("crd_type"))
             .def_property("nb_games", &RL::CRDSim::nb_games, &RL::CRDSim::set_nb_games)
             .def_property("nb_episodes", &RL::CRDSim::nb_episodes, &RL::CRDSim::set_nb_episodes)
             .def_property("nb_rounds", &RL::CRDSim::nb_rounds, &RL::CRDSim::set_nb_rounds)

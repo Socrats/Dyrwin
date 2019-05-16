@@ -13,6 +13,7 @@
 #include <Dyrwin/RL/RothErevAgent.h>
 #include <Dyrwin/RL/HistericQLearningAgent.hpp>
 #include <Dyrwin/RL/CRDGame.h>
+#include <Dyrwin/RL/CRDConditional.h>
 #include <Dyrwin/RL/PopContainer.hpp>
 #include <Dyrwin/RL/Utils.h>
 
@@ -103,16 +104,48 @@ namespace EGTTools::RL {
         Matrix2D runWellMixed(size_t nb_runs, size_t nb_generations, size_t nb_games, size_t nb_groups, double risk,
                               const std::vector<double> &args = {});
 
+
+        /**
+         * This method can only be run on actions of the type [0, 1, 2....], i.e., sequential from [0, nb_actions -1].
+         * @param nb_episodes
+         * @param nb_games
+         * @param args
+         * @return
+         */
+        Matrix2D runConditional(size_t nb_episodes, size_t nb_games, const std::vector<double> &args = {},
+                                const std::string &crd_type = "milinski");
+
+        Matrix2D
+        runConditional(size_t nb_episodes, size_t nb_games, size_t nb_groups, double risk,
+                       const std::vector<double> &args = {}, const std::string &crd_type = "milinski");
+
         void resetPopulation();
 
+        template<class G = CRDGame<PopContainer>>
         void reinforceOnlyPositive(double &pool, size_t &success, double &risk, PopContainer &pop,
-                                   CRDGame<PopContainer> &game);
+                                   G &game);
 
+        template<class G = CRDGame<PopContainer>>
         void reinforceAll(double &pool, size_t &success, double &risk, PopContainer &pop,
-                          CRDGame<PopContainer> &game);
+                          G &game);
 
+        template<class G = CRDGame<PopContainer>>
         void reinforceXico(double &pool, size_t &success, double &risk, PopContainer &pop,
-                           CRDGame<PopContainer> &game);
+                           G &game);
+
+        /**
+         * @brief sets the game type to Milinski or Xico
+         *
+         * If the game type is milinski, the minimum payoff is 0.
+         * If it is xico, the minimum payoff is -c*b, i.e., if
+         * the group doesn't reach the target, the payoff is
+         * - the amount contributed by the player.
+         *
+         * @param crd_type "milinski" or "xico".
+         */
+        void setGameType(const std::string &crd_type = "milinski");
+
+        // Getters
 
         size_t nb_games() const;
 
@@ -131,6 +164,8 @@ namespace EGTTools::RL {
         const ActionSpace &available_actions() const;
 
         const std::string &agent_type() const;
+
+        // Setters
 
         void set_nb_games(size_t nb_games);
 

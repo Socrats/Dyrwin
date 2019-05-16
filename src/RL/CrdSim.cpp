@@ -22,8 +22,16 @@ EGTTools::RL::CRDSim::CRDSim(size_t nb_episodes, size_t nb_games, size_t nb_roun
                                                                 _agent_type(agent_type) {
     if (available_actions.size() != _nb_actions)
         throw std::invalid_argument("you can't specify more actions than " + std::to_string(_nb_actions));
+    if (available_actions[0] != 0)
+        throw std::invalid_argument("First action must always be 0! And actions must be in crescent order!");
+    for (size_t i = 0; i < _nb_actions; ++i)
+        for (size_t j = i; j < _nb_actions; ++j)
+            if (available_actions[i] >= available_actions[j])
+                throw std::invalid_argument(
+                        "Actions must always be monotonically increasing! There can't be two equal actions!");
 
     _available_actions = ActionSpace(nb_actions);
+
     for (size_t i = 0; i < _nb_actions; ++i) _available_actions[i] = available_actions[i];
     try {
         population = PopContainer(agent_type, group_size, nb_rounds, nb_actions, nb_rounds, _endowment, args);
@@ -61,9 +69,10 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games
 }
 
 EGTTools::Matrix2D
-EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups, double risk, const std::vector<double> &args) {
+EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups, double risk,
+                          const std::vector<double> &args) {
     EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_groups);
-    size_t convergence = nb_episodes > 100 ? nb_episodes - 100 :  0;
+    size_t convergence = nb_episodes > 100 ? nb_episodes - 100 : 0;
 
     // Create a vector of groups
     std::vector<PopContainer> groups;
@@ -111,7 +120,8 @@ EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups,
 }
 
 EGTTools::Matrix2D
-EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_t nb_groups, double risk, const std::vector<double> &args) {
+EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_t nb_groups, double risk,
+                                   const std::vector<double> &args) {
     EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_generations);
     size_t pop_size = _group_size * nb_groups;
     size_t success;
@@ -124,7 +134,7 @@ EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_
     // Create a population of _group_size * nb_groups
     PopContainer wmPop(_agent_type, pop_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
     PopContainer group;
-    std::vector<size_t > groups(pop_size);
+    std::vector<size_t> groups(pop_size);
     std::iota(groups.begin(), groups.end(), 0);
     for (size_t i = 0; i < _group_size; ++i)
         group.push_back(wmPop(i));
@@ -156,9 +166,10 @@ EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_
 }
 
 EGTTools::Matrix2D
-EGTTools::RL::CRDSim::runWellMixed(size_t nb_runs, size_t nb_generations, size_t nb_games, size_t nb_groups, double risk, const std::vector<double> &args) {
+EGTTools::RL::CRDSim::runWellMixed(size_t nb_runs, size_t nb_generations, size_t nb_games, size_t nb_groups,
+                                   double risk, const std::vector<double> &args) {
     EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_runs);
-    size_t convergence = nb_generations > 100 ? nb_generations - 100 :  0;
+    size_t convergence = nb_generations > 100 ? nb_generations - 100 : 0;
 
 #pragma omp parallel for shared(results)
     for (size_t run = 0; run < nb_runs; ++run) {
@@ -173,9 +184,119 @@ EGTTools::RL::CRDSim::runWellMixed(size_t nb_runs, size_t nb_generations, size_t
 
 }
 
+
+EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size_t nb_games,
+                                                        const std::vector<double> &args, const std::string &crd_type) {
+    Matrix2D results = Matrix2D::Zero(2, nb_episodes);
+    size_t success;
+    double avg_contribution;
+    double avg_rounds;
+    ActionSpace available_actions(_nb_actions);
+    std::iota(available_actions.begin(), available_actions.end(), 0);
+    FlattenState flatten(Factors{_nb_rounds, (_group_size * _nb_actions) + 1});
+    CRDConditional<PopContainer> game(flatten);
+
+    // Create a population of _group_size * nb_groups
+    PopContainer popConditional(_agent_type, _group_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
+    void
+    (EGTTools::RL::CRDSim::* reinforce)(double &, size_t &, double &, PopContainer &, CRDConditional<PopContainer> &);
+
+    if (_agent_type == "rothErev")
+        reinforce = &EGTTools::RL::CRDSim::reinforceOnlyPositive<CRDConditional<PopContainer>>;
+    else if (crd_type == "milinski") reinforce = &EGTTools::RL::CRDSim::reinforceAll<CRDConditional<PopContainer>>;
+    else reinforce = &EGTTools::RL::CRDSim::reinforceXico<CRDConditional<PopContainer>>;
+
+    for (size_t step = 0; step < nb_episodes; ++step) {
+        success = 0;
+        avg_contribution = 0.;
+        avg_rounds = 0.;
+        for (size_t i = 0; i < nb_games; ++i) {
+            // First we play the game
+            auto[pool, final_round] = game.playGame(popConditional, _available_actions, _nb_rounds);
+            avg_contribution += (game.playersContribution(popConditional) / double(_group_size));
+            (this->*reinforce)(pool, success, _risk, popConditional, game);
+            avg_rounds += final_round;
+        }
+        results(0, step) = static_cast<double>(success) / static_cast<double>(nb_games);
+        results(1, step) = static_cast<double>(avg_contribution) / static_cast<double>(nb_games);
+
+        game.calcProbabilities(popConditional);
+        game.resetEpisode(popConditional);
+    }
+
+    return results;
+
+}
+
+
+EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size_t nb_games, size_t nb_groups,
+                                                        double risk, const std::vector<double> &args,
+                                                        const std::string &crd_type) {
+    EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_groups);
+    size_t convergence = nb_episodes > 100 ? nb_episodes - 100 : 0;
+
+    ActionSpace available_actions(_nb_actions);
+    std::iota(available_actions.begin(), available_actions.end(), 0);
+
+    void
+    (EGTTools::RL::CRDSim::* reinforce)(double &, size_t &, double &, PopContainer &, CRDConditional<PopContainer> &);
+
+    if (_agent_type == "rothErev")
+        reinforce = &EGTTools::RL::CRDSim::reinforceOnlyPositive<CRDConditional<PopContainer>>;
+    else if (crd_type == "milinski") reinforce = &EGTTools::RL::CRDSim::reinforceAll<CRDConditional<PopContainer>>;
+    else reinforce = &EGTTools::RL::CRDSim::reinforceXico<CRDConditional<PopContainer>>;
+
+    // Create a vector of groups
+    std::vector<PopContainer> groups;
+
+    for (size_t i = 0; i < nb_groups; ++i) {
+        try {
+            groups.emplace_back(_agent_type, _group_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
+        } catch (std::invalid_argument &e) {
+            throw e;
+        }
+    }
+
+#pragma omp parallel for shared(results)
+    for (size_t group = 0; group < nb_groups; ++group) {
+        size_t success;
+        double avg_contribution;
+        double avg_rounds;
+        FlattenState flatten(Factors{_nb_rounds, (_group_size * _nb_actions) + 1});
+        CRDConditional<PopContainer> game(flatten);
+
+        for (size_t step = 0; step < nb_episodes; ++step) {
+            success = 0;
+            avg_contribution = 0.;
+            avg_rounds = 0.;
+            for (unsigned int i = 0; i < nb_games; ++i) {
+                // First we play the game
+                auto[pool, final_round] = game.playGame(groups[group], _available_actions, _nb_rounds);
+                avg_contribution += (game.playersContribution(groups[group]) / double(_group_size));
+                (this->*reinforce)(pool, success, risk, groups[group], game);
+                avg_rounds += final_round;
+            }
+            if (step >= convergence) {
+                results(0, group) += static_cast<double>(success) / static_cast<double>(nb_games);
+                results(1, group) += avg_contribution / static_cast<double>(nb_games);
+            }
+
+            game.calcProbabilities(groups[group]);
+            game.resetEpisode(groups[group]);
+        }
+
+        results.col(group) = results.col(group) / 100.0;
+    }
+
+    return results;
+
+}
+
 void EGTTools::RL::CRDSim::resetPopulation() { population.reset(); }
 
-void EGTTools::RL::CRDSim::reinforceOnlyPositive(double &pool, size_t &success, double &risk, PopContainer & pop, CRDGame<PopContainer> & game) {
+template<class G>
+void EGTTools::RL::CRDSim::reinforceOnlyPositive(double &pool, size_t &success, double &risk, PopContainer &pop,
+                                                 G &game) {
     if (pool >= _threshold) {
         game.reinforcePath(pop);
         success++;
@@ -183,7 +304,9 @@ void EGTTools::RL::CRDSim::reinforceOnlyPositive(double &pool, size_t &success, 
     else game.setPayoffs(pop, 0);
 }
 
-void EGTTools::RL::CRDSim::reinforceAll(double &pool, size_t &success, double &risk, PopContainer & pop, CRDGame<PopContainer> & game) {
+template<class G>
+void EGTTools::RL::CRDSim::reinforceAll(double &pool, size_t &success, double &risk, PopContainer &pop,
+                                        G &game) {
 
     if (pool >= _threshold) success++;
     else if (_real_rand(_generator) < risk) game.setPayoffs(pop, 0);
@@ -191,7 +314,9 @@ void EGTTools::RL::CRDSim::reinforceAll(double &pool, size_t &success, double &r
     game.reinforcePath(pop);
 }
 
-void EGTTools::RL::CRDSim::reinforceXico(double &pool, size_t &success, double &risk, PopContainer & pop, CRDGame<PopContainer> & game) {
+template<class G>
+void EGTTools::RL::CRDSim::reinforceXico(double &pool, size_t &success, double &risk, PopContainer &pop,
+                                         G &game) {
 
     if (pool >= _threshold) success++;
     else if (_real_rand(_generator) < risk) {
@@ -201,6 +326,11 @@ void EGTTools::RL::CRDSim::reinforceXico(double &pool, size_t &success, double &
     }
 
     game.reinforcePath(pop);
+}
+
+void EGTTools::RL::CRDSim::setGameType(const std::string &crd_type) {
+    if (crd_type == "milinski") _reinforce = &EGTTools::RL::CRDSim::reinforceAll;
+    else _reinforce = &EGTTools::RL::CRDSim::reinforceXico;
 }
 
 size_t EGTTools::RL::CRDSim::nb_games() const { return _nb_games; }

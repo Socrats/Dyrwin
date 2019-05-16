@@ -60,7 +60,7 @@ namespace EGTTools::RL {
             for (size_t i = 0; i < final_round; ++i) {
                 _state[0] = i, _state[1] = static_cast<size_t>(partial);
                 partial = 0.0;
-#pragma omp parallel for shared(total)
+//#pragma omp parallel for shared(total)
                 for (size_t j = 0; j < players.size(); ++j) {
                     unsigned idx = players[j].selectAction(i, _flatten.toIndex(_state));
                     players[j].decrease(actions[idx]);
@@ -83,7 +83,7 @@ namespace EGTTools::RL {
             for (size_t i = 0; i < final_round; i++) {
                 _state[0] = i, _state[1] = static_cast<size_t>(partial);
                 partial = 0.0;
-#pragma omp parallel for shared(total)
+//#pragma omp parallel for shared(total)
                 for (size_t j = 0; j < players.size(); ++j) {
                     unsigned idx = players[j]->selectAction(i, _flatten.toIndex(_state));
                     players[j]->decrease(actions[idx]);
@@ -95,7 +95,7 @@ namespace EGTTools::RL {
         }
 
         bool reinforcePath(std::vector<A> &players) {
-#pragma omp parallel
+//#pragma omp parallel
             for (size_t j = 0; j < players.size(); ++j) {
                 players[j].reinforceTrajectory();
             }
@@ -103,7 +103,7 @@ namespace EGTTools::RL {
         }
 
         bool reinforcePath(std::vector<A> &players, size_t final_round) {
-#pragma omp parallel
+//#pragma omp parallel
             for (size_t j = 0; j < players.size(); ++j) {
                 players[j].reinforceTrajectory(final_round);
             }
@@ -111,7 +111,7 @@ namespace EGTTools::RL {
         }
 
         bool reinforcePath(std::vector<A *> &players) {
-#pragma omp parallel
+//#pragma omp parallel
             for (size_t j = 0; j < players.size(); ++j) {
                 players[j]->reinforceTrajectory();
             }
@@ -119,7 +119,7 @@ namespace EGTTools::RL {
         }
 
         bool reinforcePath(std::vector<A *> &players, size_t final_round) {
-#pragma omp parallel
+//#pragma omp parallel
             for (size_t j = 0; j < players.size(); ++j) {
                 players[j]->reinforceTrajectory(final_round);
             }
@@ -141,7 +141,7 @@ namespace EGTTools::RL {
         }
 
         bool calcProbabilities(std::vector<A> &players) {
-#pragma omp parallel
+//#pragma omp parallel
             for (size_t j = 0; j < players.size(); ++j) {
                 players[j].inferPolicy();
             }
@@ -149,7 +149,7 @@ namespace EGTTools::RL {
         }
 
         bool calcProbabilities(std::vector<A *> &players) {
-#pragma omp parallel
+//#pragma omp parallel
             for (size_t j = 0; j < players.size(); ++j) {
                 players[j]->inferPolicy();
             }
@@ -358,6 +358,101 @@ namespace EGTTools::RL {
         std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
     };
 
+    template<>
+    class CRDConditional<PopContainer, void> {
+
+    public:
+
+        explicit CRDConditional(FlattenState  flatten) : _flatten(std::move(flatten)) {
+            _state = EGTTools::RL::Factors(2);
+        }
+
+        /**
+         * @brief Model of the Collective-Risk dillemma game.
+         *
+         * This game constitutes an MDP.
+         *
+         * This function plays the game for a number of rounds
+         *
+         * @param players
+         * @param actions
+         * @param rounds
+         * @return std::tuple (donations, rounds)
+         */
+        std::pair<double, size_t>
+        playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds) {
+
+            double total = 0.0, partial = 0.0;
+            for (auto &player : players) {
+                player->resetPayoff();
+            }
+            for (size_t i = 0; i < rounds; ++i) {
+                _state[0] = i, _state[1] = static_cast<size_t>(partial);
+                partial = 0.0;
+                for (auto &a : players) {
+                    unsigned idx = a->selectAction(i, _flatten.toIndex(_state));
+                    a->decrease(actions[idx]);
+                    partial += actions[idx];
+                }
+                total += partial;
+            }
+            return std::make_tuple(total, rounds);
+        }
+
+        bool reinforcePath(PopContainer &players) {
+            for (auto& player : players)
+                player->reinforceTrajectory();
+            return true;
+        }
+
+        bool printGroup(PopContainer &players) {
+            for (auto &player : players) {
+                std::cout << *player << std::endl;
+            }
+            return true;
+        }
+
+        bool calcProbabilities(PopContainer &players) {
+            for (auto& player : players)
+                player->inferPolicy();
+            return true;
+        }
+
+        bool resetEpisode(PopContainer &players) {
+            for (auto &player : players) {
+                player->resetTrajectory();
+            }
+            return true;
+        }
+
+        double playersPayoff(PopContainer &players) {
+            double total = 0;
+            for (auto& player : players)
+                total += player->payoff();
+
+            return total;
+        }
+
+        void setPayoffs(PopContainer &players, unsigned int value) {
+            for (auto &player: players) {
+                player->set_payoff(value);
+            }
+        }
+
+        double playersContribution(PopContainer &players) {
+            double total = 0;
+            for (auto& player : players)
+                total += player->endowment() - player->payoff();
+
+            return total;
+        }
+
+    private:
+        FlattenState _flatten;
+        EGTTools::RL::Factors _state;
+        // Random generators
+        std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+    };
 
 }
 
