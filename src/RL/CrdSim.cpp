@@ -25,7 +25,7 @@ EGTTools::RL::CRDSim::CRDSim(size_t nb_episodes, size_t nb_games, size_t nb_roun
     if (available_actions[0] != 0)
         throw std::invalid_argument("First action must always be 0! And actions must be in crescent order!");
     for (size_t i = 0; i < _nb_actions; ++i)
-        for (size_t j = i; j < _nb_actions; ++j)
+        for (size_t j = i+1; j < _nb_actions - 1; ++j)
             if (available_actions[i] >= available_actions[j])
                 throw std::invalid_argument(
                         "Actions must always be monotonically increasing! There can't be two equal actions!");
