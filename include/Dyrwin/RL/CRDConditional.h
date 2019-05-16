@@ -46,7 +46,7 @@ namespace EGTTools::RL {
          * @param players
          * @param actions
          * @param rounds
-         * @return std::tuple (donations, rounds)
+         * @return std::pair (donations, rounds)
          */
         std::pair<double, unsigned>
         playGame(std::vector<A> &players, std::vector<size_t> &actions, size_t rounds, R &gen_round) {
@@ -225,9 +225,9 @@ namespace EGTTools::RL {
          * @param players
          * @param actions
          * @param rounds
-         * @return std::tuple (donations, rounds)
+         * @return std::pair (donations, rounds)
          */
-        std::tuple<double, unsigned>
+        std::pair<double, unsigned>
         playGame(std::vector<A> &players, std::vector<size_t> &actions, size_t rounds) {
             double total = 0.0, partial = 0.0;
             for (auto &player : players) {
@@ -243,10 +243,10 @@ namespace EGTTools::RL {
                 }
                 total += partial;
             }
-            return std::make_tuple(total, rounds);
+            return std::make_pair(total, rounds);
         }
 
-        std::tuple<double, unsigned>
+        std::pair<double, unsigned>
         playGame(std::vector<A *> &players, std::vector<size_t> &actions, size_t rounds) {
             double total = 0.0, partial = 0.0;
             for (auto &player : players) {
@@ -262,7 +262,7 @@ namespace EGTTools::RL {
                 }
                 total += partial;
             }
-            return std::make_tuple(total, rounds);
+            return std::make_pair(total, rounds);
         }
 
         bool reinforcePath(std::vector<A> &players) {
@@ -377,7 +377,7 @@ namespace EGTTools::RL {
          * @param players
          * @param actions
          * @param rounds
-         * @return std::tuple (donations, rounds)
+         * @return std::pair (donations, rounds)
          */
         std::pair<double, size_t>
         playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds) {
@@ -396,7 +396,7 @@ namespace EGTTools::RL {
                 }
                 total += partial;
             }
-            return std::make_tuple(total, rounds);
+            return std::make_pair(total, rounds);
         }
 
         bool reinforcePath(PopContainer &players) {
