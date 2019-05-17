@@ -447,6 +447,8 @@ namespace EGTTools::RL {
             return total;
         }
 
+        FlattenState& flatten() { return _flatten; }
+
     private:
         FlattenState _flatten;
         EGTTools::RL::Factors _state;

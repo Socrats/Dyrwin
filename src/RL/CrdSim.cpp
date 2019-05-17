@@ -199,7 +199,8 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
     CRDConditional<PopContainer> game(flatten);
 
     // Create a population of _group_size * nb_groups
-    PopContainer popConditional(_agent_type, _group_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
+    PopContainer popConditional(_agent_type, _group_size, game.flatten().factor_space, _nb_actions, _nb_rounds,
+                                _endowment, args);
     void
     (EGTTools::RL::CRDSim::* reinforce)(double &, size_t &, double &, PopContainer &, CRDConditional<PopContainer> &);
 
@@ -253,7 +254,9 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
 
     for (size_t i = 0; i < nb_groups; ++i) {
         try {
-            groups.emplace_back(_agent_type, _group_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
+            groups.emplace_back(_agent_type, _group_size,
+                                EGTTools::RL::factorSpace(Factors{_nb_rounds, (_group_size * _nb_actions) + 1}),
+                                _nb_actions, _nb_rounds, _endowment, args);
         } catch (std::invalid_argument &e) {
             throw e;
         }
