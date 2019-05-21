@@ -355,8 +355,8 @@ namespace EGTTools::SED {
                 }
             } // end Moran process loop
         } // end runs loop
-
-        return r2m / r2m + r2r;
+        if ((r2m == 0.0) && (r2r == 0.0)) return 0.0;
+        else return r2m / (r2m + r2r);
     }
 
 /**
@@ -421,7 +421,8 @@ namespace EGTTools::SED {
             } // end Moran process loop
         } // end runs loop
 
-        return r2m / r2m + r2r;
+        if ((r2m == 0.0) && (r2r == 0.0)) return 0.0;
+        else return r2m / (r2m + r2r);
     }
 
     /**
