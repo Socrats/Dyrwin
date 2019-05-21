@@ -70,16 +70,31 @@ EGTTools::SED::CrdBehavior::CrdBehavior() {
     type = dist(mt);
     payoff = 0;
     switch (type) {
-        case 0: act = &cooperator;
-        case 1: act = &defector;
-        case 2: act = &altruist;
-        case 3: act = &reciprocal;
-        case 4: act = &compensator;
-        case 5: act = &conditional_cooperator;
-        case 6: act = &conditional_defector;
+        case 0:
+            act = &cooperator;
+            break;
+        case 1:
+            act = &defector;
+            break;
+        case 2:
+            act = &altruist;
+            break;
+        case 3:
+            act = &reciprocal;
+            break;
+        case 4:
+            act = &compensator;
+            break;
+        case 5:
+            act = &conditional_cooperator;
+            break;
+        case 6:
+            act = &conditional_defector;
+            break;
         default:
             act = &cooperator;
             this->type = 0;
+            break;
     }
 }
 
@@ -87,15 +102,30 @@ EGTTools::SED::CrdBehavior::CrdBehavior(size_t type) {
     this->type = type;
     payoff = 0;
     switch (type) {
-        case 0: act = &cooperator;
-        case 1: act = &defector;
-        case 2: act = &altruist;
-        case 3: act = &reciprocal;
-        case 4: act = &compensator;
-        case 5: act = &conditional_cooperator;
-        case 6: act = &conditional_defector;
+        case 0:
+            act = &cooperator;
+            break;
+        case 1:
+            act = &defector;
+            break;
+        case 2:
+            act = &altruist;
+            break;
+        case 3:
+            act = &reciprocal;
+            break;
+        case 4:
+            act = &compensator;
+            break;
+        case 5:
+            act = &conditional_cooperator;
+            break;
+        case 6:
+            act = &conditional_defector;
+            break;
         default:
             act = &cooperator;
             this->type = 0;
+            break;
     }
 }
