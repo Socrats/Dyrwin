@@ -7,6 +7,7 @@ add_library(EGTTools
         SED/StochDynamics.cpp
         SED/TraulsenMoran.cpp
         SED/structure/Group.cpp
+        SED/behaviors/CrdBehaviors.cpp
         RL/Agent.cpp
         RL/BatchQLearningAgent.cpp
         RL/QLearningAgent.cpp

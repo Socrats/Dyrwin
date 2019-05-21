@@ -11,27 +11,74 @@
 
 /**
  * @brief This header file contains the definition of the behaviors encountered in the
- * CRD experiments Elias & Jelena & Francisco C. Santo, et. al.
+ * CRD experiments Elias & Jelena & Francisco C. Santos, et. al.
  */
 
 namespace EGTTools::SED {
     constexpr size_t nb_strategies = 5;
 
+    /**
+     * @brief This player always invests 2
+     *
+     * @param prev_donation
+     * @param threshold
+     * @return action of the player
+     */
     size_t cooperator(size_t prev_donation, size_t threshold);
 
+    /**
+     * @brief This player always invests 0
+     * @param prev_donation
+     * @param threshold
+     * @return
+     */
     size_t defector(size_t prev_donation, size_t threshold);
 
+    /**
+     * @brief This player always invests 4
+     * @param prev_donation
+     * @param threshold
+     * @return
+     */
     size_t altruist(size_t prev_donation, size_t threshold);
 
+    /**
+     * @brief Cooperates depending on threshold
+     *
+     * This player starts giving 2 and then gives 4 if
+     * threshold >= 10 otherwise gives 0
+     *
+     * @param prev_donation
+     * @param threshold
+     * @return
+     */
     size_t reciprocal(size_t prev_donation, size_t threshold);
 
+    /**
+     * @brief Cooperates depending on threshold
+     *
+     * This player starts giving 2 and then gives 0 if
+     * threshold > 10 otherwise gives 4.
+     *
+     * @param prev_donation
+     * @param threshold
+     * @return
+     */
     size_t compensator(size_t prev_donation, size_t threshold);
+
+    size_t conditional_cooperator(size_t prev_donation, size_t threshold);
+
+    size_t conditional_defector(size_t prev_donation, size_t threshold);
+
+    size_t early(size_t prev_donation, size_t threshold, size_t current_round);
+
+    size_t late(size_t prev_donation, size_t threshold, size_t current_round);
 
 
     struct CrdBehavior {
         CrdBehavior();
 
-        CrdBehavior(size_t type);
+        explicit CrdBehavior(size_t type);
 
         size_t type;
         double payoff;
