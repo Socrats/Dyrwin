@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
     size_t group_size, nb_groups, runs_grad;
     double split_prob;
     float mu = 1e-3;
-    float coop_freq = 0.5;
+//    float coop_freq = 0.5;
     EGTTools::Matrix2D payoff_matrix;
     payoff_matrix << 1, 4,
             0, 3;
