@@ -269,7 +269,7 @@ namespace EGTTools::SED {
             throw std::invalid_argument(
                     "the sum of individuals in the initial state must be equal to " + std::to_string(_pop_size));
 
-        _strategies = init_state;
+        _strategies.array() = init_state;
         // Initialize population with initial state
         VectorXui group_strategies = VectorXui::Zero(_nb_strategies);
         Group group(_nb_strategies, _group_size, w, group_strategies, _payoff_matrix);
