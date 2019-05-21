@@ -101,7 +101,7 @@ PYBIND11_MODULE(EGTtools, m) {
                  "Calculate the transition probabilities and the stationary distribution");
 
     py::class_<MoranProcess>(m, "MoranProcess")
-            .def(py::init<size_t, size_t, size_t, double, Eigen::Ref<const Vector>, Eigen::Ref<const Matrix2D>>(),)
+            .def(py::init<size_t, size_t, size_t, double, Eigen::Ref<const Vector>, Eigen::Ref<const Matrix2D>>())
             .def(py::init<size_t, size_t, size_t, size_t, double, Eigen::Ref<const Vector>, Eigen::Ref<const Matrix2D>>())
             .def(py::init<size_t, size_t, size_t, size_t, double, double, Eigen::Ref<const Vector>, Eigen::Ref<const Matrix2D>>())
             .def(py::init<size_t, size_t, size_t, size_t, double, double, double, Eigen::Ref<const Vector>, Eigen::Ref<const Matrix2D>>())

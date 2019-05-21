@@ -322,13 +322,13 @@ namespace EGTTools::SED {
             throw std::invalid_argument(
                     "The splitting probability must be zero when there is only 1 group in the population");
 
-        size_t r2m = 0; // resident to mutant count
-        size_t r2r = 0; // resident to resident count
+        double r2m = 0; // resident to mutant count
+        double r2r = 0; // resident to resident count
         VectorXui group_strategies = VectorXui::Zero(_nb_strategies);
         group_strategies(resident) = _group_size;
 
         // This loop can be done in parallel
-#pragma omp parallel for shared(r2m, r2r)
+#pragma omp parallel for shared(group_strategies) reduction(+:r2m, r2r)
         for (size_t i = 0; i < runs; ++i) {
             // First we initialize a homogeneous population with the resident strategy
             SED::Group group(_nb_strategies, _group_size, w, group_strategies, _payoff_matrix);
@@ -346,16 +346,16 @@ namespace EGTTools::SED {
                 _speedUpdate(q, groups, strategies);
 
                 if (strategies(invader) == 0) {
-                    ++r2r;
+                    r2r += 1.0;
                     break;
                 } else if (strategies(resident) == 0) {
-                    ++r2m;
+                    r2m += 1.0;
                     break;
                 }
             } // end Moran process loop
         } // end runs loop
 
-        return static_cast<double>(r2m) / static_cast<double>(r2m + r2r);
+        return r2m / r2m + r2r;
     }
 
 /**
@@ -387,13 +387,13 @@ namespace EGTTools::SED {
             throw std::invalid_argument(
                     "The splitting probability must be zero when there is only 1 group in the population");
 
-        size_t r2m = 0; // resident to mutant count
-        size_t r2r = 0; // resident to resident count
+        double r2m = 0; // resident to mutant count
+        double r2r = 0; // resident to resident count
         VectorXui group_strategies = VectorXui::Zero(_nb_strategies);
         group_strategies(resident) = _group_size;
 
         // This loop can be done in parallel
-#pragma omp parallel for shared(r2m, r2r)
+#pragma omp parallel for shared(group_strategies) reduction(+:r2m, r2r)
         for (size_t i = 0; i < runs; ++i) {
             // First we initialize a homogeneous population with the resident strategy
             SED::Group group(_nb_strategies, _group_size, w, group_strategies, _payoff_matrix);
@@ -411,16 +411,16 @@ namespace EGTTools::SED {
                 _speedUpdate(q, lambda, groups, strategies);
 
                 if (strategies(invader) == 0) {
-                    ++r2r;
+                    r2r += 1.0;
                     break;
                 } else if (strategies(resident) == 0) {
-                    ++r2m;
+                    r2m += 1.0;
                     break;
                 }
             } // end Moran process loop
         } // end runs loop
 
-        return static_cast<double>(r2m) / static_cast<double>(r2m + r2r);
+        return r2m / r2m + r2r;
     }
 
     /**
@@ -472,7 +472,7 @@ namespace EGTTools::SED {
         }
 
         // This loop can be done in parallel
-#pragma omp parallel for shared(fixations)
+#pragma omp parallel for shared(group, pop_container) reduction(+:fixations)
         for (size_t i = 0; i < runs; ++i) {
             // First we initialize a homogeneous population with the resident strategy
             bool fixated = false;
