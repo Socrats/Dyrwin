@@ -12,6 +12,7 @@
 #include <Dyrwin/Types.h>
 #include <Dyrwin/SED/structure/Group.hpp>
 #include <Dyrwin/SED/Utils.hpp>
+#include <Dyrwin/OpenMPUtils.hpp>
 
 namespace EGTTools::SED {
     template<typename S = Group>
