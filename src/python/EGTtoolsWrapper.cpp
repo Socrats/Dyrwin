@@ -101,7 +101,7 @@ PYBIND11_MODULE(EGTtools, m) {
                  "Calculate the transition probabilities and the stationary distribution");
 
     py::class_<MoranProcess>(m, "MoranProcess")
-            .def(py::init<size_t, size_t, size_t, double, Eigen::Ref<const Vector>, Eigen::Ref<const Matrix2D>>())
+            .def(py::init<size_t, size_t, size_t, double, Eigen::Ref<const Vector>, Eigen::Ref<const Matrix2D>>(),)
             .def(py::init<size_t, size_t, size_t, size_t, double, Eigen::Ref<const Vector>, Eigen::Ref<const Matrix2D>>())
             .def(py::init<size_t, size_t, size_t, size_t, double, double, Eigen::Ref<const Vector>, Eigen::Ref<const Matrix2D>>())
             .def(py::init<size_t, size_t, size_t, size_t, double, double, double, Eigen::Ref<const Vector>, Eigen::Ref<const Matrix2D>>())
@@ -124,7 +124,10 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("__repr__", &MoranProcess::toString);
 
     py::class_<SED::MLS<SED::Group>>(m, "MLS")
-            .def(py::init<size_t, size_t, size_t, size_t, double, const Eigen::Ref<const Vector> &, const Eigen::Ref<const Matrix2D> &>())
+            .def(py::init<size_t, size_t, size_t, size_t, double, const Eigen::Ref<const Vector> &, const Eigen::Ref<const Matrix2D> &>(),
+                    "Implement the Multi-level Selection process described in [Traulsen & Nowak 2006].",
+                    py::arg("generations"), py::arg("nb_strategies"), py::arg("group_size"), py::arg("nb_groups"),
+                    py::arg("w"), py::arg("strategies_freq"), py::arg("payoff_matrix"))
             .def_property("generations", &SED::MLS<SED::Group>::generations, &SED::MLS<SED::Group>::set_generations)
             .def_property_readonly("nb_strategies", &SED::MLS<SED::Group>::nb_strategies)
             .def_property("n", &SED::MLS<SED::Group>::group_size, &SED::MLS<SED::Group>::set_group_size)
@@ -137,40 +140,47 @@ PYBIND11_MODULE(EGTtools, m) {
                                    py::return_value_policy::reference_internal)
             .def_property_readonly("max_pop_size", &SED::MLS<SED::Group>::max_pop_size)
             .def("update_payoff_matrix", &SED::MLS<SED::Group>::set_payoff_matrix,
-                 py::return_value_policy::reference_internal)
-            .def("evolve", &SED::MLS<SED::Group>::evolve)
+                 py::return_value_policy::reference_internal,
+                 "updates the payoff matrix with the values from the input.",
+                 py::arg("payoff_matrix"))
+            .def("evolve", &SED::MLS<SED::Group>::evolve,
+                    "runs the moran process with multi-level selection for a given number of generations or until"
+                    "it reaches a monomorphic state", py::arg("q"), py::arg("w"), py::arg("init_state"))
             .def("fixation_probability",
                  static_cast<double (SED::MLS<SED::Group>::*)(size_t, size_t, size_t, double,
                                                               double)>( &SED::MLS<SED::Group>::fixationProbability),
                  py::call_guard<py::gil_scoped_release>(),
-                 "Calculates the fixation probability given a beta.")
+                 "Estimates the fixation probability of the invading strategy over the resident strategy for MLS.",
+                 py::arg("invader"), py::arg("resident"), py::arg("runs"), py::arg("q"), py::arg("w"))
             .def("fixation_probability",
                  static_cast<double (SED::MLS<SED::Group>::*)(size_t, size_t, size_t, double, double,
                                                               double)>( &SED::MLS<SED::Group>::fixationProbability),
                  py::call_guard<py::gil_scoped_release>(),
-                 "Calculates the fixation probability given a beta and lambda.")
+                 "Estimates the fixation probability of the invading strategy over the resident strategy "
+                 "for MLS with migration.", py::arg("invader"), py::arg("resident"), py::arg("runs"), py::arg("q"),
+                 py::arg("lambda"), py::arg("w"))
             .def("fixation_probability",
                  static_cast<Vector (SED::MLS<SED::Group>::*)(size_t, const Eigen::Ref<const VectorXui> &, size_t,
                                                               double,
                                                               double)>( &SED::MLS<SED::Group>::fixationProbability),
                  py::call_guard<py::gil_scoped_release>(),
-                 "Calculates the fixation probability given a beta and an initial state.")
-//            .def("fixation_probability",
-//                 static_cast<double (SED::MLS<SED::Group>::*)(size_t, size_t, size_t, size_t, double, double, double,
-//                                                              double)>(&SED::MLS<SED::Group>::fixationProbability),
-//                 py::call_guard<py::gil_scoped_release>(),
-//                 "Calculates the fixation probability given a beta, lambda and mu.")
+                 "Estimates the fixation probability of the invading strategy over the resident strategy "
+                 "fir MLS from any initial state", py::arg("invader"), py::arg("init_state"), py::arg("runs"),
+                 py::arg("q"), py::arg("w"))
             .def("gradient_selection",
                  static_cast<Vector (SED::MLS<SED::Group>::*)(size_t, size_t, size_t, double,
                                                               double)>(&SED::MLS<SED::Group>::gradientOfSelection),
                  py::call_guard<py::gil_scoped_release>(),
-                 "Calculates the gradient of selection between two strategies.")
+                 "Calculates the gradient of selection between two strategies.",
+                 py::arg("invader"), py::arg("resident"), py::arg("runs"), py::arg("w"), py::arg("a"))
             .def("gradient_selection",
                  static_cast<Vector (SED::MLS<SED::Group>::*)(size_t, size_t, const Eigen::Ref<const VectorXui> &,
                                                               size_t, double,
                                                               double)>(&SED::MLS<SED::Group>::gradientOfSelection),
                  py::call_guard<py::gil_scoped_release>(),
-                 "Calculates the gradient of selection for an invading strategy and any initial state.")
+                 "Calculates the gradient of selection for an invading strategy and any initial state.",
+                 py::arg("invader"), py::arg("strategy_to_reduce"), py::arg("init_state"),
+                 py::arg("runs"), py::arg("w"), py::arg("q"))
             .def("__repr__", &SED::MLS<SED::Group>::toString);
 
     // Now we define a submodule
