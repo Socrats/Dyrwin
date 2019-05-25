@@ -72,7 +72,9 @@ EGTTools::Matrix2D
 EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups, double risk,
                           const std::vector<double> &args) {
     EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_groups);
-    size_t convergence = nb_episodes > 100 ? nb_episodes - 100 : 0;
+    EGTTools::Vector group_achievement = Vector::Zero(nb_groups);
+    EGTTools::Vector avg_donations = Vector::Zero(nb_groups);
+    size_t convergence = nb_episodes > 100 ? nb_episodes - 100 : nb_episodes;
 
     // Create a vector of groups
     std::vector<PopContainer> groups;
@@ -85,7 +87,7 @@ EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups,
         }
     }
 
-#pragma omp parallel for shared(convergence, groups) reduction(+:results)
+#pragma omp parallel for shared(convergence, groups) reduction(+:group_achievement, avg_donations)
     for (size_t group = 0; group < nb_groups; ++group) {
         size_t success;
         double avg_contribution;
@@ -104,16 +106,19 @@ EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups,
                 avg_rounds += final_round;
             }
             if (step >= convergence) {
-                results(0, group) += static_cast<double>(success) / static_cast<double>(nb_games);
-                results(1, group) += avg_contribution / static_cast<double>(nb_games);
+                group_achievement(group) += static_cast<double>(success) / static_cast<double>(nb_games);
+                avg_donations(group) += avg_contribution / static_cast<double>(nb_games);
             }
 
             game.calcProbabilities(groups[group]);
             game.resetEpisode(groups[group]);
         }
-
-        results.col(group) = results.col(group) / 100.0;
     }
+
+    results.row(0) = group_achievement;
+    results.row(1) = avg_donations;
+
+    results.array() /= static_cast<double>(convergence);
 
     return results;
 
@@ -288,7 +293,9 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
                                                         double risk, const std::vector<double> &args,
                                                         const std::string &crd_type) {
     EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_groups);
-    size_t convergence = nb_episodes > 100 ? nb_episodes - 100 : 0;
+    EGTTools::Vector group_achievement = Vector::Zero(nb_groups);
+    EGTTools::Vector avg_donations = Vector::Zero(nb_groups);
+    size_t convergence = nb_episodes > 100 ? nb_episodes - 100 : nb_episodes;
 
     ActionSpace available_actions(_nb_actions);
     std::iota(available_actions.begin(), available_actions.end(), 0);
@@ -314,7 +321,7 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
         }
     }
 
-#pragma omp parallel for shared(convergence, available_actions, groups) reduction(+:results)
+#pragma omp parallel for shared(convergence, available_actions, groups) reduction(+:group_achievement, avg_donations)
     for (size_t group = 0; group < nb_groups; ++group) {
         size_t success;
         double avg_contribution;
@@ -334,16 +341,18 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
                 avg_rounds += final_round;
             }
             if (step >= convergence) {
-                results(0, group) += static_cast<double>(success) / static_cast<double>(nb_games);
-                results(1, group) += avg_contribution / static_cast<double>(nb_games);
+                group_achievement(group) += static_cast<double>(success) / static_cast<double>(nb_games);
+                avg_donations(group) += avg_contribution / static_cast<double>(nb_games);
             }
 
             game.calcProbabilities(groups[group]);
             game.resetEpisode(groups[group]);
         }
-
-        results.col(group) = results.col(group) / 100.0;
     }
+    results.row(0) = group_achievement;
+    results.row(1) = avg_donations;
+
+    results.array() /= static_cast<double>(convergence);
 
     return results;
 
