@@ -16,6 +16,7 @@
 #include <Dyrwin/RL/CRDConditional.h>
 #include <Dyrwin/RL/PopContainer.hpp>
 #include <Dyrwin/RL/Utils.h>
+#include <Dyrwin/OpenMPUtils.hpp>
 
 namespace EGTTools::RL {
     class CRDSim {
