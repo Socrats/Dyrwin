@@ -85,7 +85,7 @@ EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups,
         }
     }
 
-#pragma omp parallel for shared(results)
+#pragma omp parallel for shared(convergence, groups) reduction(+:results)
     for (size_t group = 0; group < nb_groups; ++group) {
         size_t success;
         double avg_contribution;
@@ -173,7 +173,7 @@ EGTTools::RL::CRDSim::runWellMixed(size_t nb_runs, size_t nb_generations, size_t
     EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_runs);
     size_t convergence = nb_generations > 100 ? nb_generations - 100 : 0;
 
-#pragma omp parallel for shared(results)
+#pragma omp parallel for shared(convergence, results)
     for (size_t run = 0; run < nb_runs; ++run) {
         EGTTools::Matrix2D tmp = runWellMixed(nb_generations, nb_games, nb_groups, group_size, risk, args);
         auto avg = tmp.block<2, 100>(0, convergence);
@@ -314,7 +314,7 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
         }
     }
 
-#pragma omp parallel for shared(results)
+#pragma omp parallel for shared(convergence, available_actions, groups) reduction(+:results)
     for (size_t group = 0; group < nb_groups; ++group) {
         size_t success;
         double avg_contribution;
@@ -328,7 +328,7 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
             avg_rounds = 0.;
             for (unsigned int i = 0; i < nb_games; ++i) {
                 // First we play the game
-                auto[pool, final_round] = game.playGame(groups[group], _available_actions, _nb_rounds);
+                auto[pool, final_round] = game.playGame(groups[group], available_actions, _nb_rounds);
                 avg_contribution += (game.playersContribution(groups[group]) / double(_group_size));
                 (this->*reinforce)(pool, success, risk, groups[group], game);
                 avg_rounds += final_round;
