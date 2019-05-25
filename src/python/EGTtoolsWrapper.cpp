@@ -28,7 +28,7 @@ using namespace EGTTools;
 
 PYBIND11_MODULE(EGTtools, m) {
     m.doc() = R"pbdoc(
-        EGTtools: library with tools for efficient Evolutionary Game theory methods in python
+        EGTtools: Efficient Evolutionary Game theory methods in c++ with python bindings.
         -----------------------
         .. currentmodule:: EGTtools
         .. autosummary::
@@ -125,9 +125,9 @@ PYBIND11_MODULE(EGTtools, m) {
 
     py::class_<SED::MLS<SED::Group>>(m, "MLS")
             .def(py::init<size_t, size_t, size_t, size_t, double, const Eigen::Ref<const Vector> &, const Eigen::Ref<const Matrix2D> &>(),
-                    "Implement the Multi-level Selection process described in [Traulsen & Nowak 2006].",
-                    py::arg("generations"), py::arg("nb_strategies"), py::arg("group_size"), py::arg("nb_groups"),
-                    py::arg("w"), py::arg("strategies_freq"), py::arg("payoff_matrix"))
+                 "Implement the Multi-level Selection process described in [Traulsen & Nowak 2006].",
+                 py::arg("generations"), py::arg("nb_strategies"), py::arg("group_size"), py::arg("nb_groups"),
+                 py::arg("w"), py::arg("strategies_freq"), py::arg("payoff_matrix"))
             .def_property("generations", &SED::MLS<SED::Group>::generations, &SED::MLS<SED::Group>::set_generations)
             .def_property_readonly("nb_strategies", &SED::MLS<SED::Group>::nb_strategies)
             .def_property("n", &SED::MLS<SED::Group>::group_size, &SED::MLS<SED::Group>::set_group_size)
@@ -144,8 +144,8 @@ PYBIND11_MODULE(EGTtools, m) {
                  "updates the payoff matrix with the values from the input.",
                  py::arg("payoff_matrix"))
             .def("evolve", &SED::MLS<SED::Group>::evolve,
-                    "runs the moran process with multi-level selection for a given number of generations or until"
-                    "it reaches a monomorphic state", py::arg("q"), py::arg("w"), py::arg("init_state"))
+                 "runs the moran process with multi-level selection for a given number of generations or until"
+                 "it reaches a monomorphic state", py::arg("q"), py::arg("w"), py::arg("init_state"))
             .def("fixation_probability",
                  static_cast<double (SED::MLS<SED::Group>::*)(size_t, size_t, size_t, double,
                                                               double)>( &SED::MLS<SED::Group>::fixationProbability),
@@ -425,6 +425,11 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("nb_runs"), py::arg("nb_generations"),
                  py::arg("nb_games"), py::arg("nb_groups"), py::arg("group_size"), py::arg("risk"),
                  py::arg("*agent_args"))
+            .def("runTimingUncertainty", &RL::CRDSim::runTimingUncertainty,
+                 "Runs CRD simulations with unconditional agents and timing uncertainty.",
+                 py::arg("nb_episodes"), py::arg("nb_games"),
+                 py::arg("min_rounds"), py::arg("mean_rounds"), py::arg("max_rounds"),
+                 py::arg("p"), py::arg("risk"), py::arg("*agent_args"), py::arg("crd_type"))
             .def("runConditional",
                  static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, const std::vector<double> &,
                                                                 const std::string &)>(&RL::CRDSim::runConditional),
