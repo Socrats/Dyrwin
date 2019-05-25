@@ -74,7 +74,7 @@ EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups,
     EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_groups);
     EGTTools::Vector group_achievement = Vector::Zero(nb_groups);
     EGTTools::Vector avg_donations = Vector::Zero(nb_groups);
-    size_t convergence = nb_episodes > 100 ? nb_episodes - 100 : nb_episodes;
+    size_t transient = (nb_episodes > 100) ? nb_episodes - 100 : 0;
 
     // Create a vector of groups
     std::vector<PopContainer> groups;
@@ -87,7 +87,7 @@ EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups,
         }
     }
 
-#pragma omp parallel for shared(convergence, groups) reduction(+:group_achievement, avg_donations)
+#pragma omp parallel for shared(transient, groups) reduction(+:group_achievement, avg_donations)
     for (size_t group = 0; group < nb_groups; ++group) {
         size_t success;
         double avg_contribution;
@@ -105,7 +105,7 @@ EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups,
                 (this->*_reinforce)(pool, success, risk, groups[group], game);
                 avg_rounds += final_round;
             }
-            if (step >= convergence) {
+            if (step >= transient) {
                 group_achievement(group) += static_cast<double>(success) / static_cast<double>(nb_games);
                 avg_donations(group) += avg_contribution / static_cast<double>(nb_games);
             }
@@ -118,7 +118,7 @@ EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups,
     results.row(0) = group_achievement;
     results.row(1) = avg_donations;
 
-    results.array() /= static_cast<double>(convergence);
+    results.array() /= static_cast<double>(nb_episodes - transient);
 
     return results;
 
@@ -176,15 +176,20 @@ EGTTools::RL::CRDSim::runWellMixed(size_t nb_runs, size_t nb_generations, size_t
                                    size_t group_size,
                                    double risk, const std::vector<double> &args) {
     EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_runs);
-    size_t convergence = nb_generations > 100 ? nb_generations - 100 : 0;
+    size_t transient = nb_generations > 100 ? nb_generations - 100 : 0;
 
-#pragma omp parallel for shared(convergence, results)
+#pragma omp parallel for shared(transient, results)
     for (size_t run = 0; run < nb_runs; ++run) {
         EGTTools::Matrix2D tmp = runWellMixed(nb_generations, nb_games, nb_groups, group_size, risk, args);
-        auto avg = tmp.block<2, 100>(0, convergence);
+        if (transient > 0) {
+            auto avg = tmp.block<2, 100>(0, transient);
 
-        results(0, run) = avg.row(0).mean();
-        results(1, run) = avg.row(1).mean();
+            results(0, run) = avg.row(0).mean();
+            results(1, run) = avg.row(1).mean();
+        } else {
+            results(0, run) = tmp.row(0).mean();
+            results(1, run) = tmp.row(1).mean();
+        }
     }
 
     return results;
@@ -295,7 +300,7 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
     EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_groups);
     EGTTools::Vector group_achievement = Vector::Zero(nb_groups);
     EGTTools::Vector avg_donations = Vector::Zero(nb_groups);
-    size_t convergence = nb_episodes > 100 ? nb_episodes - 100 : nb_episodes;
+    size_t transient = nb_episodes > 100 ? nb_episodes - 100 : 0;
 
     ActionSpace available_actions(_nb_actions);
     std::iota(available_actions.begin(), available_actions.end(), 0);
@@ -321,7 +326,7 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
         }
     }
 
-#pragma omp parallel for shared(convergence, available_actions, groups) reduction(+:group_achievement, avg_donations)
+#pragma omp parallel for shared(transient, available_actions, groups) reduction(+:group_achievement, avg_donations)
     for (size_t group = 0; group < nb_groups; ++group) {
         size_t success;
         double avg_contribution;
@@ -340,7 +345,7 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
                 (this->*reinforce)(pool, success, risk, groups[group], game);
                 avg_rounds += final_round;
             }
-            if (step >= convergence) {
+            if (step >= transient) {
                 group_achievement(group) += static_cast<double>(success) / static_cast<double>(nb_games);
                 avg_donations(group) += avg_contribution / static_cast<double>(nb_games);
             }
@@ -352,7 +357,7 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
     results.row(0) = group_achievement;
     results.row(1) = avg_donations;
 
-    results.array() /= static_cast<double>(convergence);
+    results.array() /= static_cast<double>(nb_episodes - transient);
 
     return results;
 
