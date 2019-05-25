@@ -358,6 +358,111 @@ namespace EGTTools::RL {
         std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
     };
 
+    template<typename R>
+    class CRDConditional<PopContainer, R> {
+
+    public:
+        explicit CRDConditional(FlattenState  flatten) : _flatten(std::move(flatten)) {
+            _state = EGTTools::RL::Factors(2);
+        }
+
+        /**
+         * @brief Model of the Collective-Risk dillemma game.
+         *
+         * This game constitutes an MDP.
+         *
+         * This function plays the game for a number of rounds
+         *
+         * @param players
+         * @param actions
+         * @param min_rounds
+         * @return std::tuple (donations, rounds)
+         */
+        std::pair<double, size_t>
+        playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t min_rounds, R &gen_round) {
+            auto final_round = gen_round.calculateEnd(min_rounds, _mt);
+
+            double total = 0.0, partial = 0.0;
+            size_t idx;
+            for (auto &player : players) {
+                player->resetPayoff();
+            }
+            for (size_t i = 0; i < min_rounds; i++) {
+                _state[0] = i, _state[1] = static_cast<size_t>(partial);
+                partial = 0.0;
+                for (auto& player : players) {
+                    idx = player->selectAction(i, _flatten.toIndex(_state));
+                    player->decrease(actions[idx]);
+                    partial += actions[idx];
+                }
+                total += partial;
+            }
+            return std::make_pair(total, final_round);
+        }
+
+        bool reinforcePath(PopContainer &players) {
+            for (auto& player : players)
+                player->reinforceTrajectory();
+            return true;
+        }
+
+        bool reinforcePath(PopContainer &players, size_t final_round) {
+            for (auto& player : players)
+                player->reinforceTrajectory(final_round);
+            return true;
+        }
+
+        bool printGroup(PopContainer &players) {
+            for (auto &player : players) {
+                std::cout << *player << std::endl;
+            }
+            return true;
+        }
+
+        bool calcProbabilities(PopContainer &players) {
+            for (auto& player : players)
+                player->inferPolicy();
+            return true;
+        }
+
+        bool resetEpisode(PopContainer &players) {
+            for (auto &player : players) {
+                player->resetTrajectory();
+            }
+            return true;
+        }
+
+        double playersPayoff(PopContainer &players) {
+            double total = 0;
+            for (auto& player : players)
+                total += player->payoff();
+
+            return total;
+        }
+
+        void setPayoffs(PopContainer &players, unsigned int value) {
+            for (auto &player: players) {
+                player->set_payoff(value);
+            }
+        }
+
+        double playersContribution(PopContainer &players) {
+            double total = 0;
+            for (auto& player : players)
+                total += player->endowment() - player->payoff();
+
+            return total;
+        }
+
+        FlattenState& flatten() { return _flatten; }
+
+    private:
+        FlattenState _flatten;
+        EGTTools::RL::Factors _state;
+        // Random generators
+        std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+    };
+
     template<>
     class CRDConditional<PopContainer, void> {
 

@@ -430,12 +430,17 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("nb_episodes"), py::arg("nb_games"),
                  py::arg("min_rounds"), py::arg("mean_rounds"), py::arg("max_rounds"),
                  py::arg("p"), py::arg("risk"), py::arg("*agent_args"), py::arg("crd_type"))
-            .def("runConditional",
-                 static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, const std::vector<double> &,
-                                                                const std::string &)>(&RL::CRDSim::runConditional),
-                 "Runs a CRD simulation for a single group with conditional agents", py::arg("nb_episodes"),
-                 py::arg("nb_games"),
-                 py::arg("*agent_args"), py::arg("crd_type"))
+            .def("runConditionalTimingUncertainty", &RL::CRDSim::runConditionalTimingUncertainty,
+                 "Runs CRD simulations with conditional agents and timing uncertainty.",
+                 py::arg("nb_episodes"), py::arg("nb_games"),
+                 py::arg("min_rounds"), py::arg("mean_rounds"), py::arg("max_rounds"),
+                 py::arg("p"), py::arg("risk"), py::arg("*agent_args"), py::arg("crd_type"))
+    .def("runConditional",
+         static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, const std::vector<double> &,
+                                                        const std::string &)>(&RL::CRDSim::runConditional),
+         "Runs a CRD simulation for a single group with conditional agents", py::arg("nb_episodes"),
+         py::arg("nb_games"),
+         py::arg("*agent_args"), py::arg("crd_type"))
             .def("runConditional",
                  static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, size_t, double,
                                                                 const std::vector<double> &,

@@ -191,6 +191,34 @@ namespace EGTTools::RL {
                                 const std::string &crd_type = "milinski");
 
         /**
+         * @brief Runs a simulation with timing uncertainty with conditional agents.
+         *
+         * This simulations run the Collective Risk Game with timing uncertainty specified in [Domingos et al. 2019].
+         * Here the number of rounds of the game is uncertain. The game will always take at least @param min_rounds
+         * and a maximum of @param max_rounds. After @param min_rounds, the game will end with probability @param p.
+         *
+         * If @param mean_rounds is != 0, @param p will be ignored, instead p = 1 / [(10 - min_rounds) + 1] so that
+         * the average of the geometric distribution that defines the final round is @param avg_rounds.
+         *
+         * @param nb_episodes : nb_episodes number of episodes during which the agents will learn
+         * @param nb_games : number of games per episode
+         * @param min_rounds : minimum number of rounds
+         * @param mean_rounds : average number of rounds
+         * @param max_rounds : maximum number of rounds (used so that the rounds of the game is
+         *                     never bigger than the number of states of the agent)
+         * @param p : probability of the game ending after each round (starting from min_rounds)
+         * @param risk : probability of loosing all endowment if the target isn't reached
+         * @param args : vector of arguments to instantiate the agent_type of the population
+         * @param crd_type : type of reinforcement
+         * @return an Eigen 2D matrix with the average group achievement and average donations at each episode.
+         */
+        Matrix2D
+        runConditionalTimingUncertainty(size_t nb_episodes, size_t nb_games, size_t min_rounds, size_t mean_rounds,
+                                        size_t max_rounds, double p,
+                                        double risk,
+                                        const std::vector<double> &args = {}, const std::string &crd_type = "milinski");
+
+        /**
          * @brief Runs several independent simulations with conditional agents.
          *
          * This method can only be run on actions of the type [0, 1, 2....], i.e., sequential from [0, nb_actions -1].
