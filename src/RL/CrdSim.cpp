@@ -186,6 +186,58 @@ EGTTools::RL::CRDSim::runWellMixed(size_t nb_runs, size_t nb_generations, size_t
 
 }
 
+EGTTools::Matrix2D
+EGTTools::RL::CRDSim::runTimingUncertainty(size_t nb_episodes, size_t nb_games, size_t min_rounds, size_t mean_rounds,
+                                           size_t max_rounds, double p,
+                                           double risk,
+                                           const std::vector<double> &args,
+                                           const std::string &crd_type) {
+
+    // First of all we instantiate the CRD game with ucertianty
+    if (mean_rounds > 0) {
+        p = 1.0 / ((static_cast<double>(mean_rounds) - static_cast<double>(min_rounds)) + 1);
+    }
+    EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
+    CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game;
+    Matrix2D results = Matrix2D::Zero(2, nb_episodes);
+
+    // Now create agent pool
+    // Create a population of _group_size
+    PopContainer group(_agent_type, _group_size, max_rounds, _nb_actions, max_rounds, _endowment, args);
+
+    // Choose function to use
+    void
+    (EGTTools::RL::CRDSim::* reinforce)(double &, size_t &, double &, PopContainer &, size_t &,
+                                        CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> &);
+
+    if (_agent_type == "rothErev")
+        reinforce = &EGTTools::RL::CRDSim::reinforceOnlyPositive<CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>>>;
+    else if (crd_type == "milinski")
+        reinforce = &EGTTools::RL::CRDSim::reinforceAll<CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>>>;
+    else reinforce = &EGTTools::RL::CRDSim::reinforceXico<CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>>>;
+
+    for (size_t step = 0; step < nb_episodes; ++step) {
+        size_t success = 0;
+        double avg_contribution = 0.;
+        double avg_rounds = 0.;
+        for (unsigned int i = 0; i < nb_games; ++i) {
+            // First we play the game
+            auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu);
+            avg_contribution += (game.playersContribution(group) / double(_group_size));
+            (this->*reinforce)(pool, success, risk, group, final_round, game);
+            avg_rounds += final_round;
+        }
+        results(0, step) = static_cast<double>(success) / static_cast<double>(nb_games);
+        results(1, step) = static_cast<double>(avg_contribution) / static_cast<double>(nb_games);
+
+        game.calcProbabilities(group);
+        game.resetEpisode(group);
+    }
+
+    game.printGroup(group);
+    return results;
+}
+
 
 EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size_t nb_games,
                                                         const std::vector<double> &args, const std::string &crd_type) {
@@ -310,6 +362,16 @@ void EGTTools::RL::CRDSim::reinforceOnlyPositive(double &pool, size_t &success, 
 }
 
 template<class G>
+void EGTTools::RL::CRDSim::reinforceOnlyPositive(double &pool, size_t &success, double &risk, PopContainer &pop,
+                                                 size_t &final_round, G &game) {
+    if (pool >= _threshold) {
+        game.reinforcePath(pop, final_round);
+        success++;
+    } else if (_real_rand(_generator) > risk) game.reinforcePath(pop, final_round);
+    else game.setPayoffs(pop, 0);
+}
+
+template<class G>
 void EGTTools::RL::CRDSim::reinforceAll(double &pool, size_t &success, double &risk, PopContainer &pop,
                                         G &game) {
 
@@ -317,6 +379,16 @@ void EGTTools::RL::CRDSim::reinforceAll(double &pool, size_t &success, double &r
     else if (_real_rand(_generator) < risk) game.setPayoffs(pop, 0);
 
     game.reinforcePath(pop);
+}
+
+template<class G>
+void EGTTools::RL::CRDSim::reinforceAll(double &pool, size_t &success, double &risk, PopContainer &pop,
+                                        size_t &final_round, G &game) {
+
+    if (pool >= _threshold) success++;
+    else if (_real_rand(_generator) < risk) game.setPayoffs(pop, 0);
+
+    game.reinforcePath(pop, final_round);
 }
 
 template<class G>
@@ -331,6 +403,20 @@ void EGTTools::RL::CRDSim::reinforceXico(double &pool, size_t &success, double &
     }
 
     game.reinforcePath(pop);
+}
+
+template<class G>
+void EGTTools::RL::CRDSim::reinforceXico(double &pool, size_t &success, double &risk, PopContainer &pop,
+                                         size_t &final_round, G &game) {
+
+    if (pool >= _threshold) success++;
+    else if (_real_rand(_generator) < risk) {
+        for (auto &player: pop) {
+            player->set_payoff(player->payoff() - player->endowment());
+        }
+    }
+
+    game.reinforcePath(pop, final_round);
 }
 
 void EGTTools::RL::CRDSim::setGameType(const std::string &crd_type) {

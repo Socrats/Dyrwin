@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     }
 
     endowment = 2 * rounds;
-    threshold = group_size * rounds;
+    threshold = static_cast<double>(rounds * group_size);
     ActionSpace available_actions = ActionSpace(actions);
     for (size_t i = 0; i < actions; ++i) available_actions[i] = i;
 

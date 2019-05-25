@@ -6,37 +6,11 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
-#include <Dyrwin/RL/BatchQLearningAgent.h>
-#include <Dyrwin/RL/QLearningAgent.h>
-#include <Dyrwin/RL/RothErevAgent.h>
-#include <Dyrwin/RL/HistericQLearningAgent.hpp>
-#include <Dyrwin/RL/CRDGame.h>
-#include <Dyrwin/RL/TimingUncertainty.hpp>
-#include <Dyrwin/RL/Utils.h>
+#include <Dyrwin/RL/CrdSim.hpp>
 #include <Dyrwin/CommandLineParsing.h>
 
 using namespace std::chrono;
 using namespace EGTTools::RL;
-
-template<typename A, typename B = void>
-void reinforceRothErev(double &pool, size_t &success, double rnd_value, double &cataclysm, double &threshold,
-                       size_t &final_round, CRDGame<A, B> &Game, EGTTools::RL::Population &group) {
-    if (pool >= threshold) {
-        Game.reinforcePath(group, final_round);
-        ++success;
-    } else if (rnd_value > cataclysm) Game.reinforcePath(group, final_round);
-    else Game.setPayoffs(group, 0);
-}
-
-template<typename A, typename B = void>
-void reinforceBatchQLearning(double &pool, size_t &success, double rnd_value, double &cataclysm, double &threshold,
-                             size_t &final_round, CRDGame<A, B> &Game, EGTTools::RL::Population &group) {
-
-    if (pool >= threshold) ++success;
-    else if (rnd_value < cataclysm) Game.setPayoffs(group, 0);
-
-    Game.reinforcePath(group, final_round);
-}
 
 int main(int argc, char *argv[]) {
     //parameters
@@ -51,12 +25,12 @@ int main(int argc, char *argv[]) {
     double alpha, beta;
     double temperature;
     double lambda;
+    double threshold;
+    double endowment;
+    double p;
     std::string filename;
     std::string agent_type;
     Options options;
-    CRDGame<Agent, EGTTools::TimingUncertainty<std::mt19937_64>> Game;
-    // Random generators
-    std::mt19937_64 generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 
     // Setup options
     options.push_back(makeDefaultedOption<size_t>("groupSize,M", &group_size, "set the group size", 6));
@@ -79,67 +53,44 @@ int main(int argc, char *argv[]) {
     if (!parseCommandLine(argc, argv, options))
         return 1;
 
-    unsigned endowment = 2 * mean_rounds; //per player
-    auto threshold = static_cast<double>(mean_rounds * group_size);
-    auto donations = std::vector<size_t>(actions);
-    auto end_probability = static_cast<double>(1. / (1 + (mean_rounds - min_rounds)));
-    EGTTools::TimingUncertainty<std::mt19937_64> tu(end_probability, max_rounds);
-    for (unsigned i = 0; i < actions; i++) donations[i] = i;
-    void (*reinforce)(double &, size_t &, double, double &, double &, size_t &,
-                      CRDGame<Agent, EGTTools::TimingUncertainty<std::mt19937_64>> &, EGTTools::RL::Population &);
+    endowment = 2 * mean_rounds; //per player
+    threshold = static_cast<double>(mean_rounds * group_size);
+    p = static_cast<double>(1. / (1 + (mean_rounds - min_rounds)));
+    ActionSpace available_actions = ActionSpace(actions);
+    for (size_t i = 0; i < actions; ++i) available_actions[i] = i;
 
     // Initialize agents depending on command option
-    EGTTools::RL::Population group;
-    if (agent_type == "rothErev") {
-        reinforce = &reinforceRothErev<Agent, EGTTools::TimingUncertainty<std::mt19937_64>>;
-        for (unsigned i = 0; i < group_size; i++) {
-            group.push_back(std::make_unique<Agent>(max_rounds, actions, max_rounds, endowment));
-        }
-    } else if (agent_type == "rothErevLambda") {
-        reinforce = &reinforceBatchQLearning<Agent, EGTTools::TimingUncertainty<std::mt19937_64>>;
-        for (unsigned i = 0; i < group_size; i++) {
-            group.push_back(std::make_unique<RothErevAgent>(max_rounds, actions, max_rounds, endowment, lambda, temperature));
-        }
+    std::vector<double> args;
+    if (agent_type == "rothErevLambda") {
+        args.push_back(lambda);
+        args.push_back(temperature);
     } else if (agent_type == "QLearning") {
-        reinforce = &reinforceBatchQLearning<Agent, EGTTools::TimingUncertainty<std::mt19937_64>>;
-        for (unsigned i = 0; i < group_size; i++) {
-            group.push_back(std::make_unique<QLearningAgent>(max_rounds, actions, max_rounds, endowment, alpha, lambda, temperature));
-        }
+        args.push_back(alpha);
+        args.push_back(lambda);
+        args.push_back(temperature);
     } else if (agent_type == "HistericQLearning") {
-        reinforce = &reinforceBatchQLearning<Agent, EGTTools::TimingUncertainty<std::mt19937_64>>;
-        for (unsigned i = 0; i < group_size; i++) {
-            group.push_back(std::make_unique<HistericQLearningAgent>(max_rounds, actions, max_rounds, endowment, alpha, beta, temperature));
-        }
-    } else {
-        reinforce = &reinforceBatchQLearning<Agent, EGTTools::TimingUncertainty<std::mt19937_64>>;
-        for (unsigned i = 0; i < group_size; i++) {
-            group.push_back(std::make_unique<BatchQLearningAgent>(max_rounds, actions, max_rounds, endowment, alpha, temperature));
-        }
+        args.push_back(alpha);
+        args.push_back(beta);
+        args.push_back(temperature);
+    } else if (agent_type == "BatchQLearning") {
+        args.push_back(alpha);
+        args.push_back(temperature);
     }
 
     // Calculate execution time
     high_resolution_clock::time_point t1 = high_resolution_clock::now();
 
-    //testing one group
-    for (unsigned int step = 0; step < attempts; step++) {
-        size_t success = 0;
-        double avgpayoff = 0.;
-        double avg_rounds = 0.;
-        for (unsigned int game = 0; game < games; game++) {
-            // First we play the game
-            auto[pool, final_round] = Game.playGame(group, donations, min_rounds, tu);
-            avgpayoff += (Game.playersPayoff(group) / double(group_size));
-            reinforce(pool, success, EGTTools::probabilityDistribution(generator), cataclysm, threshold, final_round,
-                      Game, group);
-            avg_rounds += final_round;
-        }
-        std::cout << (success / double(games)) << " " << (avgpayoff / double(games)) << " "
-                  << (avg_rounds / double(games)) << std::endl;
-        Game.calcProbabilities(group);
-        Game.resetEpisode(group);
-        //if(success == games) break;
+    try {
+        CRDSim sim(attempts, games, mean_rounds, actions, group_size, cataclysm, endowment, threshold,
+                   available_actions, agent_type, args);
+        EGTTools::Matrix2D results = sim.runTimingUncertainty(attempts, games, min_rounds, mean_rounds, max_rounds, p,
+                                                              cataclysm, args, "milinski");
+        std::cout << "success: " << results.row(0) << std::endl;
+//        std::cout << "avg_contrib: " << results.row(1) << std::endl;
+    } catch (std::invalid_argument &e) {
+        std::cerr << "\033[1;31m[EXCEPTION] Invalid argument: " << e.what() << "\033[0m" << std::endl;
+        return -1;
     }
-    Game.printGroup(group);
 
     // Print execution time
     high_resolution_clock::time_point t2 = high_resolution_clock::now();

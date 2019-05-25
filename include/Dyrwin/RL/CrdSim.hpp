@@ -80,26 +80,44 @@ namespace EGTTools::RL {
         run(size_t nb_episodes, size_t nb_games, size_t nb_groups, double risk, const std::vector<double> &args = {});
 
         /**
+         * @brief Runs simulation with a well mixed population.
          *
-         * @param nb_generations
-         * @param nb_games
-         * @param nb_groups
-         * @param risk
-         * @param args
-         * @return
+         * In the simulations performed here, agents of a population of size Z = _group_size * nb_groups
+         * are selected randomly from the population to form a group of size _group_size and play a game.
+         * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
+         *
+         * The @param args is a vector that should contain the arguments specific of the agent type of
+         * the population.
+         *
+         * @param nb_generations : number of generations per simulation
+         * @param nb_games : number of games per generation
+         * @param nb_groups : will define the population size (Z = nb_groups * _group_size)
+         * @param risk : probability of loosing all endowment if the target isn't reached
+         * @param args : vector of arguments to instantiate the agent_type of the population
+         * @return an Eigen 2D matrix with the average group achievement and average donations at each generation.
          */
         Matrix2D runWellMixed(size_t nb_generations, size_t nb_games, size_t nb_groups, size_t group_size, double risk,
                               const std::vector<double> &args = {});
 
         /**
+         * @brief Runs several simulations with a well mixed population.
          *
-         * @param nb_runs
-         * @param nb_generations
-         * @param nb_games
-         * @param nb_groups
-         * @param risk
-         * @param args
-         * @return
+         * In the simulations performed here, agents of a population of size Z = _group_size * nb_groups
+         * are selected randomly from the population to form a group of size _group_size and play a game.
+         * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
+         *
+         * The @param args is a vector that should contain the arguments specific of the agent type of
+         * the population.
+         *
+         * The simulation is repeated for @param nb_runs with independent populations.
+         *
+         * @param nb_runs : number of independent simulations
+         * @param nb_generations : number of generations per simulation
+         * @param nb_games : number of games per generation
+         * @param nb_groups : will define the population size (Z = nb_groups * _group_size)
+         * @param risk : probability of loosing all endowment if the target isn't reached
+         * @param args : vector of arguments to instantiate the agent_type of the population
+         * @return Eigen 2D matrix with the average group achievement and avg. donations across independent runs.
          */
         Matrix2D runWellMixed(size_t nb_runs, size_t nb_generations, size_t nb_games, size_t nb_groups,
                               size_t group_size, double risk,
@@ -107,31 +125,173 @@ namespace EGTTools::RL {
 
 
         /**
+         * @brief Runs a simulation with timing uncertainty
+         *
+         * This simulations run the Collective Risk Game with timing uncertainty specified in [Domingos et al. 2019].
+         * Here the number of rounds of the game is uncertain. The game will always take at least @param min_rounds
+         * and a maximum of @param max_rounds. After @param min_rounds, the game will end with probability @param p.
+         *
+         * If @param mean_rounds is != 0, @param p will be ignored, instead p = 1 / [(10 - min_rounds) + 1] so that
+         * the average of the geometric distribution that defines the final round is @param avg_rounds.
+         *
+         * @param nb_episodes : nb_episodes number of episodes during which the agents will learn
+         * @param nb_games : number of games per episode
+         * @param min_rounds : minimum number of rounds
+         * @param mean_rounds : average number of rounds
+         * @param max_rounds : maximum number of rounds (used so that the rounds of the game is
+         *                     never bigger than the number of states of the agent)
+         * @param p : probability of the game ending after each round (starting from min_rounds)
+         * @param risk : probability of loosing all endowment if the target isn't reached
+         * @param args : vector of arguments to instantiate the agent_type of the population
+         * @param crd_type : type of reinforcement
+         * @return an Eigen 2D matrix with the average group achievement and average donations at each episode.
+         */
+        Matrix2D
+        runTimingUncertainty(size_t nb_episodes, size_t nb_games, size_t min_rounds, size_t mean_rounds,
+                             size_t max_rounds, double p,
+                             double risk,
+                             const std::vector<double> &args = {}, const std::string &crd_type = "milinski");
+
+        /**
+         * @brief Runs a simulation with threshold uncertainty
+         *
+         * This simulations run the Collective Risk Game with threshold uncertainty.
+         * Here the number of rounds of the game is uncertain. The threshold of the game will be between
+         * @param min_threshold and a maximum of @param max_threshold. The threshold will take a value
+         * from this range with uniform probability.
+         *
+         * @param nb_episodes : nb_episodes number of episodes during which the agents will learn
+         * @param nb_games : number of games per episode
+         * @param min_threshold : minimum threshold
+         * @param max_threshold : maximum threshold
+         * @param risk : probability of loosing all endowment if the target isn't reached
+         * @param args : vector of arguments to instantiate the agent_type of the population
+         * @param crd_type : type of crd
+         * @return an Eigen 2D matrix with the average group achievement and average donations at each episode.
+         */
+        Matrix2D
+        runThresholdUncertainty(size_t nb_episodes, size_t nb_games, size_t min_threshold, size_t max_threshold,
+                                double risk,
+                                const std::vector<double> &args = {}, const std::string &crd_type = "milinski");
+
+
+        /**
+         * @brief Runs a simulation with conditional agents.
+         *
          * This method can only be run on actions of the type [0, 1, 2....], i.e., sequential from [0, nb_actions -1].
-         * @param nb_episodes
-         * @param nb_games
-         * @param args
-         * @return
+         *
+         * @param nb_episodes : number of times the policy of the agent will be updated based on the propensity matrix.
+         * @param nb_games : number of games per episode
+         * @param args : vector of arguments to instantiate the agent_type of the population
+         * @param crd_type : type of crd game (milinski or xico)
+         * @return an Eigen 2D matrix with the average group achievement and average donations at each generation.
          */
         Matrix2D runConditional(size_t nb_episodes, size_t nb_games, const std::vector<double> &args = {},
                                 const std::string &crd_type = "milinski");
 
+        /**
+         * @brief Runs several independent simulations with conditional agents.
+         *
+         * This method can only be run on actions of the type [0, 1, 2....], i.e., sequential from [0, nb_actions -1].
+         * A total of @param nb_groups independent simulations will be run. The simulation will return the average
+         * group achievement and donations across simulations.
+         *
+         * @param nb_episodes : number of times the policy of the agent will be updated based on the propensity matrix.
+         * @param nb_games : number of games per episode
+         * @param nb_groups : number of independent simulations
+         * @param risk : probability of loosing all endowment if the target isn't reached
+         * @param args : vector of arguments to instantiate the agent_type of the population
+         * @param crd_type : type of crd game (milinski or xico)
+         * @return Eigene 2D matrix with the average group achievement and average donations across independent runs.
+         */
         Matrix2D
         runConditional(size_t nb_episodes, size_t nb_games, size_t nb_groups, double risk,
                        const std::vector<double> &args = {}, const std::string &crd_type = "milinski");
 
+        /**
+         * @brief resets the population stored in the class.
+         */
         void resetPopulation();
 
-        template<class G = CRDGame<PopContainer>>
+        /**
+         * @brief This method reinforces agents only when the target is reached
+         * @tparam G : Game class
+         * @param pool : crd group with agents
+         * @param success : if the group reached the target
+         * @param risk : probability of losing all endowment if the target isn't reached
+         * @param pop : population container
+         * @param game : game object
+         */
+        template<class G = CRDGame <PopContainer>>
         void reinforceOnlyPositive(double &pool, size_t &success, double &risk, PopContainer &pop,
                                    G &game);
 
-        template<class G = CRDGame<PopContainer>>
+        /**
+         * @brief This method reinforces agents only when the target is reached (for Timing uncertainty games)
+         * @tparam G : Game class
+         * @param pool : crd group with agents
+         * @param success : if the group reached the target
+         * @param risk : probability of losing all endowment if the target isn't reached
+         * @param pop : population container
+         * @param final_round : number of rounds of the last played game.
+         * @param game : game object
+         */
+        template<class G = CRDGame <PopContainer>>
+        void reinforceOnlyPositive(double &pool, size_t &success, double &risk, PopContainer &pop, size_t &final_round,
+                                   G &game);
+
+        /**
+         * @brief This method reinforces agents proportionally to the obtained payoff.
+         * @tparam G : Game class
+         * @param pool : crd group with agents
+         * @param success : if the group reached the target
+         * @param risk : probability of losing all endowment if the target isn't reached
+         * @param pop : population container
+         * @param game : game object
+         */
+        template<class G = CRDGame <PopContainer>>
         void reinforceAll(double &pool, size_t &success, double &risk, PopContainer &pop,
                           G &game);
 
-        template<class G = CRDGame<PopContainer>>
+        /**
+         * @brief This method reinforces agents proportionally to the obtained payoff for Timing uncertainty games.
+         * @tparam G : Game class
+         * @param pool : crd group with agents
+         * @param success : if the group reached the target
+         * @param risk : probability of losing all endowment if the target isn't reached
+         * @param pop : population container
+         * @param final_round : number of rounds of the last played game.
+         * @param game : game object
+         */
+        template<class G = CRDGame <PopContainer>>
+        void reinforceAll(double &pool, size_t &success, double &risk, PopContainer &pop, size_t &final_round,
+                          G &game);
+
+        /**
+         * @brief This method reinforces following Xico's version of the CRD payoffs
+         * @tparam G : Game class
+         * @param pool : crd group with agents
+         * @param success :: if the group reached the target
+         * @param risk : probability of losing all endowment if the target isn't reached
+         * @param pop : population container
+         * @param game : game object
+         */
+        template<class G = CRDGame <PopContainer>>
         void reinforceXico(double &pool, size_t &success, double &risk, PopContainer &pop,
+                           G &game);
+
+        /**
+         * @brief This method reinforces following Xico's version of the CRD payoffs (for Timing uncertainty games).
+         * @tparam G : Game class
+         * @param pool : crd group with agents
+         * @param success :: if the group reached the target
+         * @param risk : probability of losing all endowment if the target isn't reached
+         * @param pop : population container
+         * @param final_round : number of rounds of the last played game.
+         * @param game : game object
+         */
+        template<class G = CRDGame <PopContainer>>
+        void reinforceXico(double &pool, size_t &success, double &risk, PopContainer &pop, size_t &final_round,
                            G &game);
 
         /**
@@ -184,7 +344,7 @@ namespace EGTTools::RL {
 
         void set_agent_type(const std::string &agent_type);
 
-        CRDGame<PopContainer> Game;
+        CRDGame <PopContainer> Game;
         PopContainer population;
 
     private:
@@ -196,7 +356,7 @@ namespace EGTTools::RL {
         std::uniform_real_distribution<double> _real_rand;
 
         void (EGTTools::RL::CRDSim::* _reinforce)(double &, size_t &, double &, PopContainer &,
-                                                  CRDGame<PopContainer> &) = nullptr;
+                                                  CRDGame <PopContainer> &) = nullptr;
 
         // Random generators
         std::mt19937_64 _generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};

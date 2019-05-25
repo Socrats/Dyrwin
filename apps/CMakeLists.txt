@@ -36,15 +36,13 @@ set_target_properties(crd PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTE
 target_link_libraries(crd EGTTools)
 
 
-#if (MAKE_CRD_UNCERTAINTY)
-#    add_executable(crdTU RL/main_uncertainty.cpp ${CRD_RL_SOURCE})
-#    target_link_libraries(crdTU ${Boost_LIBRARIES} boost_program_options)
-#    set_target_properties(crdTU PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
-##    set_target_properties(crdTU PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
-#    target_link_libraries(crdTU EGTTools)
-#endif ()
+add_executable(crdTU RL/main_uncertainty.cpp)
+target_link_libraries(crdTU ${Boost_LIBRARIES} boost_program_options)
+set_target_properties(crdTU PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
+set_target_properties(crdTU PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
+target_link_libraries(crdTU EGTTools)
 
-add_executable(crdP RL/main_pop.cpp ${CRD_RL_SOURCE})
+add_executable(crdP RL/main_pop.cpp)
 target_link_libraries(crdP ${Boost_LIBRARIES} boost_program_options)
 set_target_properties(crdP PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
 set_target_properties(crdP PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
