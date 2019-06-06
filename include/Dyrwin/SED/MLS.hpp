@@ -46,25 +46,119 @@ namespace EGTTools::SED {
         MLS(size_t generations, size_t nb_strategies, size_t group_size, size_t nb_groups, double w,
             const Eigen::Ref<const Vector> &strategies_freq, const Eigen::Ref<const Matrix2D> &payoff_matrix);
 
+        /**
+        * Runs the moran process with multi-level selection for a given number of generations
+        * or until it reaches a monomorphic state.
+        *
+        * @tparam S : container for a group
+        * @param q : splitting probability
+        * @param w : intensity of selection
+        * @param init_state : vector with the initial state of the population
+        * @return a vector with the final state of the population
+        */
         Vector evolve(double q, double w, const Eigen::Ref<const VectorXui> &init_state);
 //
 //        Vector evolve(size_t runs, double w);
 
+        /**
+         * @brief estimates the fixation probability of the invading strategy over the resident strategy.
+         *
+         * This function will estimate numerically (by running simulations) the fixation probability of
+         * a certain strategy in the population of 1 resident strategy.
+         *
+         * This implementation specializes on the EGTTools::SED::Group class
+         *
+         * @tparam S : container for the structure of the population
+         * @param invader : index of the invading strategy
+         * @param resident : index of the resident strategy
+         * @param runs : number of runs (used to average the number of times the invading strategy has fixated)
+         * @param q : splitting probability
+         * @param w : intensity of selection
+         * @return a real number (double) indicating the fixation probability
+         */
         double fixationProbability(size_t invader, size_t resident, size_t runs,
                                    double q, double w);
 
+        /**
+        * @brief estimates the fixation probability of the invading strategy over the resident strategy.
+        *
+        * This function will estimate numerically (by running simulations) the fixation probability of
+        * a certain strategy in the population of 1 resident strategy.
+        *
+        * This implementation specializes on the EGTTools::SED::Group class
+        *
+        * @tparam S : container for the structure of the population
+        * @param invader : index of the invading strategy
+        * @param resident : index of the resident strategy
+        * @param runs : number of runs (used to average the number of times the invading strategy has fixated)
+        * @param q : splitting probability
+        * @param lambda : migration probability
+        * @param w : intensity of selection
+        * @return a real number (double) indicating the fixation probability
+        */
         double fixationProbability(size_t invader, size_t resident, size_t runs,
                                    double q, double lambda, double w);
 
+        /**
+         * @brief estimates the fixation probability of the invading strategy over the resident strategy.
+         *
+         * This function will estimate numerically (by running simulations) the fixation probability of
+         * a certain strategy in the population of 1 resident strategy.
+         *
+         * This implementation specializes on the EGTTools::SED::Group class
+         * @tparam S : container for the structure of the population (group)
+         * @param invader : index of the invading strategy
+         * @param init_state : vector containing the initial state of the population (number of individuals of each strategy)
+         * @param runs : number of runs (used to average the number of times the invading strategy has fixated)
+         * @param q : splitting probability
+         * @param w : intensity of selection
+         * @return a vector of doubles indicating the probability that each strategy fixates from the initial state
+         */
         Vector fixationProbability(size_t invader, const Eigen::Ref<const VectorXui> &init_state, size_t runs,
                                    double q, double w);
 
 //        double fixationProbability(size_t invader, size_t resident, size_t runs,
 //                                   size_t t0, double q, double lambda, double w, double mu);
 
+        /**
+        * @brief calculates the gradient of selection between 2 strategies.
+        *
+        * Will return the difference between T+ and T- for each possible population configuration
+        * when the is conformed only by the resident and the invading strategy.
+        *
+        * To estimate T+ - T- (the probability that the number of invaders increase/decrease in the population)
+        * we run the simulation for population with k invaders and Z - k residents for @param run
+        * times and average how many times did the number of invadors increase and decrease.
+        *
+        * @tparam S : group container
+        * @param invader : index of the invading strategy
+        * @param resident : index of the resident strategy
+        * @param runs : number of runs (to average the results)
+        * @param w : intensity of selection
+        * @param q : splitting probability
+        * @return : an Eigen vector with the gradient of selection for each k/Z where k is the number of invaders.
+        */
         Vector
         gradientOfSelection(size_t invader, size_t resident, size_t runs, double w, double q = 0.0);
 
+        /**
+        * @brief calculates the gradient of selection for an invading strategy and any initial state.
+        *
+        * Will return the difference between T+ and T- for each possible population configuration
+        * when the is conformed only by the resident and the invading strategy.
+        *
+        * To estimate T+ - T- (the probability that the number of invaders increase/decrease in the population)
+        * we run the simulation for population with k invaders and Z - k residents for @param run
+        * times and average how many times did the number of invadors increase and decrease.
+        *
+        * @tparam S : group container
+        * @param invader : index of the invading strategy
+        * @param init_state : vector indicating the initial state of the population (how many individuals of each strategy)
+        * @param runs : number of runs (to average the results)
+        * @param w : intensity of selection
+        * @param q : splitting probability
+        * @return : an Eigen vector with the gradient of selection for each k/Z where k is the number of invaders.
+        */
         Vector
         gradientOfSelection(size_t invader, size_t reduce, const Eigen::Ref<const VectorXui> &init_state, size_t runs,
                             double w, double q = 0.0);
@@ -186,30 +280,130 @@ namespace EGTTools::SED {
 
         inline void _createMutant(size_t invader, size_t resident, std::vector<S> &groups);
 
+        /**
+         * @brief Adds a mutant of strategy invader to the population
+         *
+         * Eliminates a randmo strategy from the population and adds a mutant of strategy invader.
+         *
+         * @tparam S : container for population structur
+         * @param invader : index of the invader strategy
+         * @param groups : vector of groups
+         * @param strategies : vector of strategies
+         */
         inline void _createRandomMutant(size_t invader, std::vector<S> &groups, VectorXui &strategies);
 
         inline void _updateFullPopulationFrequencies(size_t increase, size_t decrease, VectorXui &strategies);
 
+        /**
+        * @brief internal reproduction function.
+        *
+        * This function always splits the group
+        *
+        * @tparam S : group container
+        * @param groups : vector of groups
+        * @param strategies : vector of the current proportions of each strategy in the population
+        */
         void _reproduce(std::vector<S> &groups, VectorXui &strategies);
 
+        /**
+        * @brief internal reproduction function.
+        *
+        * This functions will split depending a splitting probability q.
+        *
+        * @tparam S : group container
+        * @param groups : vector of groups
+        * @param strategies : vector of the current proportions of each strategy in the population
+        * @param q : split probability
+        */
         void _reproduce(std::vector<S> &groups, VectorXui &strategies, double q);
 
+        /**
+        * @brief Migrates an individual from a group to another
+        *
+        * @tparam S : group container
+        * @param q : splitting probability
+        * @param groups : reference to a vector of groups
+        */
         void _migrate(double q, std::vector<S> &groups, VectorXui &strategies);
 
+        /**
+        * @brief Mutates an individual from the population
+        *
+        * @tparam S : group container
+        * @param mu
+        * @param groups : reference to a vector of groups
+        */
         void _mutate(std::vector<S> &groups, VectorXui &strategies);
 
+        /**
+         * @brief splits a group in two
+         *
+         * This method creates a new group. There is a 0.5 probability that each
+         * member of the former group will be part of the new group. Also, since
+         * the number of groups is kept constant, a random group is chosen to die.
+         *
+         * @tparam S : group container
+         * @param parent_group : index to the group to split
+         * @param groups : reference to a vector of groups
+         */
         void _splitGroup(size_t parent_group, std::vector<S> &groups, VectorXui &strategies);
 
+        /**
+        * @brief selects a group proportional to its total payoff.
+        *
+        * @tparam S : group container
+        * @param groups : reference to the population groups
+        * @return : index of the parent group
+        */
         size_t _payoffProportionalSelection(std::vector<S> &groups);
 
+        /**
+        * @brief selects a group proportional to its size.
+        *
+        * @tparam S : group container
+        * @param groups : reference to the population groups
+        * @return : index of the parent group
+        */
         size_t _sizeProportionalSelection(std::vector<S> &groups);
 
+        /**
+        * @brief Checks whether a pseudo stationary state has been reached.
+        *
+        * @tparam S : group container
+        * @param groups : reference to a vector of groups
+        * @return true if reached a pseudo stationary state, otherwise false
+        */
         bool _pseudoStationary(std::vector<S> &groups);
 
+        /**
+         * @brief sets the all individuals of one strategy
+         *
+         * Sets all individuals in the population of one strategy and sets all groups at maximum capacity.
+         *
+         * @tparam S : group container
+         * @param strategy : resident strategy
+         * @param groups : reference to a vector of groups
+         */
         void _setFullHomogeneousState(size_t strategy, std::vector<S> &groups);
 
+        /**
+         * @brief Sets randomly the state of the population given a vector which contains the strategies in the population.
+         *
+         * This method shuffles a vector containing the population of strategies and then assigns each _group_size
+         * of strategies to a group.
+         *
+         * @tparam S : container for the groups
+         * @param groups : vector of groups
+         * @param container : vector of strategies
+         */
         inline void _setState(std::vector<S> &groups, std::vector<size_t> &container);
 
+        /**
+         * @brief returns the total population size
+         * @tparam S : group container
+         * @param groups : reference to a vector of groups
+         * @return the sum of the sizes of all the groups
+         */
         inline size_t _current_pop_size(std::vector<S> &groups);
 
     };
@@ -246,16 +440,6 @@ namespace EGTTools::SED {
         _real_rand = std::uniform_real_distribution<double>(0.0, 1.0);
     }
 
-    /**
-     * Runs the moran process with multi-level selection for a given number of generations
-     * or until it reaches a monomorphic state.
-     *
-     * @tparam S : container for a group
-     * @param q : splitting probability
-     * @param w : intensity of selection
-     * @param init_state : vector with the initial state of the population
-     * @return a vector with the final state of the population
-     */
     template<typename S>
     Vector MLS<S>::evolve(double q, double w, const Eigen::Ref<const VectorXui> &init_state) {
         if ((_nb_groups == 1) && q != 0.)
@@ -296,22 +480,6 @@ namespace EGTTools::SED {
 
     }
 
-/**
- * @brief estimates the fixation probability of the invading strategy over the resident strategy.
- *
- * This function will estimate numerically (by running simulations) the fixation probability of
- * a certain strategy in the population of 1 resident strategy.
- *
- * This implementation specializes on the EGTTools::SED::Group class
- *
- * @tparam S : container for the structure of the population
- * @param invader : index of the invading strategy
- * @param resident : index of the resident strategy
- * @param runs : number of runs (used to average the number of times the invading strategy has fixated)
- * @param q : splitting probability
- * @param w : intensity of selection
- * @return a real number (double) indicating the fixation probability
- */
     template<typename S>
     double
     MLS<S>::fixationProbability(size_t invader, size_t resident, size_t runs, double q, double w) {
@@ -359,23 +527,6 @@ namespace EGTTools::SED {
         else return r2m / (r2m + r2r);
     }
 
-/**
- * @brief estimates the fixation probability of the invading strategy over the resident strategy.
- *
- * This function will estimate numerically (by running simulations) the fixation probability of
- * a certain strategy in the population of 1 resident strategy.
- *
- * This implementation specializes on the EGTTools::SED::Group class
- *
- * @tparam S : container for the structure of the population
- * @param invader : index of the invading strategy
- * @param resident : index of the resident strategy
- * @param runs : number of runs (used to average the number of times the invading strategy has fixated)
- * @param q : splitting probability
- * @param lambda : migration probability
- * @param w : intensity of selection
- * @return a real number (double) indicating the fixation probability
- */
     template<typename S>
     double
     MLS<S>::fixationProbability(size_t invader, size_t resident, size_t runs,
@@ -425,21 +576,6 @@ namespace EGTTools::SED {
         else return r2m / (r2m + r2r);
     }
 
-    /**
-     * @brief estimates the fixation probability of the invading strategy over the resident strategy.
-    *
-     * This function will estimate numerically (by running simulations) the fixation probability of
-     * a certain strategy in the population of 1 resident strategy.
-     *
-     * This implementation specializes on the EGTTools::SED::Group class
-     * @tparam S : container for the structure of the population (group)
-     * @param invader : index of the invading strategy
-     * @param init_state : vector containing the initial state of the population (number of individuals of each strategy)
-     * @param runs : number of runs (used to average the number of times the invading strategy has fixated)
-     * @param q : splitting probability
-     * @param w : intensity of selection
-     * @return a vector of doubles indicating the probability that each strategy fixates from the initial state
-     */
     template<typename S>
     Vector MLS<S>::fixationProbability(size_t invader, const Eigen::Ref<const VectorXui> &init_state, size_t runs,
                                        double q, double w) {
@@ -508,24 +644,6 @@ namespace EGTTools::SED {
         return fixations.array();
     }
 
-/**
- * @brief calculates the gradient of selection between 2 strategies.
- *
- * Will return the difference between T+ and T- for each possible population configuration
- * when the is conformed only by the resident and the invading strategy.
- *
- * To estimate T+ - T- (the probability that the number of invaders increase/decrease in the population)
- * we run the simulation for population with k invaders and Z - k residents for @param run
- * times and average how many times did the number of invadors increase and decrease.
- *
- * @tparam S : group container
- * @param invader : index of the invading strategy
- * @param resident : index of the resident strategy
- * @param runs : number of runs (to average the results)
- * @param w : intensity of selection
- * @param q : splitting probability
- * @return : an Eigen vector with the gradient of selection for each k/Z where k is the number of invaders.
- */
     template<typename S>
     Vector
     MLS<S>::gradientOfSelection(size_t invader, size_t resident, size_t runs, double w, double q) {
@@ -579,24 +697,6 @@ namespace EGTTools::SED {
         return gradient;
     }
 
-    /**
-    * @brief calculates the gradient of selection for an invading strategy and any initial state.
-    *
-    * Will return the difference between T+ and T- for each possible population configuration
-    * when the is conformed only by the resident and the invading strategy.
-    *
-    * To estimate T+ - T- (the probability that the number of invaders increase/decrease in the population)
-    * we run the simulation for population with k invaders and Z - k residents for @param run
-    * times and average how many times did the number of invadors increase and decrease.
-    *
-    * @tparam S : group container
-    * @param invader : index of the invading strategy
-    * @param init_state : vector indicating the initial state of the population (how many individuals of each strategy)
-    * @param runs : number of runs (to average the results)
-    * @param w : intensity of selection
-    * @param q : splitting probability
-    * @return : an Eigen vector with the gradient of selection for each k/Z where k is the number of invaders.
-    */
     template<typename S>
     Vector
     MLS<S>::gradientOfSelection(size_t invader, size_t reduce, const Eigen::Ref<const VectorXui> &init_state,
@@ -719,16 +819,6 @@ namespace EGTTools::SED {
         groups[mutate_group].createMutant(invader, resident);
     }
 
-    /**
-     * @brief Adds a mutant of strategy invader to the population
-     *
-     * Eliminates a randmo strategy from the population and adds a mutant of strategy invader.
-     *
-     * @tparam S : container for population structur
-     * @param invader : index of the invader strategy
-     * @param groups : vector of groups
-     * @param strategies : vector of strategies
-     */
     template<typename S>
     void MLS<S>::_createRandomMutant(size_t invader, std::vector<S> &groups, EGTTools::VectorXui &strategies) {
         auto mutate_group = _uint_rand(_mt);
@@ -745,13 +835,6 @@ namespace EGTTools::SED {
         --strategies(decrease);
     }
 
-/**
- * @brief internal reproduction function.
- *
- * This function always splits the group
- *
- * @tparam S : group container
- */
     template<typename S>
     void MLS<S>::_reproduce(std::vector<S> &groups, VectorXui &strategies) {
         auto parent_group = _payoffProportionalSelection(groups);
@@ -760,16 +843,6 @@ namespace EGTTools::SED {
         _splitGroup(parent_group, groups, strategies);
     }
 
-/**
- * @brief internal reproduction function.
- *
- * This functions will split depending a splitting probability q.
- *
- * @tparam S : group container
- * @param groups : vector of groups
- * @param strategies : vector of the current proportions of each strategy in the population
- * @param q : split probability
- */
     template<typename S>
     void MLS<S>::_reproduce(std::vector<S> &groups, VectorXui &strategies, double q) {
         auto parent_group = _payoffProportionalSelection(groups);
@@ -785,13 +858,6 @@ namespace EGTTools::SED {
         }
     }
 
-/**
- * @brief Migrates an individual from a group to another
- *
- * @tparam S : group container
- * @param q : splitting probability
- * @param groups : reference to a vector of groups
- */
     template<typename S>
     void MLS<S>::_migrate(double q, std::vector<S> &groups, VectorXui &strategies) {
         size_t parent_group, child_group, migrating_strategy;
@@ -811,13 +877,6 @@ namespace EGTTools::SED {
         }
     }
 
-/**
- * @brief Mutates an individual from the population
- *
- * @tparam S : group container
- * @param mu
- * @param groups : reference to a vector of groups
- */
     template<typename S>
     void MLS<S>::_mutate(std::vector<S> &groups, VectorXui &strategies) {
         size_t parent_group, mutating_strategy, new_strategy;
@@ -831,17 +890,6 @@ namespace EGTTools::SED {
         ++strategies(new_strategy);
     }
 
-/**
- * @brief splits a group in two
- *
- * This method creates a new group. There is a 0.5 probability that each
- * member of the former group will be part of the new group. Also, since
- * the number of groups is kept constant, a random group is chosen to die.
- *
- * @tparam S : group container
- * @param parent_group : index to the group to split
- * @param groups : reference to a vector of groups
- */
     template<typename S>
     void MLS<S>::_splitGroup(size_t parent_group, std::vector<S> &groups, VectorXui &strategies) {
         // First choose a group to die
@@ -875,13 +923,6 @@ namespace EGTTools::SED {
         strategies_parent -= strategies_child;
     }
 
-/**
- * @brief selects a group proportional to its total payoff.
- *
- * @tparam S : group container
- * @param groups : reference to the population groups
- * @return : index of the parent group
- */
     template<typename S>
     size_t MLS<S>::_payoffProportionalSelection(std::vector<S> &groups) {
         double total_fitness = 0.0, tmp = 0.0;
@@ -897,13 +938,6 @@ namespace EGTTools::SED {
         return 0;
     }
 
-/**
- * @brief selects a group proportional to its size.
- *
- * @tparam S : group container
- * @param groups : reference to the population groups
- * @return : index of the parent group
- */
     template<typename S>
     size_t MLS<S>::_sizeProportionalSelection(std::vector<S> &groups) {
         size_t pop_size = _current_pop_size(groups), tmp = 0;
@@ -919,13 +953,6 @@ namespace EGTTools::SED {
         return 0;
     }
 
-/**
- * @brief Checks whether a pseudo stationary state has been reached.
- *
- * @tparam S : group container
- * @param groups : reference to a vector of groups
- * @return true if reached a pseudo stationary state, otherwise false
- */
     template<typename S>
     bool MLS<S>::_pseudoStationary(std::vector<S> &groups) {
         if (_current_pop_size(groups) < _pop_size) return false;
@@ -936,27 +963,12 @@ namespace EGTTools::SED {
         return true;
     }
 
-/**
- * @brief sets the all individuals of one strategy
- *
- * Sets all individuals in the population of one strategy and sets all groups at maximum capacity.
- *
- * @tparam S : group container
- * @param strategy : resident strategy
- * @param groups : reference to a vector of groups
- */
     template<typename S>
     void MLS<S>::_setFullHomogeneousState(size_t strategy, std::vector<S> &groups) {
         for (auto &group: groups)
             group.setPopulationHomogeneous(strategy);
     }
 
-/**
- * @brief returns the total population size
- * @tparam S : group container
- * @param groups : reference to a vector of groups
- * @return the sum of the sizes of all the groups
- */
     template<typename S>
     size_t MLS<S>::_current_pop_size(std::vector<S> &groups) {
         size_t size = 0;
@@ -965,16 +977,6 @@ namespace EGTTools::SED {
         return size;
     }
 
-    /**
-     * @brief Sets randomly the state of the population given a vector which contains the strategie sin the population.
-     *
-     * This method shuffles a vector containing the population of strategies and then assigns each _group_size
-     * of strategies to a group.
-     *
-     * @tparam S : container for the groups
-     * @param groups : vector of groups
-     * @param container : vector of strategies
-     */
     template<typename S>
     void MLS<S>::_setState(std::vector<S> &groups, std::vector<size_t> &container) {
         // Then we shuffle it randomly the contianer
