@@ -4,45 +4,58 @@
 
 #include <Dyrwin/SED/behaviors/CrdBehaviors.hpp>
 
-size_t EGTTools::SED::cooperator(size_t prev_donation, size_t threshold) {
+size_t EGTTools::SED::cooperator(size_t prev_donation, size_t threshold, size_t current_round) {
     UNUSED(prev_donation);
     UNUSED(threshold);
+    UNUSED(current_round);
     return 2;
 }
 
-size_t EGTTools::SED::defector(size_t prev_donation, size_t threshold) {
+size_t EGTTools::SED::defector(size_t prev_donation, size_t threshold, size_t current_round) {
     UNUSED(prev_donation);
     UNUSED(threshold);
+    UNUSED(current_round);
     return 0;
 }
 
-size_t EGTTools::SED::altruist(size_t prev_donation, size_t threshold) {
+size_t EGTTools::SED::altruist(size_t prev_donation, size_t threshold, size_t current_round) {
     UNUSED(prev_donation);
     UNUSED(threshold);
+    UNUSED(current_round);
     return 4;
 }
 
-size_t EGTTools::SED::reciprocal(size_t prev_donation, size_t threshold) {
-    if (prev_donation >= threshold)
-        return 4;
-    else
-        return 0;
+size_t EGTTools::SED::reciprocal(size_t prev_donation, size_t threshold, size_t current_round) {
+    if (current_round == 0) {
+        return 2;
+    } else {
+        if (prev_donation >= threshold)
+            return 4;
+        else
+            return 0;
+    }
 }
 
-size_t EGTTools::SED::compensator(size_t prev_donation, size_t threshold) {
-    if (prev_donation <= threshold)
-        return 0;
-    else
-        return 4;
+size_t EGTTools::SED::compensator(size_t prev_donation, size_t threshold, size_t current_round) {
+    if (current_round == 0) {
+        return 2;
+    } else {
+        if (prev_donation > threshold)
+            return 0;
+        else
+            return 4;
+    }
 }
 
-size_t EGTTools::SED::conditional_cooperator(size_t prev_donation, size_t threshold) {
+size_t EGTTools::SED::conditional_cooperator(size_t prev_donation, size_t threshold, size_t current_round) {
+    UNUSED(current_round);
     if (prev_donation < threshold) return 0;
     else if (prev_donation == threshold) return 2;
     else return 4;
 }
 
-size_t EGTTools::SED::conditional_defector(size_t prev_donation, size_t threshold) {
+size_t EGTTools::SED::conditional_defector(size_t prev_donation, size_t threshold, size_t current_round) {
+    UNUSED(current_round);
     if (prev_donation < threshold) return 4;
     else if (prev_donation == threshold) return 2;
     else return 0;

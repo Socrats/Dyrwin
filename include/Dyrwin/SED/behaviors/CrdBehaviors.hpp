@@ -24,7 +24,7 @@ namespace EGTTools::SED {
      * @param threshold
      * @return action of the player
      */
-    size_t cooperator(size_t prev_donation, size_t threshold);
+    size_t cooperator(size_t prev_donation, size_t threshold, size_t current_round);
 
     /**
      * @brief This player always invests 0
@@ -32,7 +32,7 @@ namespace EGTTools::SED {
      * @param threshold
      * @return
      */
-    size_t defector(size_t prev_donation, size_t threshold);
+    size_t defector(size_t prev_donation, size_t threshold, size_t current_round);
 
     /**
      * @brief This player always invests 4
@@ -40,7 +40,7 @@ namespace EGTTools::SED {
      * @param threshold
      * @return
      */
-    size_t altruist(size_t prev_donation, size_t threshold);
+    size_t altruist(size_t prev_donation, size_t threshold, size_t current_round);
 
     /**
      * @brief Cooperates depending on threshold
@@ -52,7 +52,7 @@ namespace EGTTools::SED {
      * @param threshold
      * @return
      */
-    size_t reciprocal(size_t prev_donation, size_t threshold);
+    size_t reciprocal(size_t prev_donation, size_t threshold, size_t current_round);
 
     /**
      * @brief Cooperates depending on threshold
@@ -64,15 +64,17 @@ namespace EGTTools::SED {
      * @param threshold
      * @return
      */
-    size_t compensator(size_t prev_donation, size_t threshold);
+    size_t compensator(size_t prev_donation, size_t threshold, size_t current_round);
 
-    size_t conditional_cooperator(size_t prev_donation, size_t threshold);
+    size_t conditional_cooperator(size_t prev_donation, size_t threshold, size_t current_round);
 
-    size_t conditional_defector(size_t prev_donation, size_t threshold);
+    size_t conditional_defector(size_t prev_donation, size_t threshold, size_t current_round);
 
     size_t early(size_t prev_donation, size_t threshold, size_t current_round);
 
     size_t late(size_t prev_donation, size_t threshold, size_t current_round);
+
+    double play_game(size_t focal_player, std::vector<size_t> group_composition);
 
 
     struct CrdBehavior {
@@ -83,8 +85,10 @@ namespace EGTTools::SED {
         size_t type;
         double payoff;
 
-        size_t (*act)(size_t, size_t);
+        size_t (*act)(size_t, size_t, size_t);
     };
+
+    enum class CRDBehaviors {cooperator=0, defector, altruist, reciprocal, compensator};
 
     #define UNUSED(expr) do { (void)(expr); } while (0)
 }
