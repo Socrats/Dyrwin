@@ -215,7 +215,7 @@ GroupPayoffs calculate_payoffs(size_t group_size, size_t nb_strategies, std::uni
     // For every possible group composition run the game and store the payoff of each strategy
     for (size_t i = 0; i < nb_states; ++i) {
         group_composition.back() = group_size - sum;
-        playGame(nb_strategies, group_composition, game_payoffs, urand, generator);
+        playGameTU(nb_strategies, group_composition, game_payoffs, urand, generator);
 
         // Fill payoff table
         for (size_t j = 0; j < nb_strategies; ++j) payoffs(j, i) = game_payoffs[j];
@@ -354,13 +354,13 @@ int main() {
     // First we define a vector of possible behaviors
     size_t nb_strategies = 5;
     size_t pop_size = 100;
-    size_t nb_generations = 10000000;
+    size_t nb_generations = 1000000;
     size_t group_size = 6;
     size_t die, birth;
     double beta = 0.001;
-    double mu = 0.001;
+    double mu = 0.05;
     std::vector<size_t> population(pop_size, 2);
-    std::vector<size_t> strategies{0, 100, 0, 0, 0};
+    std::vector<size_t> strategies{20, 20, 20, 20, 20};
     std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
     std::uniform_real_distribution<double> urand(0.0, 1.0);
     std::uniform_int_distribution<size_t> irand(0, nb_strategies - 1);
