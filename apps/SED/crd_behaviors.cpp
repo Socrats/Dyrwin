@@ -12,11 +12,13 @@
 #include <Dyrwin/LruCache.hpp>
 #include <Dyrwin/RL/Utils.h>
 #include <Dyrwin/SeedGenerator.h>
+#include <Dyrwin/CommandLineParsing.h>
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
 
 //using GroupPayoffs = std::unordered_map<size_t, double>;
 using GroupPayoffs = EGTTools::Matrix2D;
+using StrategyCounts = std::vector<size_t>;
 
 
 size_t starsBars(size_t stars, size_t bins) {
@@ -204,7 +206,8 @@ playGameTU(const size_t &nb_strategies, const std::vector<size_t> &group_composi
 
 }
 
-GroupPayoffs calculate_payoffs(size_t group_size, size_t nb_strategies, std::uniform_real_distribution<double> &urand, std::mt19937_64 &generator) {
+GroupPayoffs calculate_payoffs(size_t group_size, size_t nb_strategies, std::uniform_real_distribution<double> &urand,
+                               std::mt19937_64 &generator) {
     // number of possible group combinations
     auto nb_states = EGTTools::binomialCoeff(nb_strategies + group_size - 1, group_size);
     GroupPayoffs payoffs = GroupPayoffs::Zero(nb_strategies, nb_states);
@@ -215,7 +218,7 @@ GroupPayoffs calculate_payoffs(size_t group_size, size_t nb_strategies, std::uni
     // For every possible group composition run the game and store the payoff of each strategy
     for (size_t i = 0; i < nb_states; ++i) {
         group_composition.back() = group_size - sum;
-        playGameTU(nb_strategies, group_composition, game_payoffs, urand, generator);
+        playGame(nb_strategies, group_composition, game_payoffs, urand, generator);
 
         // Fill payoff table
         for (size_t j = 0; j < nb_strategies; ++j) payoffs(j, i) = game_payoffs[j];
@@ -349,24 +352,48 @@ inline size_t mutate(size_t &player, const double &mu, std::uniform_int_distribu
     return new_player;
 }
 
-int main() {
+inline std::pair<bool, size_t> is_homogeneous(size_t &pop_size, StrategyCounts &strategies) {
+    for (size_t i = 0; i < strategies.size(); ++i) {
+        if (strategies[i] == pop_size) return std::make_pair(true, i);
+    }
+    return std::make_pair(false, -1);
+}
+
+int main(int argc, char *argv[]) {
 
     // First we define a vector of possible behaviors
     size_t nb_strategies = 5;
     size_t pop_size = 100;
-    size_t nb_generations = 1000000;
+    size_t nb_generations = 10000;
     size_t group_size = 6;
     size_t die, birth;
     double beta = 0.001;
-    double mu = 0.05;
+    double mu = 0.0;
+    StrategyCounts strategies(5);
+    Options options;
+
+    options.push_back(
+            makeDefaultedOption<size_t>("generations,g", &nb_generations, "set the number of generations", 1000u));
+    options.push_back(makeDefaultedOption<size_t>("popSize,Z", &pop_size, "set the size of the population", 100u));
+    options.push_back(
+            makeRequiredOption<std::vector<size_t>>("strategies,s", &strategies, "the counts of each strategy"));
+    options.push_back(makeDefaultedOption<double>("mu,u", &mu, "set mutation rate", 0.05));
+    options.push_back(makeDefaultedOption<double>("beta,b", &beta, "set intensity of selection", 0.001));
+    options.push_back(makeDefaultedOption<size_t>("groupSize,n", &group_size, "group size", 6));
+    if (!parseCommandLine(argc, argv, options))
+        return 1;
+
     std::vector<size_t> population(pop_size, 2);
-    std::vector<size_t> strategies{20, 20, 20, 20, 20};
     std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
     std::uniform_real_distribution<double> urand(0.0, 1.0);
     std::uniform_int_distribution<size_t> irand(0, nb_strategies - 1);
     std::uniform_int_distribution<size_t> pop_rand(0, pop_size - 1);
+    // Avg. number of rounds for a mutation to happen
+    size_t nb_generations_for_mutation = std::floor(1 / mu);
+    auto[homogeneous, idx_homo] = is_homogeneous(pop_size, strategies);
+
     // Creates a cache for the fitness data
-    EGTTools::Utils::LRUCache<std::string, double> cache(10000);
+    EGTTools::Utils::LRUCache<std::string, double> cache(100000);
     GroupPayoffs payoffs = calculate_payoffs(group_size, nb_strategies, urand, generator);
 
     // Save payoffs
@@ -401,33 +428,51 @@ int main() {
         // First we pick 2 players randomly
         auto[player1, player2] = samplePlayers(pop_rand, generator);
 
-        // Then we let them play to calculate their payoffs
-        auto fitness_p1 = calculate_fitness(population[player1], nb_strategies, group_size, pop_size, strategies,
-                                            payoffs, cache);
-        auto fitness_p2 = calculate_fitness(population[player2], nb_strategies, group_size, pop_size, strategies,
-                                            payoffs, cache);
+        if (homogeneous) {
+            if (mu > 0) {
+                i += nb_generations_for_mutation;
+                // mutate
+                birth = irand(generator);
+                strategies[birth] += 1;
+                strategies[idx_homo] -= 1;
+                homogeneous = false;
+                continue;
+            } else break;
+        }
 
-//        std::cout << "===========generation " << i << "===============" << std::endl;
-//        std::cout << "type: " << population[player1] << " fitness: " << fitness_p1 << std::endl;
-//        std::cout << "type: " << population[player2] << " fitness: " << fitness_p2 << std::endl;
-//        std::cout << "================================================" << std::endl;
-
-        // Then we apply the moran process with mutation
-        if (urand(generator) < EGTTools::SED::fermi(beta, fitness_p1, fitness_p2)) {
-            // player 1 copies player 2
+        // Check if player mutates
+        if (urand(generator) < mu) {
             die = population[player1];
-            population[player1] = population[player2];
-            birth = mutate(population[player1], mu, irand, urand, generator);
+            birth = irand(generator);
             population[player1] = birth;
-        } else {
-            // player 2 copies player 1
-            die = population[player2];
-            population[player2] = population[player1];
-            birth = mutate(population[player2], mu, irand, urand, generator);
-            population[player2] = birth;
+        } else { // If no mutation, player imitates
+
+            // Then we let them play to calculate their payoffs
+            auto fitness_p1 = calculate_fitness(population[player1], nb_strategies, group_size, pop_size, strategies,
+                                                payoffs, cache);
+            auto fitness_p2 = calculate_fitness(population[player2], nb_strategies, group_size, pop_size, strategies,
+                                                payoffs, cache);
+
+            // Then we apply the moran process with mutation
+            if (urand(generator) < EGTTools::SED::fermi(beta, fitness_p1, fitness_p2)) {
+                // player 1 copies player 2
+                die = population[player1];
+                birth = population[player2];
+                population[player1] = population[player2];
+            } else {
+                // player 2 copies player 1
+                die = population[player2];
+                birth = population[player1];
+                population[player2] = population[player1];
+            }
         }
         strategies[birth] += 1;
         strategies[die] -= 1;
+        // Check if population is homogeneous
+        if (strategies[birth] == pop_size) {
+            homogeneous = true;
+            idx_homo = birth;
+        }
     }
 
     std::cout << "final state: (";
