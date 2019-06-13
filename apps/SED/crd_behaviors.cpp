@@ -218,7 +218,7 @@ GroupPayoffs calculate_payoffs(size_t group_size, size_t nb_strategies, std::uni
     // For every possible group composition run the game and store the payoff of each strategy
     for (size_t i = 0; i < nb_states; ++i) {
         group_composition.back() = group_size - sum;
-        playGame(nb_strategies, group_composition, game_payoffs, urand, generator);
+        playGameTU(nb_strategies, group_composition, game_payoffs, urand, generator);
 
         // Fill payoff table
         for (size_t j = 0; j < nb_strategies; ++j) payoffs(j, i) = game_payoffs[j];
