@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.9)
 add_library(EGTTools
         SeedGenerator.cpp
         Distributions.cpp
+        SED/Utils.cpp
         SED/MoranProcess.cpp
         SED/PDImitation.cpp
         SED/StochDynamics.cpp

@@ -257,17 +257,17 @@ calculate_fitness(const size_t &player_type, const size_t &nb_strategies, const 
     std::copy(strategies.begin(), strategies.end(), std::ostream_iterator<int>(result, ""));
 
     std::string key = std::to_string(player_type) + result.str();
-    std::vector<size_t> sample_counts(nb_strategies, 0);
-
-    // number of possible group combinations
-    auto total_nb_states = EGTTools::binomialCoeff(nb_strategies + group_size - 1, group_size);
-    size_t nb_states = EGTTools::binomialCoeff(nb_strategies + group_size - 2, group_size - 1);
 
     // First we check if fitness value is in the lookup table
     if (!cache.exists(key)) {
         fitness = 0.0;
         sum = 0;
         strategies[player_type] -= 1;
+        std::vector<size_t> sample_counts(nb_strategies, 0);
+
+        // number of possible group combinations
+        auto total_nb_states = EGTTools::binomialCoeff(nb_strategies + group_size - 1, group_size);
+        size_t nb_states = EGTTools::binomialCoeff(nb_strategies + group_size - 2, group_size - 1);
 
         // If it isn't, then we must calculate the fitness for every possible group combination
         for (size_t i = 0; i < nb_states; ++i) {
@@ -275,21 +275,12 @@ calculate_fitness(const size_t &player_type, const size_t &nb_strategies, const 
             sample_counts.back() = group_size - 1 - sum;
 
             // First update sample_counts with new group composition
-//            auto idx = calculate_state(group_size, total_nb_states, sample_counts);
-//            std::cout << "index: " << idx << std::endl;
             payoff = payoffs(player_type, calculate_state(group_size, total_nb_states, sample_counts));
-//            std::cout << "strategies: (";
-//            for (size_t strategie : strategies) std::cout << strategie << ", ";
-//            std::cout <<  ")" << std::endl;
-//            std::cout << "sample: (";
-//            for (size_t sample : sample_counts) std::cout << sample << ", ";
-//            std::cout << ")" << std::endl;
             sample_counts[player_type] -= 1;
 
             auto prob = EGTTools::multivariateHypergeometricPDF(pop_size - 1, nb_strategies, group_size - 1,
                                                                 sample_counts,
                                                                 strategies);
-//            std::cout << "prob = " << prob << ", payoff = " << payoff << std::endl;
 
             fitness += payoff * prob;
 
@@ -393,7 +384,7 @@ int main(int argc, char *argv[]) {
     auto[homogeneous, idx_homo] = is_homogeneous(pop_size, strategies);
 
     // Creates a cache for the fitness data
-    EGTTools::Utils::LRUCache<std::string, double> cache(100000);
+    EGTTools::Utils::LRUCache<std::string, double> cache(1000000);
     GroupPayoffs payoffs = calculate_payoffs(group_size, nb_strategies, urand, generator);
 
     // Save payoffs
@@ -416,7 +407,6 @@ int main(int argc, char *argv[]) {
 
     // initialise population
     initialize_population(nb_strategies, strategies, population, generator);
-    initialize_population(nb_strategies, strategies, population, generator);
 
     std::cout << "initial state: (";
     for (size_t i = 0; i < nb_strategies; ++i)
@@ -433,9 +423,17 @@ int main(int argc, char *argv[]) {
                 i += nb_generations_for_mutation;
                 // mutate
                 birth = irand(generator);
-                strategies[birth] += 1;
-                strategies[idx_homo] -= 1;
-                homogeneous = false;
+                // If population still homogeneous we wait for another mutation
+                while (birth == idx_homo) {
+                    i += nb_generations_for_mutation;
+                    birth = irand(generator);
+                }
+                if (i < nb_generations) {
+                    population[player1] = birth;
+                    strategies[birth] += 1;
+                    strategies[idx_homo] -= 1;
+                    homogeneous = false;
+                }
                 continue;
             } else break;
         }
@@ -446,7 +444,6 @@ int main(int argc, char *argv[]) {
             birth = irand(generator);
             population[player1] = birth;
         } else { // If no mutation, player imitates
-
             // Then we let them play to calculate their payoffs
             auto fitness_p1 = calculate_fitness(population[player1], nb_strategies, group_size, pop_size, strategies,
                                                 payoffs, cache);
@@ -458,12 +455,12 @@ int main(int argc, char *argv[]) {
                 // player 1 copies player 2
                 die = population[player1];
                 birth = population[player2];
-                population[player1] = population[player2];
+                population[player1] = birth;
             } else {
                 // player 2 copies player 1
                 die = population[player2];
                 birth = population[player1];
-                population[player2] = population[player1];
+                population[player2] = birth;
             }
         }
         strategies[birth] += 1;

@@ -9,9 +9,15 @@
 #include <limits>
 
 namespace EGTTools::SED {
-    double fermi(double beta, double a, double b) {
-        return 1 / (1 + std::exp(beta * (a - b)));
-    }
+    /**
+     * @brief returns the imitation probability calculated according to the fermi function.
+     *
+     * @param beta intensity of selection
+     * @param a fitness of player A
+     * @param b fitness fo player B
+     * @return probability of imitation
+     */
+    double fermi(double beta, double a, double b);
     constexpr double_t doubleEpsilon = std::numeric_limits< double >::digits10;
 }
 

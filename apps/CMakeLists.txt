@@ -23,7 +23,7 @@ set_target_properties(pmoran PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
 set_target_properties(pmoran PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(pmoran EGTTools)
 
-add_executable(behaviors SED/crd_behaviors.cpp ../include/Dyrwin/LruCache.hpp)
+add_executable(behaviors SED/crd_behaviors.cpp)
 target_link_libraries(behaviors ${Boost_LIBRARIES} boost_program_options)
 set_target_properties(behaviors PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
 set_target_properties(behaviors PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
