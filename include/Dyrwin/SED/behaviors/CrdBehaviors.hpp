@@ -8,13 +8,14 @@
 #include <cstdlib>
 #include <random>
 #include <Dyrwin/SeedGenerator.h>
+#include <Dyrwin/Utils.h>
 
 /**
  * @brief This header file contains the definition of the behaviors encountered in the
  * CRD experiments Elias & Jelena & Francisco C. Santos, et. al.
  */
 
-namespace EGTTools::SED {
+namespace EGTTools::SED::CRD {
     constexpr size_t nb_strategies = 5;
 
     /**
@@ -89,8 +90,6 @@ namespace EGTTools::SED {
     };
 
     enum class CRDBehaviors {cooperator=0, defector, altruist, reciprocal, compensator};
-
-    #define UNUSED(expr) do { (void)(expr); } while (0)
 }
 
 #endif //DYRWIN_CRDBEHAVIORS_HPP

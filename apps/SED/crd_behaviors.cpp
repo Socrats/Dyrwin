@@ -13,8 +13,10 @@
 #include <Dyrwin/RL/Utils.h>
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/CommandLineParsing.h>
-
-#define UNUSED(expr) do { (void)(expr); } while (0)
+#include <Dyrwin/Utils.h>
+#include <Dyrwin/SED/games/AbstractGame.hpp>
+#include <Dyrwin/SED/games/CrdGame.hpp>
+#include <Dyrwin/SED/games/CrdGameTU.hpp>
 
 //using GroupPayoffs = std::unordered_map<size_t, double>;
 using GroupPayoffs = EGTTools::Matrix2D;
@@ -75,139 +77,8 @@ calculate_state(const size_t &group_size, const size_t &nb_states, const EGTTool
     return nb_states - retval - 1;
 }
 
-size_t get_action(size_t player_type, size_t prev_donation, size_t threshold, size_t current_round) {
-    size_t act = 0;
-
-    switch (player_type) {
-        case 0:
-            act = EGTTools::SED::cooperator(prev_donation, threshold, current_round);
-            break;
-        case 1:
-            act = EGTTools::SED::defector(prev_donation, threshold, current_round);
-            break;
-        case 2:
-            act = EGTTools::SED::altruist(prev_donation, threshold, current_round);
-            break;
-        case 3:
-            act = EGTTools::SED::reciprocal(prev_donation, threshold, current_round);
-            break;
-        case 4:
-            act = EGTTools::SED::compensator(prev_donation, threshold, current_round);
-            break;
-        default:
-            assert(false);
-            break;
-    }
-
-    return act;
-}
-
-void
-playGame(const size_t &nb_strategies, const std::vector<size_t> &group_composition, std::vector<double> &game_payoffs,
-         std::uniform_real_distribution<double> &urand, std::mt19937_64 &generator) {
-    size_t public_account = 0;
-    size_t prev_donation = 0, current_donation = 0;
-    size_t nb_rounds = 10;
-    size_t threshold = 120;
-    size_t action;
-    double endowment = 40;
-    double risk = 0.9;
-    // Initialize payoffs
-    for (size_t j = 0; j < nb_strategies; ++j) {
-        if (group_composition[j] > 0) {
-            game_payoffs[j] = endowment;
-        } else {
-            game_payoffs[j] = 0;
-        }
-    }
-
-    for (size_t i = 0; i < nb_rounds; ++i) {
-        for (size_t j = 0; j < nb_strategies; ++j) {
-            if (group_composition[j] > 0) {
-                action = get_action(j, prev_donation, threshold, i);
-                if (game_payoffs[j] - action > 0) {
-                    game_payoffs[j] -= action;
-                    current_donation += group_composition[j] * action;
-                }
-            }
-        }
-        public_account += current_donation;
-        prev_donation = current_donation;
-        current_donation = 0;
-        if (public_account >= threshold) break;
-    }
-
-    if (public_account < threshold)
-        if (urand(generator) < risk) for (auto &type: game_payoffs) type = 0;
-
-}
-
-void
-playGameTU(const size_t &nb_strategies, const std::vector<size_t> &group_composition, std::vector<double> &game_payoffs,
-           std::uniform_real_distribution<double> &urand, std::mt19937_64 &generator) {
-    size_t public_account = 0;
-    size_t prev_donation = 0, current_donation = 0;
-    size_t threshold = 120;
-    size_t action;
-    size_t min_rounds = 6;
-    size_t avg_rounds = 10;
-    double p = 1. / (avg_rounds - min_rounds + 1);
-    double endowment = 40;
-    double risk = 0.9;
-    // Initialize payoffs
-    for (size_t j = 0; j < nb_strategies; ++j) {
-        if (group_composition[j] > 0) {
-            game_payoffs[j] = endowment;
-        } else {
-            game_payoffs[j] = 0;
-        }
-    }
-
-    for (size_t i = 0; i < min_rounds; ++i) {
-        for (size_t j = 0; j < nb_strategies; ++j) {
-            if (group_composition[j] > 0) {
-                action = get_action(j, prev_donation, threshold, i);
-                if (game_payoffs[j] - action > 0) {
-                    game_payoffs[j] -= action;
-                    current_donation += group_composition[j] * action;
-                }
-            }
-        }
-        public_account += current_donation;
-        prev_donation = current_donation;
-        current_donation = 0;
-        if (public_account >= threshold) break;
-    }
-
-    if (public_account < threshold) {
-        size_t current_round = min_rounds;
-        while (true) {
-            if (urand(generator) < p) break;
-
-            for (size_t j = 0; j < nb_strategies; ++j) {
-                if (group_composition[j] > 0) {
-                    action = get_action(j, prev_donation, threshold, current_round);
-                    if (game_payoffs[j] - action > 0) {
-                        game_payoffs[j] -= action;
-                        current_donation += group_composition[j] * action;
-                    }
-                }
-            }
-            public_account += current_donation;
-            prev_donation = current_donation;
-            current_donation = 0;
-            current_round += 1;
-            if (public_account >= threshold) break;
-        }
-    }
-
-    if (public_account < threshold)
-        if (urand(generator) < risk) for (auto &type: game_payoffs) type = 0;
-
-}
-
 GroupPayoffs calculate_payoffs(size_t group_size, size_t nb_strategies, std::uniform_real_distribution<double> &urand,
-                               std::mt19937_64 &generator) {
+                               std::mt19937_64 &generator, EGTTools::SED::AbstractGame<std::mt19937_64> *game) {
     // number of possible group combinations
     auto nb_states = EGTTools::binomialCoeff(nb_strategies + group_size - 1, group_size);
     GroupPayoffs payoffs = GroupPayoffs::Zero(nb_strategies, nb_states);
@@ -218,7 +89,7 @@ GroupPayoffs calculate_payoffs(size_t group_size, size_t nb_strategies, std::uni
     // For every possible group composition run the game and store the payoff of each strategy
     for (size_t i = 0; i < nb_states; ++i) {
         group_composition.back() = group_size - sum;
-        playGameTU(nb_strategies, group_composition, game_payoffs, urand, generator);
+        game->play(group_composition, game_payoffs, urand, generator);
 
         // Fill payoff table
         for (size_t j = 0; j < nb_strategies; ++j) payoffs(j, i) = game_payoffs[j];
@@ -353,14 +224,18 @@ inline std::pair<bool, size_t> is_homogeneous(size_t &pop_size, StrategyCounts &
 int main(int argc, char *argv[]) {
 
     // First we define a vector of possible behaviors
-    size_t nb_strategies = 5;
-    size_t pop_size = 100;
-    size_t nb_generations = 10000;
-    size_t group_size = 6;
+    size_t nb_strategies = EGTTools::SED::CRD::nb_strategies;
+    size_t pop_size;
+    size_t nb_generations;
+    size_t group_size;
     size_t die, birth;
-    double beta = 0.001;
-    double mu = 0.0;
-    StrategyCounts strategies(5);
+    size_t nb_rounds, min_rounds, endowment, threshold;
+    double beta;
+    double mu;
+    double risk;
+    bool timing_uncertainty;
+    double p = 0.0;
+    StrategyCounts strategies(EGTTools::SED::CRD::nb_strategies);
     Options options;
 
     options.push_back(
@@ -371,6 +246,12 @@ int main(int argc, char *argv[]) {
     options.push_back(makeDefaultedOption<double>("mu,u", &mu, "set mutation rate", 0.05));
     options.push_back(makeDefaultedOption<double>("beta,b", &beta, "set intensity of selection", 0.001));
     options.push_back(makeDefaultedOption<size_t>("groupSize,n", &group_size, "group size", 6));
+    options.push_back(makeDefaultedOption<size_t>("nbRounds,t", &nb_rounds, "number of rounds", 10));
+    options.push_back(makeDefaultedOption<size_t>("minRounds,m", &min_rounds, "minimum number of rounds", 8));
+    options.push_back(makeDefaultedOption<size_t>("endowment,e", &endowment, "endowment", 40));
+    options.push_back(makeDefaultedOption<size_t>("target,p", &threshold, "threshold", 120));
+    options.push_back(makeDefaultedOption<double>("risk,r", &risk, "risk", 0.9));
+    options.push_back(makeDefaultedOption<bool>("tu,d", &timing_uncertainty, "timing uncertainty", false));
     if (!parseCommandLine(argc, argv, options))
         return 1;
 
@@ -383,9 +264,19 @@ int main(int argc, char *argv[]) {
     size_t nb_generations_for_mutation = std::floor(1 / mu);
     auto[homogeneous, idx_homo] = is_homogeneous(pop_size, strategies);
 
+    EGTTools::SED::AbstractGame<std::mt19937_64> *game;
+
+    if (timing_uncertainty) {
+        p = 1 / static_cast<double>(nb_rounds - min_rounds + 1);
+        EGTTools::TimingUncertainty<std::mt19937_64> tu(p);
+        game = new EGTTools::SED::CRD::CrdGameTU(endowment, threshold, min_rounds, group_size, risk, tu);
+    } else {
+        game = new EGTTools::SED::CRD::CrdGame(endowment, threshold, nb_rounds, group_size, risk);
+    }
+
     // Creates a cache for the fitness data
     EGTTools::Utils::LRUCache<std::string, double> cache(10000000);
-    GroupPayoffs payoffs = calculate_payoffs(group_size, nb_strategies, urand, generator);
+    GroupPayoffs payoffs = calculate_payoffs(group_size, nb_strategies, urand, generator, game);
 
     // Save payoffs
     std::ofstream file("payoffs.txt", std::ios::out | std::ios::trunc);
@@ -399,6 +290,15 @@ int main(int argc, char *argv[]) {
         file << "beta = " << beta << std::endl;
         file << "mu = " << mu << std::endl;
         file << "nb_generations = " << nb_generations << std::endl;
+        file << "timing_uncertainty = " << timing_uncertainty << std::endl;
+        if (timing_uncertainty) {
+            file << "min_rounds = " << min_rounds << std::endl;
+            file << "mean_rounds = " << nb_rounds << std::endl;
+            file << "p = " << p << std::endl;
+        } else file << "nb_rounds = " << nb_rounds << std::endl;
+        file << "risk = " << risk << std::endl;
+        file << "endowment = " << endowment << std::endl;
+        file << "threshold = " << threshold << std::endl;
         file << "initial state = (";
         for (size_t i = 0; i < nb_strategies; ++i)
             file << strategies[i] << ", ";
