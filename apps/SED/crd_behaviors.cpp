@@ -23,10 +23,6 @@ using GroupPayoffs = EGTTools::Matrix2D;
 using StrategyCounts = std::vector<size_t>;
 
 
-size_t starsBars(size_t stars, size_t bins) {
-    return EGTTools::binomialCoeff(stars + bins - 1, stars);
-}
-
 /**
  * @brief This function converts a vector containing counts into an index.
  *
@@ -66,7 +62,7 @@ calculate_state(const size_t &group_size, const size_t &nb_states, const EGTTool
     for (size_t i = 0; i < current_group.size() - 1; ++i) {
         auto h = remaining;
         while (h > current_group[current_group.size() - i - 2]) {
-            retval += starsBars(remaining - h, current_group.size() - i - 1);
+            retval += EGTTools::starsBars(remaining - h, current_group.size() - i - 1);
             --h;
         }
         if (remaining == current_group[current_group.size() - i - 2])

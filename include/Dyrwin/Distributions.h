@@ -120,6 +120,14 @@ namespace EGTTools {
     multivariateHypergeometricPDF(size_t m, size_t k, size_t n, const std::vector<size_t> &sample_counts,
                                   const std::vector<size_t> &population_counts);
 
+    /**
+     * @brief Finds the number for elements given possible bins/slots and star types.
+     * @param stars
+     * @param bins
+     * @return
+     */
+    size_t starsBars(size_t stars, size_t bins);
+
 }
 
 #endif //DYRWIN_DISTRIBUTIONS_H
