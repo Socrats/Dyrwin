@@ -384,7 +384,7 @@ int main(int argc, char *argv[]) {
     auto[homogeneous, idx_homo] = is_homogeneous(pop_size, strategies);
 
     // Creates a cache for the fitness data
-    EGTTools::Utils::LRUCache<std::string, double> cache(1000000);
+    EGTTools::Utils::LRUCache<std::string, double> cache(10000000);
     GroupPayoffs payoffs = calculate_payoffs(group_size, nb_strategies, urand, generator);
 
     // Save payoffs

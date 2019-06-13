@@ -23,7 +23,7 @@ namespace EGTTools::Utils {
          *
          * @param size maximum size of the cache
          */
-        explicit LRUCache(size_t size) : max_size_(size){};
+        explicit LRUCache(size_t size);
 
         ~LRUCache() { clear(); }
 
@@ -99,6 +99,13 @@ namespace EGTTools::Utils {
 
         void clean_extra_space_();
     };
+
+    template<class TKey, class TValue>
+    LRUCache<TKey, TValue>::LRUCache(size_t size) : max_size_(size) {
+        // To increase performance of hash table
+        cache_map_.reserve(size / 10);
+        cache_map_.max_load_factor(0.25);
+    }
 
     template<class TKey, class TValue>
     void LRUCache<TKey, TValue>::insert(const TKey &key, const TValue &value) {
