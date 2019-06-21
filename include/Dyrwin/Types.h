@@ -18,6 +18,8 @@ namespace EGTTools {
     // This should have decent properties.
     using RandomEngine = std::mt19937;
 
+    using Factors = std::vector<size_t>;
+
     using Vector = Eigen::Matrix<double, Eigen::Dynamic, 1>;
     using VectorXi = Eigen::Matrix<int, Eigen::Dynamic, 1>;
     using VectorXui = Eigen::Matrix<size_t, Eigen::Dynamic, 1>;

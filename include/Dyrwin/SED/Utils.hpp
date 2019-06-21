@@ -24,6 +24,21 @@ namespace EGTTools::SED {
      */
     double fermi(double beta, double a, double b);
 
+    /**
+    * @brief This function converts a vector containing counts into an index.
+    *
+    * This method was copies from @ebargiac
+    *
+    * @param data The vector to convert.
+    * @param history The sum of the values contained in data.
+    *
+    * @return The unique index in [0, starsBars(history, data.size() - 1)) representing data.
+    */
+    size_t calculate_state(const size_t &group_size, const size_t &nb_states, const EGTTools::Factors &current_group);
+
+    /**
+     * @brief Defines the numeric limit of floating points
+     */
     constexpr double_t doubleEpsilon = std::numeric_limits<double>::digits10;
 }
 

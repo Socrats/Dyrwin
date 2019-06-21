@@ -17,61 +17,12 @@
 #include <Dyrwin/SED/games/AbstractGame.hpp>
 #include <Dyrwin/SED/games/CrdGame.hpp>
 #include <Dyrwin/SED/games/CrdGameTU.hpp>
+#include <Dyrwin/SED/Utils.hpp>
 
 //using GroupPayoffs = std::unordered_map<size_t, double>;
 using GroupPayoffs = EGTTools::Matrix2D;
 using StrategyCounts = std::vector<size_t>;
 
-
-/**
- * @brief This function converts a vector containing counts into an index.
- *
- * This method was copies from @ebargiac
- *
- * @param data The vector to convert.
- * @param history The sum of the values contained in data.
- *
- * @return The unique index in [0, starsBars(history, data.size() - 1)) representing data.
- */
-size_t
-calculate_state(const size_t &group_size, const size_t &nb_states, const EGTTools::RL::Factors &current_group) {
-    size_t retval = 0;
-    auto remaining = group_size;
-
-    // In order to find the index for the input combination, we are basically
-    // counting the number of combinations we have 'behind us", and we're going
-    // to be the next. So for example if we have 10 combinations behind us,
-    // we're going to be number 11.
-    //
-    // We do this recursively, element by element. For each element we count
-    // the number of combinations we left behind. If data[i] is the highest
-    // possible (i.e. it accounts for all remaining points), then it is the
-    // first and we didn't miss anything.
-    //
-    // Otherwise we count how many combinations we'd have had with the max (1),
-    // add it to the number, and decrease the h. Then we try again: are we
-    // still lower? If so, count again how many combinations we'd have had with
-    // this number (size() - 1). And so on, until we match the number we have.
-    //
-    // Then we go to the next element, considering the subarray of one element
-    // less (thus the size() - i), and we keep going.
-    //
-    // Note that by using this algorithm the last element in the array is never
-    // needed (since it is determined by the others), and additionally when we
-    // have no remaining elements to parse we can just break.
-    for (size_t i = 0; i < current_group.size() - 1; ++i) {
-        auto h = remaining;
-        while (h > current_group[current_group.size() - i - 2]) {
-            retval += EGTTools::starsBars(remaining - h, current_group.size() - i - 1);
-            --h;
-        }
-        if (remaining == current_group[current_group.size() - i - 2])
-            break;
-        remaining -= current_group[current_group.size() - i - 2];
-    }
-
-    return nb_states - retval - 1;
-}
 
 GroupPayoffs calculate_payoffs(size_t group_size, size_t nb_strategies, std::uniform_real_distribution<double> &urand,
                                std::mt19937_64 &generator, EGTTools::SED::AbstractGame<std::mt19937_64> *game) {
@@ -142,7 +93,7 @@ calculate_fitness(const size_t &player_type, const size_t &nb_strategies, const 
             sample_counts.back() = group_size - 1 - sum;
 
             // First update sample_counts with new group composition
-            payoff = payoffs(player_type, calculate_state(group_size, total_nb_states, sample_counts));
+            payoff = payoffs(player_type, EGTTools::SED::calculate_state(group_size, total_nb_states, sample_counts));
             sample_counts[player_type] -= 1;
 
             auto prob = EGTTools::multivariateHypergeometricPDF(pop_size - 1, nb_strategies, group_size - 1,
