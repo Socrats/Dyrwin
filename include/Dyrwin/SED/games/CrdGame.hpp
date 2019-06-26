@@ -43,20 +43,43 @@ namespace EGTTools::SED::CRD {
         inline size_t get_action(const size_t &player_type, const size_t &prev_donation, const size_t &threshold,
                                  const size_t &current_round);
 
+        const GroupPayoffs &calculate_payoffs(RandomDist &urand, G &generator) override;
+
+        double
+        calculate_fitness(const size_t &player_type, const size_t &pop_size,
+                          const std::vector<size_t> &strategies) override;
+
+        size_t nb_strategies() const override;
+
+        std::string toString() const override;
+
+        std::string type() const override;
+
+        const GroupPayoffs &payoffs() const override;
+
+        void save_payoffs(std::string file_name) const override;
+
     protected:
-        size_t endowment_, threshold_, nb_rounds_, group_size_;
+        size_t endowment_, threshold_, nb_rounds_, group_size_, nb_strategies_, nb_states_;
         double risk_;
+        GroupPayoffs payoffs_;
     };
 
     template<typename G>
     CrdGame<G>::CrdGame(size_t endowment, size_t threshold, size_t nb_rounds, size_t group_size, double risk)
             : endowment_(endowment),
               threshold_(threshold), nb_rounds_(nb_rounds), group_size_(group_size), risk_(risk) {
+        nb_strategies_ = nb_strategies();
+        // number of possible group combinations
+        nb_states_ = EGTTools::binomialCoeff(nb_strategies_ + group_size_ - 1, group_size_);
+        payoffs_ = GroupPayoffs::Zero(nb_strategies_, nb_states_);
+        // Initialise payoff matrix
+        calculate_payoffs();
     }
 
     template<typename G>
     void CrdGame<G>::play(const EGTTools::SED::StrategyCounts &group_composition,
-                               PayoffVector &game_payoffs, RandomDist &urand, G &generator) {
+                          PayoffVector &game_payoffs, RandomDist &urand, G &generator) {
         size_t prev_donation = 0, current_donation = 0;
         size_t public_account = 0;
         size_t action = 0;
@@ -109,6 +132,133 @@ namespace EGTTools::SED::CRD {
                 assert(false);
                 throw std::invalid_argument("invalid player type: " + std::to_string(player_type));
         }
+    }
+
+    template<typename G>
+    std::string CrdGame<G>::toString() const {
+        return "Collective-risk dilemma game.\n"
+               "It only plays the game with the strategies described in EGTtools::SED::CRD::behaviors";
+    }
+
+    template<typename G>
+    std::string CrdGame<G>::type() const {
+        return "CrdGame";
+    }
+
+    template<typename G>
+    size_t CrdGame<G>::nb_strategies() const {
+        return EGTTools::SED::CRD::nb_strategies;
+    }
+
+    template<typename G>
+    const GroupPayoffs &
+    CrdGame<G>::calculate_payoffs(RandomDist &urand, G &generator) {
+        EGTTools::RL::Factors group_composition(nb_strategies_, 0);
+        std::vector<double> game_payoffs(nb_strategies_, 0);
+        size_t sum = 0;
+
+        // For every possible group composition run the game and store the payoff of each strategy
+        for (size_t i = 0; i < nb_states_; ++i) {
+            group_composition.back() = group_size_ - sum;
+            play(group_composition, game_payoffs, urand, generator);
+
+            // Fill payoff table
+            for (size_t j = 0; j < group_size_; ++j) payoffs_(j, i) = game_payoffs[j];
+
+            // update group composition
+            for (size_t k = 0; k < group_size_ - 1; ++k) {
+                if (sum < group_size_) {
+                    if (group_composition[k] < group_size_) {
+                        group_composition[k] += 1;
+                        sum += 1;
+                        break;
+                    } else {
+                        sum -= group_composition[k];
+                        group_composition[k] = 0;
+                    }
+                } else {
+                    sum -= group_composition[k];
+                    group_composition[k] = 0;
+                }
+            }
+        }
+
+        return payoffs_;
+    }
+
+    template<typename G>
+    double CrdGame<G>::calculate_fitness(const size_t &player_type, const size_t &pop_size,
+                                         const std::vector<size_t> &strategies) {
+        double fitness, payoff;
+        size_t sum;
+
+        fitness = 0.0;
+        sum = 0;
+        std::vector<size_t> sample_counts(nb_strategies_, 0);
+
+        // number of possible group combinations
+        auto total_nb_states = EGTTools::binomialCoeff(nb_strategies_ + group_size_ - 1, group_size_);
+        size_t nb_states = EGTTools::binomialCoeff(nb_strategies_ + group_size_ - 2, group_size_ - 1);
+
+        // If it isn't, then we must calculate the fitness for every possible group combination
+        for (size_t i = 0; i < nb_states; ++i) {
+            sample_counts[player_type] += 1;
+            sample_counts.back() = group_size_ - 1 - sum;
+
+            // First update sample_counts with new group composition
+            payoff = payoffs_(player_type, EGTTools::SED::calculate_state(group_size_, total_nb_states, sample_counts));
+            sample_counts[player_type] -= 1;
+
+            auto prob = EGTTools::multivariateHypergeometricPDF(pop_size - 1, nb_strategies_, group_size_ - 1,
+                                                                sample_counts,
+                                                                strategies);
+
+            fitness += payoff * prob;
+
+            // update group composition
+            for (size_t k = 0; k < nb_strategies_ - 1; ++k) {
+                if (sum < group_size_ - 1) {
+                    if (sample_counts[k] < group_size_ - 1) {
+                        sample_counts[k] += 1;
+                        sum += 1;
+                        break;
+                    } else {
+                        sum -= sample_counts[k];
+                        sample_counts[k] = 0;
+                    }
+                } else {
+                    sum -= sample_counts[k];
+                    sample_counts[k] = 0;
+                }
+            }
+
+        }
+
+        return fitness;
+    }
+
+    template<typename G>
+    void CrdGame<G>::save_payoffs(std::string file_name) const {
+        // Save payoffs
+        std::ofstream file(file_name, std::ios::out | std::ios::trunc);
+        if (file.is_open()) {
+            file << "Payoffs for each type of player and each possible state:" << std::endl;
+            file << "rows: cooperator, defector, altruist, reciprocal, compensator" << std::endl;
+            file << "cols: all possible group compositions starting at (0, 0, 0, 0, group_size)" << std::endl;
+            file << payoffs_ << std::endl;
+            file << "group_size = " << group_size_ << std::endl;
+            file << "timing_uncertainty = false" << std::endl;
+            file << "nb_rounds = " << nb_rounds_ << std::endl;
+            file << "risk = " << risk_ << std::endl;
+            file << "endowment = " << endowment_ << std::endl;
+            file << "threshold = " << threshold_ << std::endl;
+            file.close();
+        }
+    }
+
+    template<typename G>
+    const GroupPayoffs &CrdGame<G>::payoffs() const {
+        return payoffs_;
     }
 }
 

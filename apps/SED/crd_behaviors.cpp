@@ -18,6 +18,7 @@
 #include <Dyrwin/SED/games/CrdGame.hpp>
 #include <Dyrwin/SED/games/CrdGameTU.hpp>
 #include <Dyrwin/SED/Utils.hpp>
+#include <Dyrwin/SED/PairwiseMoran.hpp>
 
 //using GroupPayoffs = std::unordered_map<size_t, double>;
 using GroupPayoffs = EGTTools::Matrix2D;

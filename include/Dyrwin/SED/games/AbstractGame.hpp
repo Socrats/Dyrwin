@@ -16,7 +16,7 @@ namespace EGTTools::SED {
      * @brief This class defines the interface of a game to be used in an evolutionary process.
      * @tparam G : type of random generator.
      */
-    template <typename G=std::mt19937_64>
+    template<typename G=std::mt19937_64>
     class AbstractGame {
     public:
         /**
@@ -33,6 +33,53 @@ namespace EGTTools::SED {
          */
         virtual void play(const EGTTools::SED::StrategyCounts &group_composition,
                           PayoffVector &game_payoffs, RandomDist &urand, G &generator);
+
+        /**
+         * @brief Estimates the payoff matrix for each strategy.
+         *
+         * @param urand : uniform random distribution [0, 1).
+         * @param generator : random generator
+         * @return a payoff matrix
+         */
+        virtual const GroupPayoffs& calculate_payoffs(RandomDist &urand, G &generator) = 0;
+
+        /**
+         * @brief Estimates the fitness for a @param player_type in the population with state @param strategies.
+         *
+         * @param player_type : index of the strategy used by the player
+         * @param pop_size : size of the population
+         * @param strategies : current state of the population
+         * @param payoffs : the payoff matrix of the game
+         * @return a fitness value
+         */
+        virtual double
+        calculate_fitness(const size_t &player_type, const size_t &pop_size, const std::vector<size_t> &strategies) = 0;
+
+        virtual size_t nb_strategies() const;
+
+        /**
+         * @return Returns a small description of the game.
+         */
+        virtual std::string toString() const;
+
+        /**
+         *
+         * @return The type of game
+         */
+        virtual std::string type() const;
+
+        /**
+         *
+         * @return payoff matrix of the game
+         */
+        virtual const GroupPayoffs & payoffs() const = 0;
+
+        /**
+         * @brief stores the payoff matrix in a txt file
+         *
+         * @param file_name : name of the file in which the data will be stored
+         */
+        virtual void save_payoffs(std::string file_name) const = 0;
     };
 
     template<typename G>
@@ -42,6 +89,22 @@ namespace EGTTools::SED {
         UNUSED(game_payoffs);
         UNUSED(urand);
         UNUSED(generator);
+    }
+
+    template<typename G>
+    std::string AbstractGame<G>::type() const {
+        return "Abstract Game";
+    }
+
+    template<typename G>
+    std::string AbstractGame<G>::toString() const {
+        return "This is an abstract game.\n"
+               "It should only be used as interface (parent class) for other games.";
+    }
+
+    template<typename G>
+    size_t AbstractGame<G>::nb_strategies() const {
+        return 0;
     }
 }
 
