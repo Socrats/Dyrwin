@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Initialise selection mutation process
-    auto smProcess = EGTTools::SED::PairwiseMoran(pop_size, game);
+    auto smProcess = EGTTools::SED::PairwiseMoran(pop_size, *game);
 
     // Save payoffs
     std::ofstream file("payoffs.txt", std::ios::out | std::ios::trunc);

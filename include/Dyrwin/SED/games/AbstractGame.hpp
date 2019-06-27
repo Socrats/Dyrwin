@@ -18,6 +18,8 @@ namespace EGTTools::SED {
      */
     class AbstractGame {
     public:
+        virtual ~AbstractGame() = default;
+
         /**
          * @brief updates the vector of payoffs with the payoffs of each player after playing the game.
          *

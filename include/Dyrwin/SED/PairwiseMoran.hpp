@@ -37,7 +37,7 @@ namespace EGTTools::SED {
          * @param group_size : size of the group
          * @param game : pointer to the game class (it must be a child of AbstractGame)
          */
-        PairwiseMoran(size_t pop_size, EGTTools::SED::AbstractGame *game);
+        PairwiseMoran(size_t pop_size, EGTTools::SED::AbstractGame &game);
 
         /**
          * Runs the moran process for a given number of generations or until it reaches a monomorphic state
@@ -93,12 +93,12 @@ namespace EGTTools::SED {
         // Setters
         void set_population_size(size_t pop_size);
 
-        void change_game(EGTTools::SED::AbstractGame *game);
+        void change_game(EGTTools::SED::AbstractGame &game);
 
 
     private:
         size_t _nb_strategies, _pop_size;
-        EGTTools::SED::AbstractGame *_game;
+        EGTTools::SED::AbstractGame &_game;
 
         // Random distributions
         std::uniform_int_distribution<size_t> _pop_sampler;
@@ -120,7 +120,7 @@ namespace EGTTools::SED {
 
     template<class Cache>
     PairwiseMoran<Cache>::PairwiseMoran(size_t pop_size,
-                                        EGTTools::SED::AbstractGame *game) : _nb_strategies(game->nb_strategies()),
+                                        EGTTools::SED::AbstractGame &game) : _nb_strategies(game.nb_strategies()),
                                                                              _pop_size(pop_size),
                                                                              _game(game) {
         // Initialize random uniform distribution
@@ -293,7 +293,7 @@ namespace EGTTools::SED {
         // First we check if fitness value is in the lookup table
         if (!cache.exists(key)) {
             strategies[player_type] -= 1;
-            fitness = _game->calculate_fitness(player_type, _pop_size, strategies);
+            fitness = _game.calculate_fitness(player_type, _pop_size, strategies);
             strategies[player_type] += 1;
 
             // Finally we store the new fitness in the Cache. We also keep a Cache for the payoff given each group combination
@@ -325,7 +325,7 @@ namespace EGTTools::SED {
 
     template<class Cache>
     std::string PairwiseMoran<Cache>::game_type() const {
-        return _game->type();
+        return _game.type();
     }
 
     template<class Cache>
@@ -339,7 +339,7 @@ namespace EGTTools::SED {
     }
 
     template<class Cache>
-    void PairwiseMoran<Cache>::change_game(EGTTools::SED::AbstractGame *game) {
+    void PairwiseMoran<Cache>::change_game(EGTTools::SED::AbstractGame &game) {
         _game = game;
     }
 }
