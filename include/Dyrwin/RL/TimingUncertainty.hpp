@@ -27,8 +27,8 @@ namespace EGTTools {
         }
 
         // Getters
-        double probability() { return _p; }
-        size_t max_rounds() { return _max_rounds; }
+        double probability() const { return _p; }
+        size_t max_rounds() const { return _max_rounds; }
 
         // Setters
         void setProbability( double p ) {

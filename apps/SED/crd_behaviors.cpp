@@ -7,167 +7,12 @@
 
 #include <Dyrwin/SED/behaviors/CrdBehaviors.hpp>
 #include <Dyrwin/Types.h>
-#include <Dyrwin/SED/Utils.hpp>
-#include <Dyrwin/Distributions.h>
-#include <Dyrwin/LruCache.hpp>
-#include <Dyrwin/RL/Utils.h>
-#include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/CommandLineParsing.h>
-#include <Dyrwin/Utils.h>
 #include <Dyrwin/SED/games/AbstractGame.hpp>
 #include <Dyrwin/SED/games/CrdGame.hpp>
 #include <Dyrwin/SED/games/CrdGameTU.hpp>
-#include <Dyrwin/SED/Utils.hpp>
 #include <Dyrwin/SED/PairwiseMoran.hpp>
 
-//using GroupPayoffs = std::unordered_map<size_t, double>;
-using GroupPayoffs = EGTTools::Matrix2D;
-using StrategyCounts = std::vector<size_t>;
-
-
-GroupPayoffs calculate_payoffs(size_t group_size, size_t nb_strategies, std::uniform_real_distribution<double> &urand,
-                               std::mt19937_64 &generator, EGTTools::SED::AbstractGame<std::mt19937_64> *game) {
-    // number of possible group combinations
-    auto nb_states = EGTTools::binomialCoeff(nb_strategies + group_size - 1, group_size);
-    GroupPayoffs payoffs = GroupPayoffs::Zero(nb_strategies, nb_states);
-    EGTTools::RL::Factors group_composition(nb_strategies, 0);
-    std::vector<double> game_payoffs(nb_strategies, 0);
-    size_t sum = 0;
-
-    // For every possible group composition run the game and store the payoff of each strategy
-    for (size_t i = 0; i < nb_states; ++i) {
-        group_composition.back() = group_size - sum;
-        game->play(group_composition, game_payoffs, urand, generator);
-
-        // Fill payoff table
-        for (size_t j = 0; j < nb_strategies; ++j) payoffs(j, i) = game_payoffs[j];
-
-        // update group composition
-        for (size_t k = 0; k < nb_strategies - 1; ++k) {
-            if (sum < group_size) {
-                if (group_composition[k] < group_size) {
-                    group_composition[k] += 1;
-                    sum += 1;
-                    break;
-                } else {
-                    sum -= group_composition[k];
-                    group_composition[k] = 0;
-                }
-            } else {
-                sum -= group_composition[k];
-                group_composition[k] = 0;
-            }
-        }
-    }
-
-    return payoffs;
-}
-
-
-inline double
-calculate_fitness(const size_t &player_type, const size_t &nb_strategies, const size_t &group_size,
-                  const size_t &pop_size,
-                  std::vector<size_t> &strategies,
-                  const GroupPayoffs &payoffs,
-                  EGTTools::Utils::LRUCache<std::string, double> &cache) {
-    double fitness, payoff;
-    size_t sum;
-    std::stringstream result;
-    std::copy(strategies.begin(), strategies.end(), std::ostream_iterator<int>(result, ""));
-
-    std::string key = std::to_string(player_type) + result.str();
-
-    // First we check if fitness value is in the lookup table
-    if (!cache.exists(key)) {
-        fitness = 0.0;
-        sum = 0;
-        strategies[player_type] -= 1;
-        std::vector<size_t> sample_counts(nb_strategies, 0);
-
-        // number of possible group combinations
-        auto total_nb_states = EGTTools::binomialCoeff(nb_strategies + group_size - 1, group_size);
-        size_t nb_states = EGTTools::binomialCoeff(nb_strategies + group_size - 2, group_size - 1);
-
-        // If it isn't, then we must calculate the fitness for every possible group combination
-        for (size_t i = 0; i < nb_states; ++i) {
-            sample_counts[player_type] += 1;
-            sample_counts.back() = group_size - 1 - sum;
-
-            // First update sample_counts with new group composition
-            payoff = payoffs(player_type, EGTTools::SED::calculate_state(group_size, total_nb_states, sample_counts));
-            sample_counts[player_type] -= 1;
-
-            auto prob = EGTTools::multivariateHypergeometricPDF(pop_size - 1, nb_strategies, group_size - 1,
-                                                                sample_counts,
-                                                                strategies);
-
-            fitness += payoff * prob;
-
-            // update group composition
-            for (size_t k = 0; k < nb_strategies - 1; ++k) {
-                if (sum < group_size - 1) {
-                    if (sample_counts[k] < group_size - 1) {
-                        sample_counts[k] += 1;
-                        sum += 1;
-                        break;
-                    } else {
-                        sum -= sample_counts[k];
-                        sample_counts[k] = 0;
-                    }
-                } else {
-                    sum -= sample_counts[k];
-                    sample_counts[k] = 0;
-                }
-            }
-
-        }
-
-        strategies[player_type] += 1;
-
-        // Finally we store the new fitness in the Cache. We also keep a Cache for the payoff given each group combination
-        cache.insert(key, fitness);
-    } else {
-        fitness = cache.get(key);
-    }
-
-    return fitness;
-}
-
-inline void initialize_population(const size_t &nb_strategies, const std::vector<size_t> &strategies,
-                                  std::vector<size_t> &population, std::mt19937_64 &generator) {
-    size_t z = 0;
-    for (unsigned int i = 0; i < nb_strategies; ++i) {
-        for (size_t j = 0; j < strategies[i]; ++j) {
-            population[z++] = i;
-        }
-    }
-
-    // Then we shuffle it randomly
-    std::shuffle(population.begin(), population.end(), generator);
-}
-
-template<typename G>
-inline std::pair<size_t, size_t>
-samplePlayers(std::uniform_int_distribution<size_t> &dist, G &generator) {
-    auto player1 = dist(generator);
-    auto player2 = dist(generator);
-    while (player2 == player1) player2 = dist(generator);
-    return std::make_pair(player1, player2);
-}
-
-inline size_t mutate(size_t &player, const double &mu, std::uniform_int_distribution<size_t> &irand,
-                     std::uniform_real_distribution<double> &urand, std::mt19937_64 &generator) {
-    auto new_player = player;
-    if (urand(generator) < mu) while (new_player == player) new_player = irand(generator);
-    return new_player;
-}
-
-inline std::pair<bool, size_t> is_homogeneous(size_t &pop_size, StrategyCounts &strategies) {
-    for (size_t i = 0; i < strategies.size(); ++i) {
-        if (strategies[i] == pop_size) return std::make_pair(true, i);
-    }
-    return std::make_pair(false, -1);
-}
 
 int main(int argc, char *argv[]) {
 
@@ -176,14 +21,14 @@ int main(int argc, char *argv[]) {
     size_t pop_size;
     size_t nb_generations;
     size_t group_size;
-    size_t die, birth;
+//    size_t die, birth;
     size_t nb_rounds, min_rounds, endowment, threshold;
     double beta;
     double mu;
     double risk;
     bool timing_uncertainty;
     double p = 0.0;
-    StrategyCounts strategies(EGTTools::SED::CRD::nb_strategies);
+    EGTTools::SED::StrategyCounts strategies(EGTTools::SED::CRD::nb_strategies);
     Options options;
 
     options.push_back(
@@ -203,16 +48,7 @@ int main(int argc, char *argv[]) {
     if (!parseCommandLine(argc, argv, options))
         return 1;
 
-    std::vector<size_t> population(pop_size, 2);
-    std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
-    std::uniform_real_distribution<double> urand(0.0, 1.0);
-    std::uniform_int_distribution<size_t> irand(0, nb_strategies - 1);
-    std::uniform_int_distribution<size_t> pop_rand(0, pop_size - 1);
-    // Avg. number of rounds for a mutation to happen
-    size_t nb_generations_for_mutation = std::floor(1 / mu);
-    auto[homogeneous, idx_homo] = is_homogeneous(pop_size, strategies);
-
-    EGTTools::SED::AbstractGame<std::mt19937_64> *game;
+    EGTTools::SED::AbstractGame *game;
 
     if (timing_uncertainty) {
         p = 1 / static_cast<double>(nb_rounds - min_rounds + 1);
@@ -222,9 +58,8 @@ int main(int argc, char *argv[]) {
         game = new EGTTools::SED::CRD::CrdGame(endowment, threshold, nb_rounds, group_size, risk);
     }
 
-    // Creates a cache for the fitness data
-    EGTTools::Utils::LRUCache<std::string, double> cache(10000000);
-    GroupPayoffs payoffs = calculate_payoffs(group_size, nb_strategies, urand, generator, game);
+    // Initialise selection mutation process
+    auto smProcess = EGTTools::SED::PairwiseMoran(pop_size, game);
 
     // Save payoffs
     std::ofstream file("payoffs.txt", std::ios::out | std::ios::trunc);
@@ -232,7 +67,7 @@ int main(int argc, char *argv[]) {
         file << "Payoffs for each type of player and each possible state:" << std::endl;
         file << "rows: cooperator, defector, altruist, reciprocal, compensator" << std::endl;
         file << "cols: all possible group compositions starting at (0, 0, 0, 0, group_size)" << std::endl;
-        file << payoffs << std::endl;
+        file << game->payoffs() << std::endl;
         file << "group_size = " << group_size << std::endl;
         file << "population_size = " << pop_size << std::endl;
         file << "beta = " << beta << std::endl;
@@ -253,82 +88,25 @@ int main(int argc, char *argv[]) {
         file << ")" << std::endl;
     }
 
-    // initialise population
-    initialize_population(nb_strategies, strategies, population, generator);
-
     std::cout << "initial state: (";
     for (size_t i = 0; i < nb_strategies; ++i)
         std::cout << strategies[i] << ", ";
     std::cout << ")" << std::endl;
 
-    // Now we start the imitation process
-    for (size_t i = 0; i < nb_generations; ++i) {
-        // First we pick 2 players randomly
-        auto[player1, player2] = samplePlayers(pop_rand, generator);
+    EGTTools::VectorXui init_state = EGTTools::VectorXui(nb_strategies);
+    for (size_t i = 0; i < nb_strategies; ++i) init_state(i) = strategies[i];
 
-        if (homogeneous) {
-            if (mu > 0) {
-                i += nb_generations_for_mutation;
-                // mutate
-                birth = irand(generator);
-                // If population still homogeneous we wait for another mutation
-                while (birth == idx_homo) {
-                    i += nb_generations_for_mutation;
-                    birth = irand(generator);
-                }
-                if (i < nb_generations) {
-                    population[player1] = birth;
-                    strategies[birth] += 1;
-                    strategies[idx_homo] -= 1;
-                    homogeneous = false;
-                }
-                continue;
-            } else break;
-        }
-
-        // Check if player mutates
-        if (urand(generator) < mu) {
-            die = population[player1];
-            birth = irand(generator);
-            population[player1] = birth;
-        } else { // If no mutation, player imitates
-            // Then we let them play to calculate their payoffs
-            auto fitness_p1 = calculate_fitness(population[player1], nb_strategies, group_size, pop_size, strategies,
-                                                payoffs, cache);
-            auto fitness_p2 = calculate_fitness(population[player2], nb_strategies, group_size, pop_size, strategies,
-                                                payoffs, cache);
-
-            // Then we apply the moran process with mutation
-            if (urand(generator) < EGTTools::SED::fermi(beta, fitness_p1, fitness_p2)) {
-                // player 1 copies player 2
-                die = population[player1];
-                birth = population[player2];
-                population[player1] = birth;
-            } else {
-                // player 2 copies player 1
-                die = population[player2];
-                birth = population[player1];
-                population[player2] = birth;
-            }
-        }
-        strategies[birth] += 1;
-        strategies[die] -= 1;
-        // Check if population is homogeneous
-        if (strategies[birth] == pop_size) {
-            homogeneous = true;
-            idx_homo = birth;
-        }
-    }
+    auto final_strategies = smProcess.evolve(nb_generations, beta, mu, init_state);
 
     std::cout << "final state: (";
     for (size_t i = 0; i < nb_strategies; ++i)
-        std::cout << strategies[i] << ", ";
+        std::cout << final_strategies[i] << ", ";
     std::cout << ")" << std::endl;
 
     if (file.is_open()) {
         file << "final state: (";
         for (size_t i = 0; i < nb_strategies; ++i)
-            file << strategies[i] << ", ";
+            file << final_strategies[i] << ", ";
         file << ")" << std::endl;
         file.close();
     }

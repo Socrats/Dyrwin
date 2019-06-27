@@ -37,17 +37,7 @@ namespace EGTTools::SED {
          * @param group_size : size of the group
          * @param game : pointer to the game class (it must be a child of AbstractGame)
          */
-        PairwiseMoran(size_t pop_size, EGTTools::SED::AbstractGame<std::mt19937_64> *game);
-
-        /**
-         * Runs the moran process for a given number of generations or until it reaches a monomorphic state
-         *
-         * @param nb_generations : maximum number of generations
-         * @param beta : intensity of selection
-         * @param init_state : initial state of the population
-         * @return a vector with the final state of the population
-         */
-        Vector evolve(size_t nb_generations, double beta, const Eigen::Ref<const VectorXui> &init_state);
+        PairwiseMoran(size_t pop_size, EGTTools::SED::AbstractGame *game);
 
         /**
          * Runs the moran process for a given number of generations or until it reaches a monomorphic state
@@ -58,7 +48,8 @@ namespace EGTTools::SED {
          * @param init_state : initial state of the population
          * @return a vector with the final state of the population
          */
-        Vector evolve(size_t nb_generations, double beta, double mu, const Eigen::Ref<const VectorXui> &init_state);
+        StrategyCounts
+        evolve(size_t nb_generations, double beta, double mu, const Eigen::Ref<const VectorXui> &init_state);
 
         /**
          * @brief Estimates the fixation probability of the invading strategy over the resident strategy.
@@ -73,94 +64,22 @@ namespace EGTTools::SED {
          * @param beta : intensity of selection
          * @return the fixation probability of the invader strategy
          */
-        double fixationProbability(size_t invader, size_t resident, size_t runs, size_t nb_generations, double beta);
-
-        /**
-         * @brief Estimates the fixation probability under mutation of the invading strategy over the resident strategy.
-         *
-         * This function will estimate numerically the fixation probability of an @param invader strategy
-         * in a population of @param resident strategies. Apart from selection, there is a mutation process.
-         *
-         * @param invader : index of the invading strategy
-         * @param resident : index of the resident strategy
-         * @param runs : number of independent runs (the estimation improves with the number of runs)
-         * @param nb_generations : maximum number of generations per run
-         * @param beta : intensity of selection
-         * @param mu: probability of mutation
-         * @return the fixation probability of the invader strategy
-         */
         double fixationProbability(size_t invader, size_t resident, size_t runs, size_t nb_generations, double beta,
                                    double mu);
 
         /**
-         * @brief Estimates the fixation probability of the invading strategy over a population.
+         * @brief Estimates the stationary distribution of the population of strategies in the game.
          *
-         * This function will estimate numerically the fixation probability of an @param invader strategy
-         * in a population configured as @param init_state.
+         * The estimation of the stationary distribution is done by calculating averaging the fraction of
+         * the population of each strategy at the end of each trial over all trials.
          *
-         * @param invader : index of the invading strategy
-         * @param init_state : initial state of the population
-         * @param runs : number of independent runs
-         * @param nb_generations : maximum number of generations per run
+         * @param nb_runs : number of trials used to estimate the stationary distribution
+         * @param nb_generations : number of generations per trial
          * @param beta : intensity of selection
-         * @return the fixation probaiblity of the invading strategy
+         * @param mu : mutation probability
+         * @return the stationary distribution
          */
-        double fixationProbability(size_t invader, const Eigen::Ref<const VectorXui> &init_state, size_t runs,
-                                   size_t nb_generations, double beta);
-
-        /**
-         * @brief Estimates the fixation probability with mutation of the invading strategy over a population.
-         *
-         * This function will estimate numerically the fixation probability of an @param invader strategy
-         * in a population configured as @param init_state.
-         *
-         * @param invader : index of the invading strategy
-         * @param init_state : initial state of the population
-         * @param runs : number of independent runs
-         * @param nb_generations : maximum number of generations per run
-         * @param beta : intensity of selection
-         * @param mu: mutation probability
-         * @return the fixation probaiblity of the invading strategy
-         */
-        double fixationProbability(size_t invader, const Eigen::Ref<const VectorXui> &init_state, size_t runs,
-                                   size_t nb_generations, double beta, double mu);
-
-        /**
-         * @brief Calculates the gradient of selection between 2 strategies.
-         *
-         * Will return the difference between T+ and T- for each possible population configuration
-         * when the is conformed only by the resident and the invading strategy.
-         *
-         * To estimate T+ - T- (the probability that the number of invaders increase/decrease in the population)
-         * we run the simulation for population with k invaders and Z - k residents for @param run
-         * times and average how many times did the number of invaders increase and decrease.
-         *
-         * @param invader : index of the invading strategy
-         * @param resident : index of the resident strategy
-         * @param runs : number of independent runs
-         * @param beta : intensity of selection
-         * @return an Eigen vector with the gradient of selection for each k/Z where k is the number of invaders.
-         */
-        Vector gradientOfSelection(size_t invader, size_t resident, size_t runs, double beta);
-
-        /**
-         * @brief Calculates the gradient of selection between 2 strategies with mutation.
-         *
-         * Will return the difference between T+ and T- for each possible population configuration
-         * when the is conformed only by the resident and the invading strategy.
-         *
-         * To estimate T+ - T- (the probability that the number of invaders increase/decrease in the population)
-         * we run the simulation for population with k invaders and Z - k residents for @param run
-         * times and average how many times did the number of invaders increase and decrease.
-         *
-         * @param invader : index of the invading strategy
-         * @param resident : index of the resident strategy
-         * @param runs : number of independent runs
-         * @param beta : intensity of selection
-         * @param mu: mutation probability
-         * @return an Eigen vector with the gradient of selection for each k/Z where k is the number of invaders.
-         */
-        Vector gradientOfSelection(size_t invader, size_t resident, size_t runs, double beta, double mu);
+        Vector stationaryDistribution(size_t nb_runs, size_t nb_generations, double beta, double mu);
 
         // Getters
         size_t nb_strategies() const;
@@ -174,12 +93,12 @@ namespace EGTTools::SED {
         // Setters
         void set_population_size(size_t pop_size);
 
-        void change_game(EGTTools::SED::AbstractGame<std::mt19937_64> *game);
+        void change_game(EGTTools::SED::AbstractGame *game);
 
 
     private:
         size_t _nb_strategies, _pop_size;
-        EGTTools::SED::AbstractGame<std::mt19937_64> *_game;
+        EGTTools::SED::AbstractGame *_game;
 
         // Random distributions
         std::uniform_int_distribution<size_t> _pop_sampler;
@@ -194,27 +113,25 @@ namespace EGTTools::SED {
         inline double
         _calculate_fitness(const size_t &player_type, StrategyCounts &strategies, Cache &cache);
 
-        inline void initialise_population(const StrategyCounts &strategies, std::vector<size_t> &population);
+        inline void _initialise_population(const StrategyCounts &strategies, std::vector<size_t> &population);
 
         inline std::pair<bool, size_t> _is_homogeneous(StrategyCounts &strategies);
     };
 
     template<class Cache>
     PairwiseMoran<Cache>::PairwiseMoran(size_t pop_size,
-                                        EGTTools::SED::AbstractGame<std::mt19937_64> *game) : _pop_size(pop_size),
-                                                                                              _game(game) {
-
+                                        EGTTools::SED::AbstractGame *game) : _nb_strategies(game->nb_strategies()),
+                                                                             _pop_size(pop_size),
+                                                                             _game(game) {
         // Initialize random uniform distribution
         _pop_sampler = std::uniform_int_distribution<size_t>(0, _pop_size - 1);
         _strategy_sampler = std::uniform_int_distribution<size_t>(0, _nb_strategies - 1);
         _real_rand = std::uniform_real_distribution<double>(0.0, 1.0);
-
-        _nb_strategies = _game->nb_strategies();
     }
 
     template<class Cache>
     void
-    PairwiseMoran<Cache>::initialise_population(const StrategyCounts &strategies, std::vector<size_t> &population) {
+    PairwiseMoran<Cache>::_initialise_population(const StrategyCounts &strategies, std::vector<size_t> &population) {
         size_t z = 0;
         for (unsigned int i = 0; i < _nb_strategies; ++i) {
             for (size_t j = 0; j < strategies[i]; ++j) {
@@ -227,23 +144,24 @@ namespace EGTTools::SED {
     }
 
     template<class Cache>
-    Vector
+    StrategyCounts
     PairwiseMoran<Cache>::evolve(size_t nb_generations, double beta, double mu,
                                  const Eigen::Ref<const VectorXui> &init_state) {
         size_t die, birth;
         std::vector<size_t> population(_pop_size, 0);
-        StrategyCounts strategies(EGTTools::SED::CRD::nb_strategies);
+        StrategyCounts strategies(_nb_strategies);
+        for (size_t i = 0; i < _nb_strategies; ++i) strategies[i] = init_state(i);
         // Initialise strategies from init_state
 
         // Avg. number of rounds for a mutation to happen
         size_t nb_generations_for_mutation = std::floor(1 / mu);
-        auto[homogeneous, idx_homo] = is_homogeneous(_pop_size, strategies);
+        auto[homogeneous, idx_homo] = _is_homogeneous(strategies);
 
         // Creates a cache for the fitness data
         EGTTools::Utils::LRUCache<std::string, double> cache(10000000);
 
         // initialise population
-        initialise_population(init_state, population);
+        _initialise_population(strategies, population);
 
         // Now we start the imitation process
         for (size_t i = 0; i < nb_generations; ++i) {
@@ -271,7 +189,7 @@ namespace EGTTools::SED {
             }
 
             // Check if player mutates
-            if (urand(_mt) < mu) {
+            if (_real_rand(_mt) < mu) {
                 die = population[player1];
                 birth = _strategy_sampler(_mt);
                 population[player1] = birth;
@@ -302,7 +220,57 @@ namespace EGTTools::SED {
             }
         }
 
-        return EGTTools::Vector();
+        return strategies;
+    }
+
+    template<class Cache>
+    double
+    PairwiseMoran<Cache>::fixationProbability(size_t invader, size_t resident, size_t runs, size_t nb_generations,
+                                              double beta, double mu) {
+        if (invader > _nb_strategies || resident > _nb_strategies)
+            throw std::invalid_argument(
+                    "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
+                    ")");
+
+        double r2m = 0; // resident to mutant count
+        double r2r = 0; // resident to resident count
+
+        // This loop can be done in parallel
+#pragma omp parallel for reduction(+:r2m, r2r)
+        for (size_t i = 0; i < runs; ++i) {
+            // First we initialize a homogeneous population with the resident strategy
+            VectorXui strategies = VectorXui::Zero(_nb_strategies);
+            strategies(resident) = _pop_size - 1;
+            strategies(invader) = 1;
+
+            // Then we run the Moran Process
+            auto final_state = evolve(nb_generations, beta, mu, strategies);
+
+            if (final_state[invader] == 0) {
+                r2r += 1.0;
+            } else if (final_state[resident] == 0) {
+                r2m += 1.0;
+            }
+        } // end runs loop
+        if ((r2m == 0.0) && (r2r == 0.0)) return 0.0;
+        else return r2m / (r2m + r2r);
+    }
+
+    template<class Cache>
+    Vector PairwiseMoran<Cache>::stationaryDistribution(size_t nb_runs, size_t nb_generations, double beta,
+                                                        double mu) {
+        // First we initialise the container for the stationary distribution
+        Vector sdist = Vector::Zero(_nb_strategies);
+
+#pragma omp parallel for reduction(+:sdist)
+        for (size_t i = 0; i < nb_runs; ++i) {
+            // Then we sample a random population state
+            VectorXui init_state = VectorXui::Zero(_nb_strategies);
+
+            // Finally we call the evolve function
+            sdist.array() += evolve(nb_generations, beta, mu, init_state);
+        }
+        return sdist / nb_runs;
     }
 
     template<class Cache>
@@ -371,7 +339,7 @@ namespace EGTTools::SED {
     }
 
     template<class Cache>
-    void PairwiseMoran<Cache>::change_game(EGTTools::SED::AbstractGame<std::mt19937_64> *game) {
+    void PairwiseMoran<Cache>::change_game(EGTTools::SED::AbstractGame *game) {
         _game = game;
     }
 }

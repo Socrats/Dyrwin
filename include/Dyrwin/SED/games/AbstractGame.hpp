@@ -16,7 +16,6 @@ namespace EGTTools::SED {
      * @brief This class defines the interface of a game to be used in an evolutionary process.
      * @tparam G : type of random generator.
      */
-    template<typename G=std::mt19937_64>
     class AbstractGame {
     public:
         /**
@@ -32,7 +31,7 @@ namespace EGTTools::SED {
          * @param generator random generator
          */
         virtual void play(const EGTTools::SED::StrategyCounts &group_composition,
-                          PayoffVector &game_payoffs, RandomDist &urand, G &generator);
+                          PayoffVector &game_payoffs) = 0;
 
         /**
          * @brief Estimates the payoff matrix for each strategy.
@@ -41,7 +40,7 @@ namespace EGTTools::SED {
          * @param generator : random generator
          * @return a payoff matrix
          */
-        virtual const GroupPayoffs& calculate_payoffs(RandomDist &urand, G &generator) = 0;
+        virtual const GroupPayoffs& calculate_payoffs() = 0;
 
         /**
          * @brief Estimates the fitness for a @param player_type in the population with state @param strategies.
@@ -55,18 +54,18 @@ namespace EGTTools::SED {
         virtual double
         calculate_fitness(const size_t &player_type, const size_t &pop_size, const std::vector<size_t> &strategies) = 0;
 
-        virtual size_t nb_strategies() const;
+        virtual size_t nb_strategies() const = 0;
 
         /**
          * @return Returns a small description of the game.
          */
-        virtual std::string toString() const;
+        virtual std::string toString() const = 0;
 
         /**
          *
          * @return The type of game
          */
-        virtual std::string type() const;
+        virtual std::string type() const = 0;
 
         /**
          *
@@ -81,31 +80,6 @@ namespace EGTTools::SED {
          */
         virtual void save_payoffs(std::string file_name) const = 0;
     };
-
-    template<typename G>
-    void AbstractGame<G>::play(const EGTTools::SED::StrategyCounts &group_composition,
-                               PayoffVector &game_payoffs, RandomDist &urand, G &generator) {
-        UNUSED(group_composition);
-        UNUSED(game_payoffs);
-        UNUSED(urand);
-        UNUSED(generator);
-    }
-
-    template<typename G>
-    std::string AbstractGame<G>::type() const {
-        return "Abstract Game";
-    }
-
-    template<typename G>
-    std::string AbstractGame<G>::toString() const {
-        return "This is an abstract game.\n"
-               "It should only be used as interface (parent class) for other games.";
-    }
-
-    template<typename G>
-    size_t AbstractGame<G>::nb_strategies() const {
-        return 0;
-    }
 }
 
 #endif //DYRWIN_ABSTRACTGAME_HPP

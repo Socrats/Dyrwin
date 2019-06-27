@@ -10,6 +10,8 @@ add_library(EGTTools
         SED/TraulsenMoran.cpp
         SED/structure/Group.cpp
         SED/behaviors/CrdBehaviors.cpp
+        SED/games/CrdGame.cpp
+        SED/games/CrdGameTU.cpp
         RL/Agent.cpp
         RL/BatchQLearningAgent.cpp
         RL/QLearningAgent.cpp

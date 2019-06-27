@@ -26,7 +26,7 @@ target_link_libraries(pmoran EGTTools)
 add_executable(behaviors SED/crd_behaviors.cpp)
 target_link_libraries(behaviors ${Boost_LIBRARIES} boost_program_options)
 set_target_properties(behaviors PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
-#set_target_properties(behaviors PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
+set_target_properties(behaviors PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(behaviors EGTTools)
 
 add_executable(crd RL/main.cpp)
