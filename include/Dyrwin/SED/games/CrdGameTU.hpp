@@ -46,13 +46,13 @@ namespace EGTTools::SED::CRD {
          * @return action of the strategy
          */
         static inline size_t get_action(const size_t &player_type, const size_t &prev_donation, const size_t &threshold,
-                                 const size_t &current_round);
+                                        const size_t &current_round);
 
         const GroupPayoffs &calculate_payoffs() override;
 
         double
         calculate_fitness(const size_t &player_type, const size_t &pop_size,
-                          const std::vector<size_t> &strategies) override;
+                          const Eigen::Ref<const VectorXui> &strategies) override;
 
         size_t nb_strategies() const override;
 

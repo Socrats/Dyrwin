@@ -126,7 +126,7 @@ const EGTTools::SED::GroupPayoffs &EGTTools::SED::CRD::CrdGameTU::calculate_payo
 }
 
 double EGTTools::SED::CRD::CrdGameTU::calculate_fitness(const size_t &player_type, const size_t &pop_size,
-                                                   const std::vector<size_t> &strategies) {
+                                                        const Eigen::Ref<const VectorXui> &strategies) {
     double fitness, payoff;
     size_t sum;
 

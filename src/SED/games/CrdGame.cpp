@@ -4,7 +4,8 @@
 
 #include <Dyrwin/SED/games/CrdGame.hpp>
 
-EGTTools::SED::CRD::CrdGame::CrdGame(size_t endowment, size_t threshold, size_t nb_rounds, size_t group_size, double risk)
+EGTTools::SED::CRD::CrdGame::CrdGame(size_t endowment, size_t threshold, size_t nb_rounds, size_t group_size,
+                                     double risk)
         : endowment_(endowment),
           threshold_(threshold), nb_rounds_(nb_rounds), group_size_(group_size), risk_(risk) {
     nb_strategies_ = nb_strategies();
@@ -20,7 +21,7 @@ EGTTools::SED::CRD::CrdGame::CrdGame(size_t endowment, size_t threshold, size_t 
 }
 
 void EGTTools::SED::CRD::CrdGame::play(const EGTTools::SED::StrategyCounts &group_composition,
-                                  PayoffVector &game_payoffs) {
+                                       PayoffVector &game_payoffs) {
     size_t prev_donation = 0, current_donation = 0;
     size_t public_account = 0;
     size_t action = 0;
@@ -57,7 +58,7 @@ void EGTTools::SED::CRD::CrdGame::play(const EGTTools::SED::StrategyCounts &grou
 
 size_t
 EGTTools::SED::CRD::CrdGame::get_action(const size_t &player_type, const size_t &prev_donation, const size_t &threshold,
-                                   const size_t &current_round) {
+                                        const size_t &current_round) {
     switch (player_type) {
         case 0:
             return EGTTools::SED::CRD::cooperator(prev_donation, threshold, current_round);
@@ -123,7 +124,7 @@ const EGTTools::SED::GroupPayoffs &EGTTools::SED::CRD::CrdGame::calculate_payoff
 }
 
 double EGTTools::SED::CRD::CrdGame::calculate_fitness(const size_t &player_type, const size_t &pop_size,
-                                                 const std::vector<size_t> &strategies) {
+                                                      const Eigen::Ref<const VectorXui> &strategies) {
     double fitness, payoff;
     size_t sum;
 

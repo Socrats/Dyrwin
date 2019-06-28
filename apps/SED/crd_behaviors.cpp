@@ -96,17 +96,18 @@ int main(int argc, char *argv[]) {
     EGTTools::VectorXui init_state = EGTTools::VectorXui(nb_strategies);
     for (size_t i = 0; i < nb_strategies; ++i) init_state(i) = strategies[i];
 
-    auto final_strategies = smProcess.evolve(nb_generations, beta, mu, init_state);
+//    init_state = smProcess.evolve(nb_generations, beta, mu, init_state);
+    auto distribution = smProcess.stationaryDistribution(30, nb_generations, beta, mu);
 
     std::cout << "final state: (";
     for (size_t i = 0; i < nb_strategies; ++i)
-        std::cout << final_strategies[i] << ", ";
+        std::cout << distribution(i) << ", ";
     std::cout << ")" << std::endl;
 
     if (file.is_open()) {
         file << "final state: (";
         for (size_t i = 0; i < nb_strategies; ++i)
-            file << final_strategies[i] << ", ";
+            file << distribution(i) << ", ";
         file << ")" << std::endl;
         file.close();
     }

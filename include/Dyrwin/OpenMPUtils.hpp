@@ -10,4 +10,7 @@
 #pragma omp declare reduction (+: EGTTools::Vector: omp_out=omp_out+omp_in)\
      initializer(omp_priv=EGTTools::Vector::Zero(omp_orig.size()))
 
+#pragma omp declare reduction (+: EGTTools::VectorXui: omp_out=omp_out+omp_in)\
+     initializer(omp_priv=EGTTools::VectorXui::Zero(omp_orig.size()))
+
 #endif //DYRWIN_OPENMPUTILS_HPP

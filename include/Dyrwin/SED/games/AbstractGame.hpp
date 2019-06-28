@@ -42,7 +42,7 @@ namespace EGTTools::SED {
          * @param generator : random generator
          * @return a payoff matrix
          */
-        virtual const GroupPayoffs& calculate_payoffs() = 0;
+        virtual const GroupPayoffs &calculate_payoffs() = 0;
 
         /**
          * @brief Estimates the fitness for a @param player_type in the population with state @param strategies.
@@ -54,7 +54,8 @@ namespace EGTTools::SED {
          * @return a fitness value
          */
         virtual double
-        calculate_fitness(const size_t &player_type, const size_t &pop_size, const std::vector<size_t> &strategies) = 0;
+        calculate_fitness(const size_t &player_type, const size_t &pop_size,
+                          const Eigen::Ref<const VectorXui> &strategies) = 0;
 
         virtual size_t nb_strategies() const = 0;
 
@@ -73,7 +74,7 @@ namespace EGTTools::SED {
          *
          * @return payoff matrix of the game
          */
-        virtual const GroupPayoffs & payoffs() const = 0;
+        virtual const GroupPayoffs &payoffs() const = 0;
 
         /**
          * @brief stores the payoff matrix in a txt file

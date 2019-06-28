@@ -51,6 +51,23 @@ EGTTools::multivariateHypergeometricPDF(size_t m, size_t k, size_t n, const std:
     return static_cast<double>(res) / denominator;
 }
 
+double
+EGTTools::multivariateHypergeometricPDF(size_t m, size_t k, size_t n, const std::vector<size_t> &sample_counts,
+                                        const Eigen::Ref<const VectorXui> &population_counts) {
+
+    size_t res = 1;
+    // First we calculate the number of unordered samples of size n chosen from the population
+    auto denominator = EGTTools::binomialCoeff(m, n);
+
+    // Then we calculate the multiplication of the number of all unordered subsets of a subset of the population
+    // with only 1 type of object
+    for (size_t i = 0; i < k; ++i) {
+        res *= EGTTools::binomialCoeff(population_counts(i), sample_counts[i]);
+    }
+
+    return static_cast<double>(res) / denominator;
+}
+
 size_t EGTTools::starsBars(size_t stars, size_t bins) {
     return EGTTools::binomialCoeff(stars + bins - 1, stars);
 }

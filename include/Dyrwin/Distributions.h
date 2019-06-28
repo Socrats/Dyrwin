@@ -121,6 +121,26 @@ namespace EGTTools {
                                   const std::vector<size_t> &population_counts);
 
     /**
+    * @brief Calculates the probability density function of a multivariate hypergeometric distribution.
+    *
+    * This function returns the probability that a sample of size @param n in a population of @param k
+    * objects with have @param sample_counts counts of each object in a sample, given a population D
+    * with @param population_counts counts of each object.
+    *
+    * The sampling is without replacement.
+    *
+    * @param m size of the population
+    * @param k number of objects in the population
+    * @param n size of the sample
+    * @param sample_counts a vector containing the counts of each objects in the sample
+    * @param population_counts a vector containing the counts of each objects in the population
+    * @return probability of a sample occurring in the population.
+    */
+    double
+    multivariateHypergeometricPDF(size_t m, size_t k, size_t n, const std::vector<size_t> &sample_counts,
+                                  const Eigen::Ref<const VectorXui> &population_counts);
+
+    /**
      * @brief Finds the number for elements given possible bins/slots and star types.
      * @param stars
      * @param bins

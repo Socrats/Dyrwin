@@ -9,6 +9,7 @@
 #include <Dyrwin/Types.h>
 #include <Dyrwin/LruCache.hpp>
 #include <Dyrwin/SED/Utils.hpp>
+#include <Dyrwin/OpenMPUtils.hpp>
 
 namespace EGTTools::SED {
     /**
@@ -48,7 +49,7 @@ namespace EGTTools::SED {
          * @param init_state : initial state of the population
          * @return a vector with the final state of the population
          */
-        StrategyCounts
+        VectorXui
         evolve(size_t nb_generations, double beta, double mu, const Eigen::Ref<const VectorXui> &init_state);
 
         /**
@@ -111,11 +112,11 @@ namespace EGTTools::SED {
         inline std::pair<size_t, size_t> _sample_players();
 
         inline double
-        _calculate_fitness(const size_t &player_type, StrategyCounts &strategies, Cache &cache);
+        _calculate_fitness(const size_t &player_type, VectorXui &strategies, Cache &cache);
 
-        inline void _initialise_population(const StrategyCounts &strategies, std::vector<size_t> &population);
+        inline void _initialise_population(const VectorXui &strategies, std::vector<size_t> &population);
 
-        inline std::pair<bool, size_t> _is_homogeneous(StrategyCounts &strategies);
+        inline std::pair<bool, size_t> _is_homogeneous(VectorXui &strategies);
     };
 
     template<class Cache>
@@ -131,10 +132,10 @@ namespace EGTTools::SED {
 
     template<class Cache>
     void
-    PairwiseMoran<Cache>::_initialise_population(const StrategyCounts &strategies, std::vector<size_t> &population) {
+    PairwiseMoran<Cache>::_initialise_population(const VectorXui &strategies, std::vector<size_t> &population) {
         size_t z = 0;
         for (unsigned int i = 0; i < _nb_strategies; ++i) {
-            for (size_t j = 0; j < strategies[i]; ++j) {
+            for (size_t j = 0; j < strategies(i); ++j) {
                 population[z++] = i;
             }
         }
@@ -144,14 +145,14 @@ namespace EGTTools::SED {
     }
 
     template<class Cache>
-    StrategyCounts
+    VectorXui
     PairwiseMoran<Cache>::evolve(size_t nb_generations, double beta, double mu,
                                  const Eigen::Ref<const VectorXui> &init_state) {
         size_t die, birth;
         std::vector<size_t> population(_pop_size, 0);
-        StrategyCounts strategies(_nb_strategies);
-        for (size_t i = 0; i < _nb_strategies; ++i) strategies[i] = init_state(i);
+        VectorXui strategies(_nb_strategies);
         // Initialise strategies from init_state
+        strategies.array() = init_state;
 
         // Avg. number of rounds for a mutation to happen
         size_t nb_generations_for_mutation = std::floor(1 / mu);
@@ -180,8 +181,8 @@ namespace EGTTools::SED {
                     }
                     if (i < nb_generations) {
                         population[player1] = birth;
-                        strategies[birth] += 1;
-                        strategies[idx_homo] -= 1;
+                        strategies(birth) += 1;
+                        strategies(idx_homo) -= 1;
                         homogeneous = false;
                     }
                     continue;
@@ -211,10 +212,10 @@ namespace EGTTools::SED {
                     population[player2] = birth;
                 }
             }
-            strategies[birth] += 1;
-            strategies[die] -= 1;
+            strategies(birth) += 1;
+            strategies(die) -= 1;
             // Check if population is homogeneous
-            if (strategies[birth] == _pop_size) {
+            if (strategies(birth) == _pop_size) {
                 homogeneous = true;
                 idx_homo = birth;
             }
@@ -246,9 +247,9 @@ namespace EGTTools::SED {
             // Then we run the Moran Process
             auto final_state = evolve(nb_generations, beta, mu, strategies);
 
-            if (final_state[invader] == 0) {
+            if (final_state(invader) == 0) {
                 r2r += 1.0;
-            } else if (final_state[resident] == 0) {
+            } else if (final_state(resident) == 0) {
                 r2m += 1.0;
             }
         } // end runs loop
@@ -260,17 +261,29 @@ namespace EGTTools::SED {
     Vector PairwiseMoran<Cache>::stationaryDistribution(size_t nb_runs, size_t nb_generations, double beta,
                                                         double mu) {
         // First we initialise the container for the stationary distribution
-        Vector sdist = Vector::Zero(_nb_strategies);
+//        auto total_nb_states = EGTTools::binomialCoeff(_nb_strategies + _pop_size - 1, _pop_size);
+//        auto sampler = std::uniform_int_distribution<size_t>(0, total_nb_states - 1);
+        VectorXui sdist = VectorXui::Zero(_nb_strategies);
 
 #pragma omp parallel for reduction(+:sdist)
         for (size_t i = 0; i < nb_runs; ++i) {
             // Then we sample a random population state
             VectorXui init_state = VectorXui::Zero(_nb_strategies);
+            auto sum = _pop_sampler(_mt);
+            init_state(0) = sum;
+            for (size_t j = 1; j < _nb_strategies; j++) {
+                init_state(j) = _pop_sampler(_mt);
+                sum += init_state(j);
+                if (sum >= _pop_size) {
+                    init_state(j) -= sum - _pop_size;
+                    break;
+                }
+            }
 
             // Finally we call the evolve function
-            sdist.array() += evolve(nb_generations, beta, mu, init_state);
+            sdist += evolve(nb_generations, beta, mu, init_state);
         }
-        return sdist / nb_runs;
+        return sdist.cast<double>() / nb_runs;
     }
 
     template<class Cache>
@@ -283,18 +296,18 @@ namespace EGTTools::SED {
 
     template<class Cache>
     double
-    PairwiseMoran<Cache>::_calculate_fitness(const size_t &player_type, StrategyCounts &strategies, Cache &cache) {
+    PairwiseMoran<Cache>::_calculate_fitness(const size_t &player_type, VectorXui &strategies, Cache &cache) {
         double fitness;
         std::stringstream result;
-        std::copy(strategies.begin(), strategies.end(), std::ostream_iterator<int>(result, ""));
+        result << strategies;
 
         std::string key = std::to_string(player_type) + result.str();
 
         // First we check if fitness value is in the lookup table
         if (!cache.exists(key)) {
-            strategies[player_type] -= 1;
+            strategies(player_type) -= 1;
             fitness = _game.calculate_fitness(player_type, _pop_size, strategies);
-            strategies[player_type] += 1;
+            strategies(player_type) += 1;
 
             // Finally we store the new fitness in the Cache. We also keep a Cache for the payoff given each group combination
             cache.insert(key, fitness);
@@ -306,9 +319,9 @@ namespace EGTTools::SED {
     }
 
     template<class Cache>
-    std::pair<bool, size_t> PairwiseMoran<Cache>::_is_homogeneous(StrategyCounts &strategies) {
-        for (size_t i = 0; i < strategies.size(); ++i) {
-            if (strategies[i] == _pop_size) return std::make_pair(true, i);
+    std::pair<bool, size_t> PairwiseMoran<Cache>::_is_homogeneous(VectorXui &strategies) {
+        for (size_t i = 0; i < _nb_strategies; ++i) {
+            if (strategies(i) == _pop_size) return std::make_pair(true, i);
         }
         return std::make_pair(false, -1);
     }
@@ -330,7 +343,7 @@ namespace EGTTools::SED {
 
     template<class Cache>
     const GroupPayoffs &PairwiseMoran<Cache>::payoffs() const {
-        return payoffs;
+        return _game.payoffs();
     }
 
     template<class Cache>
