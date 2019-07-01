@@ -411,7 +411,7 @@ namespace EGTTools::SED {
          * @param groups : vector of groups
          */
         inline void
-        _migrate(const size_t &parent_group, const size_t &individual, std::vector<S> &groups);
+        _migrate(const size_t &parent_group, const size_t &migrating_strategy, std::vector<S> &groups);
 
         /**
         * @brief Mutates an individual from the population
@@ -1303,24 +1303,23 @@ namespace EGTTools::SED {
         // The winner is duplicated, and replaces the losing group. If the groups
         // selected for conflict have the same sum of payoffs one is chosen randomly to be
         // the winner with probability 0.5.
-        size_t idx = 0;
-        std::vector<size_t> conflicts(_nb_groups, 0);
+        std::vector<size_t> conflicts;
+        conflicts.reserve(_nb_groups);
         // Build conflict list
-        for (size_t i = 0; i < _nb_groups; ++i) if (_real_rand(_mt) < kappa) conflicts[idx++] = i;
+        for (size_t i = 0; i < _nb_groups; ++i) if (_real_rand(_mt) < kappa) conflicts.push_back(i);
         // If number of groups is odd
-        if (idx % 2 != 0) {
+        if (conflicts.size() % 2 != 0) {
             // select a new group randomly
-            if (_real_rand(_mt) < 0.5) conflicts[idx++] = _uint_rand(_mt);
+            if (_real_rand(_mt) < 0.5) conflicts.push_back(_uint_rand(_mt));
             else {
                 // eliminate a group
-                std::uniform_int_distribution<size_t> dist(0, idx - 1);
+                std::uniform_int_distribution<size_t> dist(0, conflicts.size() - 1);
                 conflicts.erase(conflicts.begin() + dist(_mt));
-                --idx;
             }
         }
         // Resolve conflicts
         if (z == 0) {
-            for (size_t i = 0; i < idx; i += 2) {
+            for (size_t i = 0; i < conflicts.size(); i += 2) {
                 if (groups[conflicts[i]].totalPayoff() > groups[conflicts[i + 1]].totalPayoff()) {
                     strategies -= groups[conflicts[i + 1]].strategies();
                     strategies += groups[conflicts[i]].strategies();
@@ -1334,7 +1333,7 @@ namespace EGTTools::SED {
                 }
             }
         } else {
-            for (size_t i = 0; i < idx; i += 2) {
+            for (size_t i = 0; i < conflicts.size(); i += 2) {
                 if (_real_rand(_mt) < EGTTools::SED::contest_success(z, groups[conflicts[i]].totalPayoff(),
                                                                      groups[conflicts[i + 1]].totalPayoff())) {
                     strategies -= groups[conflicts[i + 1]].strategies();

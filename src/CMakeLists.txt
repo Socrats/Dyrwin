@@ -9,6 +9,7 @@ add_library(EGTTools
         SED/StochDynamics.cpp
         SED/TraulsenMoran.cpp
         SED/structure/Group.cpp
+        SED/structure/GarciaGroup.cpp
         SED/behaviors/CrdBehaviors.cpp
         SED/games/CrdGame.cpp
         SED/games/CrdGameTU.cpp
