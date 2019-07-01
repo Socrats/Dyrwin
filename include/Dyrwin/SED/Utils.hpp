@@ -9,6 +9,7 @@
 #include <limits>
 #include <vector>
 #include <Dyrwin/Types.h>
+#include <Dyrwin/Distributions.h>
 
 namespace EGTTools::SED {
     using GroupPayoffs = EGTTools::Matrix2D;
@@ -23,6 +24,30 @@ namespace EGTTools::SED {
      * @return probability of imitation
      */
     double fermi(double beta, double a, double b);
+
+    /**
+     * @brief contest success function that compares 2 payoffs according to a payoff importance z
+     *
+     * This function must never be called with z = 0. This would produce a zero division error.
+     * And the behaviour might be undefined.
+     *
+     * @param z : importance of the payoff
+     * @param a : expected payoff a
+     * @param b : expected payoff b
+     * @return probability of a winning over b
+     */
+    double contest_success(double z, double a, double b);
+
+    /**
+     * @brief contest success function that compares 2 payoffs according to a payoff importance z
+     *
+     * This function should be used when z = 0
+     *
+     * @param a : expected payoff a
+     * @param b : expected payoff b
+     * @return probability of a winning over b
+     */
+    double contest_success(double a, double b);
 
     /**
     * @brief This function converts a vector containing counts into an index.

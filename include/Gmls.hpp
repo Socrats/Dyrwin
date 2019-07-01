@@ -1,9 +1,9 @@
 //
-// Created by Elias Fernandez on 2019-04-25.
+// Created by Elias Fernandez on 2019-06-28.
 //
 
-#ifndef DYRWIN_SED_MLS_HPP
-#define DYRWIN_SED_MLS_HPP
+#ifndef DYRWIN_SED_GMLS_HPP
+#define DYRWIN_SED_GMLS_HPP
 
 #include <random>
 #include <algorithm>
@@ -15,8 +15,9 @@
 #include <Dyrwin/OpenMPUtils.hpp>
 
 namespace EGTTools::SED {
+
     template<typename S = Group>
-    class MLS {
+    class GMLS {
     public:
         /**
          * @brief This class implements the Multi Level selection process introduced in Arne et al.
@@ -43,12 +44,10 @@ namespace EGTTools::SED {
          * @param strategy_freq : frequency of each strategy in the population
          * @param payoff_matrix : payoff matrix
          */
-        MLS(size_t generations, size_t nb_strategies, size_t group_size, size_t nb_groups, double w,
+        GMLS(size_t generations, size_t nb_strategies, size_t group_size, size_t nb_groups, double w,
             const Eigen::Ref<const Vector> &strategies_freq, const Eigen::Ref<const Matrix2D> &payoff_matrix);
 
         /**
-        * @brief Runs one complete simulation with multi-level selection.
-        *
         * Runs the moran process with multi-level selection for a given number of generations
         * or until it reaches a monomorphic state.
         *
@@ -59,39 +58,6 @@ namespace EGTTools::SED {
         * @return a vector with the final state of the population
         */
         Vector evolve(double q, double w, const Eigen::Ref<const VectorXui> &init_state);
-
-        /**
-         * @brief Runs one complete simulation with multi-level selection
-         *
-         * This method includes the possibility that players migrate between groups.
-         *
-         * @param q : splitting probability
-         * @param w : intensity of selection
-         * @param lambda : migration probability
-         * @param init_state : intitial state of the population
-         * @return final state of the population
-         */
-        Vector evolve(double q, double w, double lambda, const Eigen::Ref<const VectorXui> &init_state);
-
-
-        /**
-         * @brief Runs one complete simulation with multi-level selection following (Garcia et al. 2011)
-         *
-         * This Methods follows the multi-level selection with direct group interactions presented
-         * in (Garcia et al. 2011). @param kappa defines the fraction of groups that will interact
-         * against each other.
-         *
-         * @param q : splitting probability
-         * @param w : intensity of selection
-         * @param lambda : migration probability
-         * @param kappa : average fraction of groups involved in a conflict
-         * @param z: intesity of selection between groups in conflict
-         * @param init_state : initial state of the population
-         * @return the final state of the population
-         */
-        Vector evolve(double q, double w, double lambda, double kappa, double z,
-                      const Eigen::Ref<const VectorXui> &init_state);
-
 //
 //        Vector evolve(size_t runs, double w);
 
@@ -135,31 +101,6 @@ namespace EGTTools::SED {
                                    double q, double lambda, double w);
 
         /**
-        * @brief estimates the fixation probability of the invading strategy over the resident strategy.
-        *
-        * This function will estimate numerically (by running simulations) the fixation probability of
-        * a certain strategy in the population of 1 resident strategy.
-        *
-        * The evolutionary process uses (Garcia et al.) multi-level selection with direct conflict
-        * between groups.
-        *
-        * This implementation specializes on the EGTTools::SED::Group class
-        *
-        * @tparam S : container for the structure of the population
-        * @param invader : index of the invading strategy
-        * @param resident : index of the resident strategy
-        * @param runs : number of runs (used to average the number of times the invading strategy has fixated)
-        * @param q : splitting probability
-        * @param lambda : migration probability
-        * @param w : intensity of selection
-        * @param kappa : fraction of groups that enter in conflict
-        * @param z : importance of payoffs during conflict
-        * @return a real number (double) indicating the fixation probability
-        */
-        double fixationProbability(size_t invader, size_t resident, size_t runs,
-                                   double q, double lambda, double w, double kappa, double z);
-
-        /**
          * @brief estimates the fixation probability of the invading strategy over the resident strategy.
          *
          * This function will estimate numerically (by running simulations) the fixation probability of
@@ -176,6 +117,9 @@ namespace EGTTools::SED {
          */
         Vector fixationProbability(size_t invader, const Eigen::Ref<const VectorXui> &init_state, size_t runs,
                                    double q, double w);
+
+//        double fixationProbability(size_t invader, size_t resident, size_t runs,
+//                                   size_t t0, double q, double lambda, double w, double mu);
 
         /**
         * @brief calculates the gradient of selection between 2 strategies.
@@ -305,7 +249,7 @@ namespace EGTTools::SED {
                    "\npayoff_matrix = " + ss.str();
         }
 
-        friend std::ostream &operator<<(std::ostream &o, MLS &r) { return o << r.toString(); }
+        friend std::ostream &operator<<(std::ostream &o, GMLS &r) { return o << r.toString(); }
 
     private:
         size_t _generations, _nb_strategies, _group_size, _nb_groups, _pop_size;
@@ -328,9 +272,6 @@ namespace EGTTools::SED {
         inline void _update(double q, double lambda, std::vector<S> &groups, VectorXui &strategies);
 
         inline void _update(double q, double lambda, double mu, std::vector<S> &groups, VectorXui &strategies);
-
-        inline void
-        _update(double q, double lambda, double kappa, double z, std::vector<S> &groups, VectorXui &strategies);
 
         inline void _speedUpdate(double q, std::vector<S> &groups, VectorXui &strategies);
 
@@ -378,22 +319,6 @@ namespace EGTTools::SED {
         void _reproduce(std::vector<S> &groups, VectorXui &strategies, double q);
 
         /**
-        * @brief internal reproduction function.
-        *
-        * This functions will split depending a splitting probability q.
-        *
-        * @tparam S : group container
-        * @param groups : vector of groups
-        * @param strategies : vector of the current proportions of each strategy in the population
-        * @param q : split probability
-        * @param lambda : migration probability
-        * @param kappa : fraction of groups that enter in conflict
-        * @param z : importance of payoffs
-        */
-        inline void _reproduce(std::vector<S> &groups, VectorXui &strategies, const double &q, const double &lambda,
-                               const double &kappa, const double &z);
-
-        /**
         * @brief Migrates an individual from a group to another
         *
         * @tparam S : group container
@@ -401,17 +326,6 @@ namespace EGTTools::SED {
         * @param groups : reference to a vector of groups
         */
         void _migrate(double q, std::vector<S> &groups, VectorXui &strategies);
-
-        /**
-         * @brief Migrates an individual from a group to another
-         *
-         * @param parent_group : group of the invididual that will migrate
-         * @param individual : strategy of the migrating individual
-         * @param q : splitting probability
-         * @param groups : vector of groups
-         */
-        inline void
-        _migrate(const size_t &parent_group, const size_t &individual, std::vector<S> &groups);
 
         /**
         * @brief Mutates an individual from the population
@@ -493,22 +407,11 @@ namespace EGTTools::SED {
          */
         inline size_t _current_pop_size(std::vector<S> &groups);
 
-        /**
-         * @brief Performs the conflict resultion step of Garcia et al.
-         *
-         * @param kappa : average fraction of groups involved in conflict
-         * @param z : importance of payoffs
-         * @param groups : vector of groups
-         * @param strategies : vector of strategies
-         */
-        inline void
-        _resolve_conflict(const double &kappa, const double &z, std::vector<S> &groups, VectorXui &strategies);
-
     };
 
 
     template<typename S>
-    MLS<S>::MLS(size_t generations, size_t nb_strategies,
+    GMLS<S>::GMLS(size_t generations, size_t nb_strategies,
                 size_t group_size, size_t nb_groups, double w,
                 const Eigen::Ref<const EGTTools::Vector> &strategies_freq,
                 const Eigen::Ref<const EGTTools::Matrix2D> &payoff_matrix) : _generations(generations),
@@ -539,7 +442,7 @@ namespace EGTTools::SED {
     }
 
     template<typename S>
-    Vector MLS<S>::evolve(double q, double w, const Eigen::Ref<const VectorXui> &init_state) {
+    Vector GMLS<S>::evolve(double q, double w, const Eigen::Ref<const VectorXui> &init_state) {
         if ((_nb_groups == 1) && q != 0.)
             throw std::invalid_argument(
                     "The splitting probability must be zero when there is only 1 group in the population");
@@ -570,112 +473,7 @@ namespace EGTTools::SED {
 
         // Then we run the Moran Process
         for (size_t t = 0; t < _generations; ++t) {
-            _update(q, groups, _strategies);
-            sum = _strategies.sum();
-            if ((_strategies.array() == sum).any()) break;
-        } // end Moran process loop
-        return _strategies.cast<double>() / static_cast<double>(sum);
-
-    }
-
-    template<typename S>
-    Vector MLS<S>::evolve(double q, double w, double lambda, const Eigen::Ref<const VectorXui> &init_state) {
-        if ((_nb_groups == 1) && q != 0.)
-            throw std::invalid_argument(
-                    "The splitting probability must be zero when there is only 1 group in the population");
-        if ((q < 0.) || (q > 1.))
-            throw std::invalid_argument(
-                    "q must be in the range [0, 1]");
-        if ((w < 0.) || (w > 1.))
-            throw std::invalid_argument(
-                    "w must be in the range [0, 1]");
-        if ((lambda < 0.) || (lambda > 1.))
-            throw std::invalid_argument(
-                    "lambda must be in the range [0, 1]");
-        if (static_cast<size_t>(init_state.size()) != _nb_strategies)
-            throw std::invalid_argument(
-                    "you must specify the number of individuals of each " + std::to_string(_nb_strategies) +
-                    " strategies");
-        if (init_state.sum() != _pop_size)
-            throw std::invalid_argument(
-                    "the sum of individuals in the initial state must be equal to " + std::to_string(_pop_size));
-
-        _strategies.array() = init_state;
-        // Initialize population with initial state
-        VectorXui group_strategies = VectorXui::Zero(_nb_strategies);
-        Group group(_nb_strategies, _group_size, w, group_strategies, _payoff_matrix);
-        group.set_group_size(_group_size);
-        std::vector<size_t> pop_container(_pop_size);
-        // initialize container
-        size_t z = 0, sum = 1;
-        for (size_t i = 0; i < _nb_strategies; ++i) {
-            for (size_t j = 0; j < init_state(i); ++j) {
-                pop_container[z++] = i;
-            }
-        }
-        std::vector<Group> groups(_nb_groups, group);
-        _setState(groups, pop_container);
-
-
-        // Then we run the Moran Process
-        for (size_t t = 0; t < _generations; ++t) {
-            _update(q, lambda, groups, _strategies);
-            sum = _strategies.sum();
-            if ((_strategies.array() == sum).any()) break;
-        } // end Moran process loop
-        return _strategies.cast<double>() / static_cast<double>(sum);
-
-    }
-
-    template<typename S>
-    Vector MLS<S>::evolve(double q, double w, double lambda, double kappa, double z,
-                          const Eigen::Ref<const VectorXui> &init_state) {
-        if ((_nb_groups == 1) && q != 0.)
-            throw std::invalid_argument(
-                    "The splitting probability must be zero when there is only 1 group in the population");
-        if ((q < 0.) || (q > 1.))
-            throw std::invalid_argument(
-                    "q must be in the range [0, 1]");
-        if ((w < 0.) || (w > 1.))
-            throw std::invalid_argument(
-                    "w must be in the range [0, 1]");
-        if ((lambda < 0.) || (lambda > 1.))
-            throw std::invalid_argument(
-                    "lambda must be in the range [0, 1]");
-        if ((kappa < 0.) || (kappa > 1.))
-            throw std::invalid_argument(
-                    "kappa must be in the range [0, 1]");
-        if (z < 0.)
-            throw std::invalid_argument(
-                    "z must be in the range [0, +Inf)");
-        if (static_cast<size_t>(init_state.size()) != _nb_strategies)
-            throw std::invalid_argument(
-                    "you must specify the number of individuals of each " + std::to_string(_nb_strategies) +
-                    " strategies");
-        if (init_state.sum() != _pop_size)
-            throw std::invalid_argument(
-                    "the sum of individuals in the initial state must be equal to " + std::to_string(_pop_size));
-
-        _strategies.array() = init_state;
-        // Initialize population with initial state
-        VectorXui group_strategies = VectorXui::Zero(_nb_strategies);
-        Group group(_nb_strategies, _group_size, w, group_strategies, _payoff_matrix);
-        group.set_group_size(_group_size);
-        std::vector<size_t> pop_container(_pop_size);
-        // initialize container
-        size_t it = 0, sum = 1;
-        for (size_t i = 0; i < _nb_strategies; ++i) {
-            for (size_t j = 0; j < init_state(i); ++j) {
-                pop_container[it++] = i;
-            }
-        }
-        std::vector<Group> groups(_nb_groups, group);
-        _setState(groups, pop_container);
-
-
-        // Then we run the Moran Process
-        for (size_t t = 0; t < _generations; ++t) {
-            _update(q, lambda, kappa, z, groups, _strategies);
+            _speedUpdate(q, groups, _strategies);
             sum = _strategies.sum();
             if ((_strategies.array() == sum).any()) break;
         } // end Moran process loop
@@ -685,7 +483,7 @@ namespace EGTTools::SED {
 
     template<typename S>
     double
-    MLS<S>::fixationProbability(size_t invader, size_t resident, size_t runs, double q, double w) {
+    GMLS<S>::fixationProbability(size_t invader, size_t resident, size_t runs, double q, double w) {
         if (invader > _nb_strategies || resident > _nb_strategies)
             throw std::invalid_argument(
                     "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
@@ -715,7 +513,7 @@ namespace EGTTools::SED {
 
             // Then we run the Moran Process
             for (size_t t = 0; t < _generations; ++t) {
-                _update(q, groups, strategies);
+                _speedUpdate(q, groups, strategies);
 
                 if (strategies(invader) == 0) {
                     r2r += 1.0;
@@ -732,7 +530,7 @@ namespace EGTTools::SED {
 
     template<typename S>
     double
-    MLS<S>::fixationProbability(size_t invader, size_t resident, size_t runs,
+    GMLS<S>::fixationProbability(size_t invader, size_t resident, size_t runs,
                                 double q, double lambda, double w) {
         if (invader > _nb_strategies || resident > _nb_strategies)
             throw std::invalid_argument(
@@ -763,7 +561,7 @@ namespace EGTTools::SED {
 
             // Then we run the Moran Process
             for (size_t t = 0; t < _generations; ++t) {
-                _update(q, lambda, groups, strategies);
+                _speedUpdate(q, lambda, groups, strategies);
 
                 if (strategies(invader) == 0) {
                     r2r += 1.0;
@@ -780,55 +578,7 @@ namespace EGTTools::SED {
     }
 
     template<typename S>
-    double MLS<S>::fixationProbability(size_t invader, size_t resident, size_t runs,
-                                       double q, double lambda, double w, double kappa, double z) {
-        if (invader > _nb_strategies || resident > _nb_strategies)
-            throw std::invalid_argument(
-                    "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
-                    ")");
-        if ((_nb_groups == 1) && q != 0.)
-            throw std::invalid_argument(
-                    "The splitting probability must be zero when there is only 1 group in the population");
-
-        double r2m = 0; // resident to mutant count
-        double r2r = 0; // resident to resident count
-        VectorXui group_strategies = VectorXui::Zero(_nb_strategies);
-        group_strategies(resident) = _group_size;
-
-        // This loop can be done in parallel
-#pragma omp parallel for shared(group_strategies) reduction(+:r2m, r2r)
-        for (size_t i = 0; i < runs; ++i) {
-            // First we initialize a homogeneous population with the resident strategy
-            SED::Group group(_nb_strategies, _group_size, w, group_strategies, _payoff_matrix);
-            std::vector<SED::Group> groups(_nb_groups, group);
-            VectorXui strategies = VectorXui::Zero(_nb_strategies);
-            strategies(resident) = _pop_size;
-
-            // Then we create a mutant of the invading strategy
-            _createMutant(invader, resident, groups);
-            // Update full population frequencies
-            _updateFullPopulationFrequencies(invader, resident, strategies);
-
-            // Then we run the Moran Process
-            for (size_t t = 0; t < _generations; ++t) {
-                _update(q, lambda, kappa, z, groups, strategies);
-
-                if (strategies(invader) == 0) {
-                    r2r += 1.0;
-                    break;
-                } else if (strategies(resident) == 0) {
-                    r2m += 1.0;
-                    break;
-                }
-            } // end Moran process loop
-        } // end runs loop
-
-        if ((r2m == 0.0) && (r2r == 0.0)) return 0.0;
-        else return r2m / (r2m + r2r);
-    }
-
-    template<typename S>
-    Vector MLS<S>::fixationProbability(size_t invader, const Eigen::Ref<const VectorXui> &init_state, size_t runs,
+    Vector GMLS<S>::fixationProbability(size_t invader, const Eigen::Ref<const VectorXui> &init_state, size_t runs,
                                        double q, double w) {
         if (invader > _nb_strategies)
             throw std::invalid_argument(
@@ -875,7 +625,7 @@ namespace EGTTools::SED {
 
             // Then we run the Moran Process
             for (size_t t = 0; t < _generations; ++t) {
-                _update(q, groups, strategies);
+                _speedUpdate(q, groups, strategies);
                 size_t sum = strategies.sum();
                 for (size_t s = 0; s < _nb_strategies; ++s)
                     if (strategies(s) == sum) {
@@ -897,7 +647,7 @@ namespace EGTTools::SED {
 
     template<typename S>
     Vector
-    MLS<S>::gradientOfSelection(size_t invader, size_t resident, size_t runs, double w, double q) {
+    GMLS<S>::gradientOfSelection(size_t invader, size_t resident, size_t runs, double w, double q) {
         if (invader > _nb_strategies || resident > _nb_strategies)
             throw std::invalid_argument(
                     "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
@@ -950,7 +700,7 @@ namespace EGTTools::SED {
 
     template<typename S>
     Vector
-    MLS<S>::gradientOfSelection(size_t invader, size_t reduce, const Eigen::Ref<const VectorXui> &init_state,
+    GMLS<S>::gradientOfSelection(size_t invader, size_t reduce, const Eigen::Ref<const VectorXui> &init_state,
                                 size_t runs, double w, double q) {
         if (invader > _nb_strategies)
             throw std::invalid_argument(
@@ -1010,41 +760,35 @@ namespace EGTTools::SED {
     }
 
     template<typename S>
-    void MLS<S>::_update(double q, std::vector<S> &groups, VectorXui &strategies) {
+    void GMLS<S>::_update(double q, std::vector<S> &groups, VectorXui &strategies) {
         _reproduce(groups, strategies, q);
     }
 
     template<typename S>
-    void MLS<S>::_update(double q, double lambda, std::vector<S> &groups, VectorXui &strategies) {
+    void GMLS<S>::_update(double q, double lambda, std::vector<S> &groups, VectorXui &strategies) {
         _reproduce(groups, strategies, q);
         if (_real_rand(_mt) < lambda) _migrate(q, groups, strategies);
     }
 
     template<typename S>
     void
-    MLS<S>::_update(double q, double lambda, double mu, std::vector<S> &groups, VectorXui &strategies) {
+    GMLS<S>::_update(double q, double lambda, double mu, std::vector<S> &groups, VectorXui &strategies) {
         _reproduce(groups, strategies, q);
         if (_real_rand(_mt) < lambda) _migrate(q, groups, strategies);
         if (_real_rand(_mt) < mu) _mutate(groups, strategies);
     }
 
     template<typename S>
-    void
-    MLS<S>::_update(double q, double lambda, double kappa, double z, std::vector<S> &groups, VectorXui &strategies) {
-        _reproduce(groups, strategies, q, lambda, kappa, z);
-    }
-
-    template<typename S>
-    void MLS<S>::_speedUpdate(double q, std::vector<S> &groups, VectorXui &strategies) {
+    void GMLS<S>::_speedUpdate(double q, std::vector<S> &groups, VectorXui &strategies) {
         if (!_pseudoStationary(groups)) {
             _reproduce(groups, strategies, q);
         } else { // If the groups have reached maximum size and the population is monomorphic
-            if (_real_rand(_mt) < q) _reproduce(groups, strategies);
+            _reproduce(groups, strategies);
         }
     }
 
     template<typename S>
-    void MLS<S>::_speedUpdate(double q, double lambda, std::vector<S> &groups, VectorXui &strategies) {
+    void GMLS<S>::_speedUpdate(double q, double lambda, std::vector<S> &groups, VectorXui &strategies) {
         if (!_pseudoStationary(groups)) {
             _reproduce(groups, strategies, q);
             if (_real_rand(_mt) < lambda) _migrate(q, groups, strategies);
@@ -1056,7 +800,7 @@ namespace EGTTools::SED {
 
     template<typename S>
     void
-    MLS<S>::_speedUpdate(double q, double lambda, double mu, std::vector<S> &groups,
+    GMLS<S>::_speedUpdate(double q, double lambda, double mu, std::vector<S> &groups,
                          VectorXui &strategies) {
         if (!_pseudoStationary(groups)) {
             _reproduce(groups, strategies, q);
@@ -1071,13 +815,13 @@ namespace EGTTools::SED {
     }
 
     template<typename S>
-    void MLS<S>::_createMutant(size_t invader, size_t resident, std::vector<S> &groups) {
+    void GMLS<S>::_createMutant(size_t invader, size_t resident, std::vector<S> &groups) {
         auto mutate_group = _uint_rand(_mt);
         groups[mutate_group].createMutant(invader, resident);
     }
 
     template<typename S>
-    void MLS<S>::_createRandomMutant(size_t invader, std::vector<S> &groups, EGTTools::VectorXui &strategies) {
+    void GMLS<S>::_createRandomMutant(size_t invader, std::vector<S> &groups, EGTTools::VectorXui &strategies) {
         auto mutate_group = _uint_rand(_mt);
         size_t mutating_strategy = groups[mutate_group].deleteMember(_mt);
         groups[mutate_group].addMember(invader);
@@ -1086,22 +830,22 @@ namespace EGTTools::SED {
     }
 
     template<typename S>
-    void MLS<S>::_updateFullPopulationFrequencies(size_t increase, size_t decrease,
+    void GMLS<S>::_updateFullPopulationFrequencies(size_t increase, size_t decrease,
                                                   EGTTools::VectorXui &strategies) {
         ++strategies(increase);
         --strategies(decrease);
     }
 
     template<typename S>
-    void MLS<S>::_reproduce(std::vector<S> &groups, VectorXui &strategies) {
+    void GMLS<S>::_reproduce(std::vector<S> &groups, VectorXui &strategies) {
         auto parent_group = _payoffProportionalSelection(groups);
         auto[split, new_strategy] = groups[parent_group].createOffspring(_mt);
         ++strategies(new_strategy);
-        if (split) _splitGroup(parent_group, groups, strategies);
+        _splitGroup(parent_group, groups, strategies);
     }
 
     template<typename S>
-    void MLS<S>::_reproduce(std::vector<S> &groups, VectorXui &strategies, double q) {
+    void GMLS<S>::_reproduce(std::vector<S> &groups, VectorXui &strategies, double q) {
         auto parent_group = _payoffProportionalSelection(groups);
         auto[split, new_strategy] = groups[parent_group].createOffspring(_mt);
         ++strategies(new_strategy);
@@ -1116,34 +860,12 @@ namespace EGTTools::SED {
     }
 
     template<typename S>
-    void MLS<S>::_reproduce(std::vector<S> &groups, VectorXui &strategies, const double &q, const double &lambda,
-                            const double &kappa, const double &z) {
-        auto parent_group = _payoffProportionalSelection(groups);
-        auto[split, new_strategy] = groups[parent_group].createOffspring(_mt);
-        ++strategies(new_strategy);
-        if (_real_rand(_mt) < lambda) _migrate(parent_group, new_strategy, groups);
-        _resolve_conflict(kappa, z, groups, strategies);
-        for (size_t i = 0; i < _nb_groups; ++i) {
-            if (groups[i].isGroupOversize()) {
-                if (_real_rand(_mt) < q) { // split group
-                    _splitGroup(parent_group, groups, strategies);
-                } else { // remove individual
-                    size_t deleted_strategy = groups[parent_group].deleteMember(_mt);
-                    --strategies(deleted_strategy);
-                }
-            }
-        }
-    }
-
-    template<typename S>
-    void MLS<S>::_migrate(double q, std::vector<S> &groups, VectorXui &strategies) {
+    void GMLS<S>::_migrate(double q, std::vector<S> &groups, VectorXui &strategies) {
         size_t parent_group, child_group, migrating_strategy;
 
         parent_group = _sizeProportionalSelection(groups);
         while (groups[parent_group].group_size() < 2) parent_group = _uint_rand(_mt);
         child_group = _uint_rand(_mt);
-        // Makes sure that parent group and chiled group are different
-        while (child_group == parent_group) child_group = _uint_rand(_mt);
         // First we delete a random member from the parent group
         migrating_strategy = groups[parent_group].deleteMember(_mt);
         // Then add the member to the child group
@@ -1157,19 +879,7 @@ namespace EGTTools::SED {
     }
 
     template<typename S>
-    void
-    MLS<S>::_migrate(const size_t &parent_group, const size_t &migrating_strategy,
-                     std::vector<S> &groups) {
-        size_t child_group = _uint_rand(_mt);
-        while (child_group == parent_group) child_group = _uint_rand(_mt);
-        // First we delete the migrating strategy from the parent group
-        groups[parent_group].deleteMember(migrating_strategy);
-        // Then add the member to the randomly selected group
-        groups[child_group].addMember(migrating_strategy);
-    }
-
-    template<typename S>
-    void MLS<S>::_mutate(std::vector<S> &groups, VectorXui &strategies) {
+    void GMLS<S>::_mutate(std::vector<S> &groups, VectorXui &strategies) {
         size_t parent_group, mutating_strategy, new_strategy;
 
         parent_group = _sizeProportionalSelection(groups);
@@ -1182,7 +892,7 @@ namespace EGTTools::SED {
     }
 
     template<typename S>
-    void MLS<S>::_splitGroup(size_t parent_group, std::vector<S> &groups, VectorXui &strategies) {
+    void GMLS<S>::_splitGroup(size_t parent_group, std::vector<S> &groups, VectorXui &strategies) {
         // First choose a group to die
         size_t child_group = _uint_rand(_mt);
         while (child_group == parent_group) child_group = _uint_rand(_mt);
@@ -1215,7 +925,7 @@ namespace EGTTools::SED {
     }
 
     template<typename S>
-    size_t MLS<S>::_payoffProportionalSelection(std::vector<S> &groups) {
+    size_t GMLS<S>::_payoffProportionalSelection(std::vector<S> &groups) {
         double total_fitness = 0.0, tmp = 0.0;
         // Calculate total fitness
         for (auto &group: groups) total_fitness += group.totalPayoff();
@@ -1230,7 +940,7 @@ namespace EGTTools::SED {
     }
 
     template<typename S>
-    size_t MLS<S>::_sizeProportionalSelection(std::vector<S> &groups) {
+    size_t GMLS<S>::_sizeProportionalSelection(std::vector<S> &groups) {
         size_t pop_size = _current_pop_size(groups), tmp = 0;
         std::uniform_int_distribution<size_t> dist(0, pop_size - 1);
         // Calculate total fitness
@@ -1245,7 +955,7 @@ namespace EGTTools::SED {
     }
 
     template<typename S>
-    bool MLS<S>::_pseudoStationary(std::vector<S> &groups) {
+    bool GMLS<S>::_pseudoStationary(std::vector<S> &groups) {
         if (_current_pop_size(groups) < _pop_size) return false;
         for (auto &group: groups)
             if (!group.isPopulationMonomorphic())
@@ -1255,13 +965,13 @@ namespace EGTTools::SED {
     }
 
     template<typename S>
-    void MLS<S>::_setFullHomogeneousState(size_t strategy, std::vector<S> &groups) {
+    void GMLS<S>::_setFullHomogeneousState(size_t strategy, std::vector<S> &groups) {
         for (auto &group: groups)
             group.setPopulationHomogeneous(strategy);
     }
 
     template<typename S>
-    size_t MLS<S>::_current_pop_size(std::vector<S> &groups) {
+    size_t GMLS<S>::_current_pop_size(std::vector<S> &groups) {
         size_t size = 0;
         for (auto &group: groups) size += group.group_size();
 
@@ -1269,7 +979,7 @@ namespace EGTTools::SED {
     }
 
     template<typename S>
-    void MLS<S>::_setState(std::vector<S> &groups, std::vector<size_t> &container) {
+    void GMLS<S>::_setState(std::vector<S> &groups, std::vector<size_t> &container) {
         // Then we shuffle it randomly the contianer
         std::shuffle(container.begin(), container.end(), _mt);
 
@@ -1283,73 +993,7 @@ namespace EGTTools::SED {
             }
         }
     }
-
-    template<typename S>
-    void
-    MLS<S>::_resolve_conflict(const double &kappa, const double &z, std::vector<S> &groups,
-                              VectorXui &strategies) {
-        // Pairs of groups are selected for conflict. The value of @param kappa determines
-        // the average fraction fo groups involved in conflict, in the following manner:
-        //
-        // a list of conflicting groups is constructed using a series of Bernoulli trials
-        // with success probability kappa. After the nb_groups (m) trials the number of
-        // selected groups may be odd. In this case, a random group is added to the list with
-        // probability 0.5, or a random group from the list is taken out with probability 0.5.
-        //
-        // In a pair of conflicting groups, the one having the highest sum of payoffs has
-        // a higher chance of winning (depending on z, if z = 0 a higher sum means winning
-        // for sure).
-        //
-        // The winner is duplicated, and replaces the losing group. If the groups
-        // selected for conflict have the same sum of payoffs one is chosen randomly to be
-        // the winner with probability 0.5.
-        size_t idx = 0;
-        std::vector<size_t> conflicts(_nb_groups, 0);
-        // Build conflict list
-        for (size_t i = 0; i < _nb_groups; ++i) if (_real_rand(_mt) < kappa) conflicts[idx++] = i;
-        // If number of groups is odd
-        if (idx % 2 != 0) {
-            // select a new group randomly
-            if (_real_rand(_mt) < 0.5) conflicts[idx++] = _uint_rand(_mt);
-            else {
-                // eliminate a group
-                std::uniform_int_distribution<size_t> dist(0, idx - 1);
-                conflicts.erase(conflicts.begin() + dist(_mt));
-                --idx;
-            }
-        }
-        // Resolve conflicts
-        if (z == 0) {
-            for (size_t i = 0; i < idx; i += 2) {
-                if (groups[conflicts[i]].totalPayoff() > groups[conflicts[i + 1]].totalPayoff()) {
-                    strategies -= groups[conflicts[i + 1]].strategies();
-                    strategies += groups[conflicts[i]].strategies();
-                    // Second group is replaced by the first
-                    groups[conflicts[i + 1]] = groups[conflicts[i]];
-                } else {
-                    strategies -= groups[conflicts[i]].strategies();
-                    strategies += groups[conflicts[i + 1]].strategies();
-                    // First group is replaced by the second
-                    groups[conflicts[i]] = groups[conflicts[i + 1]];
-                }
-            }
-        } else {
-            for (size_t i = 0; i < idx; i += 2) {
-                if (_real_rand(_mt) < EGTTools::SED::contest_success(z, groups[conflicts[i]].totalPayoff(),
-                                                                     groups[conflicts[i + 1]].totalPayoff())) {
-                    strategies -= groups[conflicts[i + 1]].strategies();
-                    strategies += groups[conflicts[i]].strategies();
-                    // Second group is replaced by the first
-                    groups[conflicts[i + 1]] = groups[conflicts[i]];
-                } else {
-                    strategies -= groups[conflicts[i]].strategies();
-                    strategies += groups[conflicts[i + 1]].strategies();
-                    // First group is replaced by the second
-                    groups[conflicts[i]] = groups[conflicts[i + 1]];
-                }
-            }
-        }
-    }
 }
 
-#endif //DYRWIN_SED_MLS_HPP
+
+#endif //DYRWIN_SED_GMLS_HPP

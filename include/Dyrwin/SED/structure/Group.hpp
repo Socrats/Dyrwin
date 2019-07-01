@@ -54,6 +54,14 @@ namespace EGTTools::SED {
             assert(_group_size <= _max_group_size);
         }
 
+        /**
+         * @brief We overload the assignment operator so that we can copy a group into another.
+         *
+         * @param grp group to be copied
+         * @return a group reference
+         */
+        Group &operator=(const Group &grp);
+
         template<typename G = std::mt19937_64>
         std::pair<bool, size_t> createOffspring(G &generator);
 
@@ -62,14 +70,28 @@ namespace EGTTools::SED {
         double totalPayoff();
 
         bool addMember(size_t new_strategy); // adds a new member to the group
+
         template<typename G = std::mt19937_64>
         size_t deleteMember(G &generator);    // delete one randomly chosen member
+        /**
+         * @brief Deletes a member with strategy @param member_strategy
+         * @param member_strategy : strategy to be deleted
+         * @return a boolean indicating wether the member was deleted
+         */
+        bool deleteMember(const size_t &member_strategy);    // delete one randomly chosen member
+
         template<typename G = std::mt19937_64>
         inline size_t payoffProportionalSelection(G &generator);
 
         bool isPopulationMonomorphic();
 
         void setPopulationHomogeneous(size_t strategy);
+
+        /**
+         * @brief checks if the size of the group is above the maximum allowed size
+         * @return true if oversize else false
+         */
+        bool isGroupOversize();
 
         // Getters
         size_t nb_strategies() const { return _nb_strategies; }

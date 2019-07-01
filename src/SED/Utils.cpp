@@ -3,10 +3,20 @@
 //
 
 #include <Dyrwin/SED/Utils.hpp>
-#include <Dyrwin/Distributions.h>
 
 double EGTTools::SED::fermi(double beta, double a, double b) {
     return 1 / (1 + std::exp(beta * (a - b)));
+}
+
+double EGTTools::SED::contest_success(double z, double a, double b) {
+    double tmp = 1 / z;
+    double tmp1 = std::pow(a, tmp);
+    return tmp1 / (tmp1 + std::pow(b, tmp));
+}
+
+double EGTTools::SED::contest_success(double a, double b) {
+    if (a > b) return 1.0;
+    else return 0.0;
 }
 
 size_t EGTTools::SED::calculate_state(const size_t &group_size, const size_t &nb_states,

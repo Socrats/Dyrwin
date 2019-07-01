@@ -148,9 +148,22 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::return_value_policy::reference_internal,
                  "updates the payoff matrix with the values from the input.",
                  py::arg("payoff_matrix"))
-            .def("evolve", &SED::MLS<SED::Group>::evolve,
+            .def("evolve", static_cast<EGTTools::Vector (SED::MLS<SED::Group>::*)(double, double,
+                                                                                  const Eigen::Ref<const EGTTools::VectorXui> &)>(&SED::MLS<SED::Group>::evolve),
                  "runs the moran process with multi-level selection for a given number of generations or until"
                  "it reaches a monomorphic state", py::arg("q"), py::arg("w"), py::arg("init_state"))
+            .def("evolve", static_cast<EGTTools::Vector (SED::MLS<SED::Group>::*)(double, double, double,
+                                                                                  const Eigen::Ref<const EGTTools::VectorXui> &)>(&SED::MLS<SED::Group>::evolve),
+                 "runs the moran process with multi-level selection for a given number of generations or until"
+                 "it reaches a monomorphic state with migration", py::arg("q"), py::arg("w"), py::arg("lambda"),
+                 py::arg("init_state"))
+            .def("evolve",
+                 static_cast<EGTTools::Vector (SED::MLS<SED::Group>::*)(double, double, double, double, double,
+                                                                        const Eigen::Ref<const EGTTools::VectorXui> &)>(&SED::MLS<SED::Group>::evolve),
+                 "runs the moran process with multi-level selection for a given number of generations or until"
+                 "it reaches a monomorphic state with migration and direct multi-level selection (Garcia et al.)",
+                 py::arg("q"), py::arg("w"), py::arg("lambda"), py::arg("kappa"), py::arg("z"),
+                 py::arg("init_state"))
             .def("fixation_probability",
                  static_cast<double (SED::MLS<SED::Group>::*)(size_t, size_t, size_t, double,
                                                               double)>( &SED::MLS<SED::Group>::fixationProbability),
@@ -164,6 +177,14 @@ PYBIND11_MODULE(EGTtools, m) {
                  "Estimates the fixation probability of the invading strategy over the resident strategy "
                  "for MLS with migration.", py::arg("invader"), py::arg("resident"), py::arg("runs"), py::arg("q"),
                  py::arg("lambda"), py::arg("w"))
+            .def("fixation_probability",
+                 static_cast<double (SED::MLS<SED::Group>::*)(size_t, size_t, size_t, double, double, double, double,
+                                                              double)>( &SED::MLS<SED::Group>::fixationProbability),
+                 py::call_guard<py::gil_scoped_release>(),
+                 "Estimates the fixation probability of the invading strategy over the resident strategy "
+                 "for MLS with migration and direct conflict.", py::arg("invader"), py::arg("resident"),
+                 py::arg("runs"), py::arg("q"),
+                 py::arg("lambda"), py::arg("w"), py::arg("kappa"), py::arg("z"))
             .def("fixation_probability",
                  static_cast<Vector (SED::MLS<SED::Group>::*)(size_t, const Eigen::Ref<const VectorXui> &, size_t,
                                                               double,

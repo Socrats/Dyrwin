@@ -51,6 +51,13 @@ bool SED::Group::addMember(size_t new_strategy) {
     return ++_group_size <= _max_group_size;
 }
 
+bool SED::Group::deleteMember(const size_t &member_strategy) {
+    if (_strategies(member_strategy) <= 0) return false;
+    --_strategies(member_strategy);
+    --_group_size;
+    return true;
+}
+
 /**
  * @brief Checks whether the population inside the group is monomorphic (only one strategy)
  *
@@ -71,4 +78,23 @@ void SED::Group::setPopulationHomogeneous(size_t strategy) {
     _group_size = _max_group_size;
     _strategies.setZero();
     _strategies(strategy) = _max_group_size;
+}
+
+SED::Group &SED::Group::operator=(const SED::Group &grp) {
+    if (this == &grp) return *this;
+
+    _nb_strategies = grp.nb_strategies();
+    _max_group_size = grp.max_group_size();
+    _group_size = grp.group_size();
+    _group_fitness = grp.group_fitness();
+    _w = grp.selection_intensity();
+    _strategies = grp.strategies();
+    totalPayoff();
+
+    return *this;
+}
+
+bool SED::Group::isGroupOversize() {
+    if (_group_size > _max_group_size) return true;
+    return false;
 }
