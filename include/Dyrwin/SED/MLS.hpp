@@ -1307,6 +1307,8 @@ namespace EGTTools::SED {
         conflicts.reserve(_nb_groups);
         // Build conflict list
         for (size_t i = 0; i < _nb_groups; ++i) if (_real_rand(_mt) < kappa) conflicts.push_back(i);
+        // If there are no conflicts we return
+        if (conflicts.size() == 0) return;
         // If number of groups is odd
         if (conflicts.size() % 2 != 0) {
             // select a new group randomly
