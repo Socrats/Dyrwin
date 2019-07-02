@@ -11,6 +11,8 @@
 #include <Dyrwin/SED/TraulsenMoran.h>
 #include <Dyrwin/SED/MoranProcess.hpp>
 #include <Dyrwin/SED/MLS.hpp>
+#include <Dyrwin/SED/structure/Group.hpp>
+#include <Dyrwin/SED/structure/GarciaGroup.hpp>
 #include <Dyrwin/SED/games/AbstractGame.hpp>
 #include <Dyrwin/SED/games/CrdGame.hpp>
 #include <Dyrwin/SED/games/CrdGameTU.hpp>
@@ -208,6 +210,32 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("invader"), py::arg("strategy_to_reduce"), py::arg("init_state"),
                  py::arg("runs"), py::arg("w"), py::arg("q"))
             .def("__repr__", &SED::MLS<SED::Group>::toString);
+
+    py::class_<SED::MLS<SED::GarciaGroup>>(m, "MLSGarcia")
+            .def(py::init<size_t, size_t, size_t, size_t>(),
+                 "Implement the Multi-level Selection process described in [Traulsen & Nowak 2006].",
+                 py::arg("generations"), py::arg("nb_strategies"), py::arg("group_size"), py::arg("nb_groups"))
+            .def_property("generations", &SED::MLS<SED::GarciaGroup>::generations,
+                          &SED::MLS<SED::GarciaGroup>::set_generations)
+            .def_property_readonly("nb_strategies", &SED::MLS<SED::GarciaGroup>::nb_strategies)
+            .def_property("n", &SED::MLS<SED::GarciaGroup>::group_size, &SED::MLS<SED::GarciaGroup>::set_group_size)
+            .def_property("m", &SED::MLS<SED::GarciaGroup>::nb_groups, &SED::MLS<SED::GarciaGroup>::set_nb_groups)
+            .def_property_readonly("max_pop_size", &SED::MLS<SED::GarciaGroup>::max_pop_size)
+            .def("fixation_probability",
+                 static_cast<double (SED::MLS<SED::GarciaGroup>::*)(size_t, size_t, size_t,
+                                                                    double, double, double, double,
+                                                                    double, double,
+                                                                    const Eigen::Ref<const Matrix2D> &,
+                                                                    const Eigen::Ref<const Matrix2D> &)>( &SED::MLS<SED::GarciaGroup>::fixationProbability),
+                 py::keep_alive<1, 11>(), py::keep_alive<1, 12>(),
+                 py::call_guard<py::gil_scoped_release>(),
+                 "Estimates the fixation probability of the invading strategy over the resident strategy "
+                 "for MLS with migration and direct conflict and inter-group interactions.", py::arg("invader"),
+                 py::arg("resident"),
+                 py::arg("runs"), py::arg("q"),
+                 py::arg("lambda"), py::arg("w"), py::arg("alpha"),
+                 py::arg("kappa"), py::arg("z"), py::arg("payoff_matrix_in"), py::arg("payoff_matrix_out"))
+            .def("__repr__", &SED::MLS<SED::GarciaGroup>::toString);
 
 //    py::class_<EGTTools::SED::AbstractGame>(m, "AbstractGame")
 //            .def("play", &EGTTools::SED::AbstractGame::play)

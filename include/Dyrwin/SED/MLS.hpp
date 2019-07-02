@@ -13,8 +13,10 @@
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/Types.h>
 #include <Dyrwin/SED/structure/Group.hpp>
+#include <Dyrwin/SED/structure/GarciaGroup.hpp>
 #include <Dyrwin/SED/Utils.hpp>
 #include <Dyrwin/OpenMPUtils.hpp>
+
 
 namespace EGTTools::SED {
     template<typename S = Group>
@@ -337,8 +339,31 @@ namespace EGTTools::SED {
 
         inline void _update(double q, double lambda, double mu, std::vector<S> &groups, VectorXui &strategies);
 
+        /**
+         * @brief Updates the population one step with migration, splitting and group conflict
+         * @param q
+         * @param lambda
+         * @param kappa
+         * @param z
+         * @param groups
+         * @param strategies
+         */
         inline void
         _update(double q, double lambda, double kappa, double z, std::vector<S> &groups, VectorXui &strategies);
+
+        /**
+         * @brief Updates the population one step with migration, splitting, group conflict and inter-group interactions
+         * @param q
+         * @param lambda
+         * @param alpha
+         * @param kappa
+         * @param z
+         * @param groups
+         * @param strategies
+         */
+        inline void
+        _update(double q, double lambda, double alpha, double kappa, double z, std::vector<S> &groups,
+                VectorXui &strategies);
 
         inline void _speedUpdate(double q, std::vector<S> &groups, VectorXui &strategies);
 
@@ -398,6 +423,20 @@ namespace EGTTools::SED {
         inline void _reproduce_garcia(std::vector<S> &groups, VectorXui &strategies, const double &lambda);
 
         /**
+        * @brief internal reproduction function.
+        *
+        * This functions will split depending a splitting probability q.
+        *
+        * @tparam S : group container
+        * @param groups : vector of groups
+        * @param strategies : vector of the current proportions of each strategy in the population
+        * @param lambda : migration probability
+        * @brief alpha : probability of interacting with members of the same group
+        */
+        inline void
+        _reproduce_garcia(std::vector<S> &groups, VectorXui &strategies, const double &lambda, const double &alpha);
+
+        /**
         * @brief Migrates an individual from a group to another
         *
         * @tparam S : group container
@@ -447,6 +486,16 @@ namespace EGTTools::SED {
         * @return : index of the parent group
         */
         size_t _payoffProportionalSelection(std::vector<S> &groups);
+
+        /**
+         * @brief selects a group proportional to its total payoff with within group interactions.
+         *
+         * @param alpha : probability of interacting with members of the same group
+         * @param groups : vector of groups
+         * @param strategies : vector of strategy counts
+         * @return : index of the selected individual
+         */
+        size_t _payoffProportionalSelection(const double &alpha, std::vector<S> &groups, VectorXui &strategies);
 
         /**
         * @brief selects a group proportional to its size.
@@ -510,6 +559,272 @@ namespace EGTTools::SED {
 
     };
 
+    template<>
+    class MLS<GarciaGroup> {
+    public:
+        /**
+         * @brief This class implements the Multi Level selection process introduced in Arne et al.
+         *
+         * This class implements selection on the level of groups.
+         *
+         * A population with m groups, which all have a maximum size n. Therefore, the maximum population
+         * size N = nm. Each group must contain at least one individual. The minimum population size is m
+         * (each group must have at least one individual). In each time step, an individual is chosen from
+         * a population with a probability proportional to its fitness. The individual produces an
+         * identical offspring that is added to the same group. If the group size is greater than n after
+         * this step, then either a randomly chosen individual from the group is eliminated (with probability 1-q)
+         * or the group splits into two groups (with probability q). Each individual of the splitting
+         * group has probability 1/2 to end up in each of the daughter groups. One daughter group remains
+         * empty with probability 2^(1-n). In this case, the repeating process is repeated to avoid empty
+         * groups. In order to keep the number of groups constant, a randomly chosen group is eliminated
+         * whenever a group splits in two.
+         *
+         * @param generations : maximum number of generations
+         * @param nb_strategies : number of strategies in the population
+         * @param group_size : group size (n)
+         * @param nb_groups : number of groups (m)
+         */
+        MLS(size_t generations, size_t nb_strategies, size_t group_size, size_t nb_groups);
+
+        /**
+        * @brief estimates the fixation probability of the invading strategy over the resident strategy.
+        *
+        * This function will estimate numerically (by running simulations) the fixation probability of
+        * a certain strategy in the population of 1 resident strategy.
+        *
+        * The evolutionary process uses (Garcia et al.) multi-level selection with direct conflict
+        * between groups and inter-group interactions.
+        *
+        * This function should only be called with GarciaGroup
+        *
+        * This implementation specializes on the EGTTools::SED::Group class
+        *
+        * @tparam S : container for the structure of the population
+        * @param invader : index of the invading strategy
+        * @param resident : index of the resident strategy
+        * @param runs : number of runs (used to average the number of times the invading strategy has fixated)
+        * @param q : splitting probability
+        * @param lambda : migration probability
+        * @param w : intensity of selection
+        * @param alpha : probability of interacter with members of the same group
+        * @param kappa : fraction of groups that enter in conflict
+        * @param z : importance of payoffs during conflict
+        * @param payoff_matrix_in : ingroup payoff matrix
+        * @param payoff_matrix_out : outgroup payoff matrix
+        * @return a real number (double) indicating the fixation probability
+        */
+        double fixationProbability(size_t invader, size_t resident, size_t runs,
+                                   double q, double lambda, double w, double alpha, double kappa, double z,
+                                   const Eigen::Ref<const Matrix2D> &payoff_matrix_in,
+                                   const Eigen::Ref<const Matrix2D> &payoff_matrix_out);
+
+        // Getters
+        size_t generations() { return _generations; }
+
+        size_t nb_strategies() { return _nb_strategies; }
+
+        size_t max_pop_size() { return _pop_size; }
+
+        size_t group_size() { return _group_size; }
+
+        size_t nb_groups() { return _nb_groups; }
+
+        // Setters
+        void set_generations(size_t generations) { _generations = generations; }
+
+        void set_pop_size(size_t pop_size) { _pop_size = pop_size; }
+
+        void set_group_size(size_t group_size) {
+            if (group_size < 4)
+                throw std::invalid_argument(
+                        "The maximum group size must be at least 4.");
+            _group_size = group_size;
+            _pop_size = _nb_groups * _group_size;
+        }
+
+        void set_nb_groups(size_t nb_groups) {
+            if (nb_groups == 0)
+                throw std::invalid_argument(
+                        "There must be at least 1 group in the population");
+            _nb_groups = nb_groups;
+            _uint_rand.param(std::uniform_int_distribution<size_t>::param_type(0, _nb_groups - 1));
+            _pop_size = _nb_groups * _group_size;
+        }
+
+        std::string toString() const {
+            Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+            std::stringstream ss;
+            return "Z = " + std::to_string(_pop_size) +
+                   "\nm = " + std::to_string(_nb_groups) +
+                   "\nn = " + std::to_string(_group_size) +
+                   "\nnb_strategies = " + std::to_string(_nb_strategies) +
+                   "\npayoff_matrix = " + ss.str();
+        }
+
+        friend std::ostream &operator<<(std::ostream &o, MLS &r) { return o << r.toString(); }
+
+    private:
+        size_t _generations, _nb_strategies, _group_size, _nb_groups, _pop_size;
+
+        // Uniform random distribution
+        std::uniform_int_distribution<size_t> _uint_rand;
+        std::uniform_int_distribution<size_t> _uint_rand_strategy;
+        std::uniform_real_distribution<double> _real_rand; // uniform random distribution
+
+        // Random generators
+        std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+
+        /**
+         * @brief Updates the population one step with migration, splitting, group conflict and inter-group interactions
+         * @param q
+         * @param lambda
+         * @param alpha
+         * @param kappa
+         * @param z
+         * @param groups
+         * @param strategies
+         */
+        inline void
+        _update(double q, double lambda, double alpha, double kappa, double z, std::vector<GarciaGroup> &groups,
+                VectorXui &strategies);
+
+        inline void _createMutant(size_t invader, size_t resident, std::vector<GarciaGroup> &groups);
+
+        /**
+         * @brief Adds a mutant of strategy invader to the population
+         *
+         * Eliminates a randmo strategy from the population and adds a mutant of strategy invader.
+         *
+         * @tparam S : container for population structur
+         * @param invader : index of the invader strategy
+         * @param groups : vector of groups
+         * @param strategies : vector of strategies
+         */
+        inline void _createRandomMutant(size_t invader, std::vector<GarciaGroup> &groups, VectorXui &strategies);
+
+        inline void _updateFullPopulationFrequencies(size_t increase, size_t decrease, VectorXui &strategies);
+
+        /**
+        * @brief internal reproduction function.
+        *
+        * This functions will split depending a splitting probability q.
+        *
+        * @tparam S : group container
+        * @param groups : vector of groups
+        * @param strategies : vector of the current proportions of each strategy in the population
+        * @param lambda : migration probability
+        * @brief alpha : probability of interacting with members of the same group
+        */
+        inline void
+        _reproduce_garcia(std::vector<GarciaGroup> &groups, VectorXui &strategies, const double &lambda,
+                          const double &alpha);
+
+        /**
+         * @brief Migrates an individual from a group to another
+         *
+         * @param parent_group : group of the invididual that will migrate
+         * @param individual : strategy of the migrating individual
+         * @param q : splitting probability
+         * @param groups : vector of groups
+         */
+        inline void
+        _migrate(const size_t &parent_group, const size_t &migrating_strategy, std::vector<GarciaGroup> &groups);
+
+        /**
+        * @brief Mutates an individual from the population
+        *
+        * @tparam S : group container
+        * @param mu
+        * @param groups : reference to a vector of groups
+        */
+        void _mutate(std::vector<GarciaGroup> &groups, VectorXui &strategies);
+
+        /**
+         * @brief splits a group in two
+         *
+         * This method creates a new group. There is a 0.5 probability that each
+         * member of the former group will be part of the new group. Also, since
+         * the number of groups is kept constant, a random group is chosen to die.
+         *
+         * @tparam S : group container
+         * @param parent_group : index to the group to split
+         * @param groups : reference to a vector of groups
+         */
+        void _splitGroup(size_t parent_group, std::vector<GarciaGroup> &groups, VectorXui &strategies);
+
+        /**
+         * @brief selects a group proportional to its total payoff with within group interactions.
+         *
+         * @param alpha : probability of interacting with members of the same group
+         * @param groups : vector of groups
+         * @param strategies : vector of strategy counts
+         * @return : index of the selected individual
+         */
+        size_t
+        _payoffProportionalSelection(const double &alpha, std::vector<GarciaGroup> &groups, VectorXui &strategies);
+
+        /**
+        * @brief selects a group proportional to its size.
+        *
+        * @tparam S : group container
+        * @param groups : reference to the population groups
+        * @return : index of the parent group
+        */
+        size_t _sizeProportionalSelection(std::vector<GarciaGroup> &groups);
+
+        /**
+        * @brief Checks whether a pseudo stationary state has been reached.
+        *
+        * @tparam S : group container
+        * @param groups : reference to a vector of groups
+        * @return true if reached a pseudo stationary state, otherwise false
+        */
+        bool _pseudoStationary(std::vector<GarciaGroup> &groups);
+
+        /**
+         * @brief sets the all individuals of one strategy
+         *
+         * Sets all individuals in the population of one strategy and sets all groups at maximum capacity.
+         *
+         * @tparam S : group container
+         * @param strategy : resident strategy
+         * @param groups : reference to a vector of groups
+         */
+        void _setFullHomogeneousState(size_t strategy, std::vector<GarciaGroup> &groups);
+
+        /**
+         * @brief Sets randomly the state of the population given a vector which contains the strategies in the population.
+         *
+         * This method shuffles a vector containing the population of strategies and then assigns each _group_size
+         * of strategies to a group.
+         *
+         * @tparam S : container for the groups
+         * @param groups : vector of groups
+         * @param container : vector of strategies
+         */
+        inline void _setState(std::vector<GarciaGroup> &groups, std::vector<size_t> &container);
+
+        /**
+         * @brief returns the total population size
+         * @tparam S : group container
+         * @param groups : reference to a vector of groups
+         * @return the sum of the sizes of all the groups
+         */
+        inline size_t _current_pop_size(std::vector<GarciaGroup> &groups);
+
+        /**
+         * @brief Performs the conflict resultion step of Garcia et al.
+         *
+         * @param kappa : average fraction of groups involved in conflict
+         * @param z : importance of payoffs
+         * @param groups : vector of groups
+         * @param strategies : vector of strategies
+         */
+        inline void
+        _resolve_conflict(const double &kappa, const double &z, std::vector<GarciaGroup> &groups,
+                          VectorXui &strategies);
+
+    };
 
     template<typename S>
     MLS<S>::MLS(size_t generations, size_t nb_strategies,
@@ -803,7 +1118,7 @@ namespace EGTTools::SED {
         group_strategies(resident) = _group_size;
 
         // This loop can be done in parallel
-//#pragma omp parallel for shared(group_strategies) reduction(+:r2m, r2r)
+#pragma omp parallel for shared(group_strategies) reduction(+:r2m, r2r)
         for (size_t i = 0; i < runs; ++i) {
             // First we initialize a homogeneous population with the resident strategy
             SED::Group group(_nb_strategies, _group_size, w, group_strategies, _payoff_matrix);
@@ -1053,6 +1368,25 @@ namespace EGTTools::SED {
     }
 
     template<typename S>
+    void
+    MLS<S>::_update(double q, double lambda, double alpha, double kappa, double z,
+                    std::vector<S> &groups,
+                    VectorXui &strategies) {
+        _reproduce_garcia(groups, strategies, lambda, alpha);
+        _resolve_conflict(kappa, z, groups, strategies);
+        for (size_t i = 0; i < _nb_groups; ++i) {
+            if (groups[i].isGroupOversize()) {
+                if (_real_rand(_mt) < q) { // split group
+                    _splitGroup(i, groups, strategies);
+                } else { // remove individual
+                    size_t deleted_strategy = groups[i].deleteMember(_mt);
+                    --strategies(deleted_strategy);
+                }
+            }
+        }
+    }
+
+    template<typename S>
     void MLS<S>::_speedUpdate(double q, std::vector<S> &groups, VectorXui &strategies) {
         if (!_pseudoStationary(groups)) {
             _reproduce(groups, strategies, q);
@@ -1142,13 +1476,23 @@ namespace EGTTools::SED {
     }
 
     template<typename S>
+    void
+    MLS<S>::_reproduce_garcia(std::vector<S> &groups, VectorXui &strategies, const double &lambda,
+                              const double &alpha) {
+        auto parent_group = _payoffProportionalSelection(alpha, groups, strategies);
+        auto[split, new_strategy] = groups[parent_group].createOffspring(_mt);
+        ++strategies(new_strategy);
+        if (_real_rand(_mt) < lambda) _migrate(parent_group, new_strategy, groups);
+    }
+
+    template<typename S>
     void MLS<S>::_migrate(double q, std::vector<S> &groups, VectorXui &strategies) {
         size_t parent_group, child_group, migrating_strategy;
 
         parent_group = _sizeProportionalSelection(groups);
         while (groups[parent_group].group_size() < 2) parent_group = _uint_rand(_mt);
         child_group = _uint_rand(_mt);
-        // Makes sure that parent group and chiled group are different
+        // Makes sure that parent group and child group are different
         while (child_group == parent_group) child_group = _uint_rand(_mt);
         // First we delete a random member from the parent group
         migrating_strategy = groups[parent_group].deleteMember(_mt);
@@ -1227,6 +1571,22 @@ namespace EGTTools::SED {
         double total_fitness = 0.0, tmp = 0.0;
         // Calculate total fitness
         for (auto &group: groups) total_fitness += group.totalPayoff();
+        total_fitness *= _real_rand(_mt);
+        size_t parent_group = 0;
+        for (parent_group = 0; parent_group < _nb_groups; ++parent_group) {
+            tmp += groups[parent_group].group_fitness();
+            if (tmp > total_fitness) return parent_group;
+        }
+
+        return 0;
+    }
+
+    template<typename S>
+    size_t MLS<S>::_payoffProportionalSelection(const double &alpha, std::vector<S> &groups,
+                                                VectorXui &strategies) {
+        double total_fitness = 0.0, tmp = 0.0;
+        // Calculate total fitness
+        for (auto &group: groups) total_fitness += group.totalPayoff(alpha, strategies);
         total_fitness *= _real_rand(_mt);
         size_t parent_group = 0;
         for (parent_group = 0; parent_group < _nb_groups; ++parent_group) {
@@ -1338,8 +1698,8 @@ namespace EGTTools::SED {
         // Resolve conflicts
         if (z > 0) {
             for (size_t i = 0; i < conflicts.size() - 1; i += 2) {
-                prob = EGTTools::SED::contest_success(z, groups[conflicts[i]].totalPayoff(),
-                                                      groups[conflicts[i + 1]].totalPayoff());
+                prob = EGTTools::SED::contest_success(z, groups[conflicts[i]].group_fitness(),
+                                                      groups[conflicts[i + 1]].group_fitness());
 
                 if (_real_rand(_mt) < prob) {
                     strategies.array() -= groups[conflicts[i + 1]].strategies().array();
@@ -1355,8 +1715,8 @@ namespace EGTTools::SED {
             }
         } else {
             for (size_t i = 0; i < conflicts.size() - 1; i += 2) {
-                fitness_group1 = groups[conflicts[i]].totalPayoff();
-                fitness_group2 = groups[conflicts[i + 1]].totalPayoff();
+                fitness_group1 = groups[conflicts[i]].group_fitness();
+                fitness_group2 = groups[conflicts[i + 1]].group_fitness();
 
                 if (fitness_group1 > fitness_group2) {
                     strategies.array() -= groups[conflicts[i + 1]].strategies().array();

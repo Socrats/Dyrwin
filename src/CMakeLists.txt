@@ -13,6 +13,7 @@ add_library(EGTTools
         SED/behaviors/CrdBehaviors.cpp
         SED/games/CrdGame.cpp
         SED/games/CrdGameTU.cpp
+        SED/MLS.cpp
         RL/Agent.cpp
         RL/BatchQLearningAgent.cpp
         RL/QLearningAgent.cpp
