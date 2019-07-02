@@ -3,6 +3,7 @@
 //
 
 #include <Dyrwin/SED/structure/Group.hpp>
+#include <iostream>
 
 using namespace EGTTools;
 
@@ -82,14 +83,11 @@ void SED::Group::setPopulationHomogeneous(size_t strategy) {
 
 SED::Group &SED::Group::operator=(const SED::Group &grp) {
     if (this == &grp) return *this;
-
     _nb_strategies = grp.nb_strategies();
     _max_group_size = grp.max_group_size();
     _group_size = grp.group_size();
-    _group_fitness = grp.group_fitness();
     _w = grp.selection_intensity();
-    _strategies = grp.strategies();
-    totalPayoff();
+    _strategies.array() = grp.strategies();
 
     return *this;
 }

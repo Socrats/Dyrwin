@@ -8,6 +8,8 @@
 #include <random>
 #include <algorithm>
 #include <cmath>
+#include <unordered_set>
+#include <iterator>
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/Types.h>
 #include <Dyrwin/SED/structure/Group.hpp>
@@ -254,11 +256,17 @@ namespace EGTTools::SED {
         void set_pop_size(size_t pop_size) { _pop_size = pop_size; }
 
         void set_group_size(size_t group_size) {
+            if (group_size < 4)
+                throw std::invalid_argument(
+                        "The maximum group size must be at least 4.");
             _group_size = group_size;
             _pop_size = _nb_groups * _group_size;
         }
 
         void set_nb_groups(size_t nb_groups) {
+            if (nb_groups == 0)
+                throw std::invalid_argument(
+                        "There must be at least 1 group in the population");
             _nb_groups = nb_groups;
             _uint_rand.param(std::uniform_int_distribution<size_t>::param_type(0, _nb_groups - 1));
             _pop_size = _nb_groups * _group_size;
@@ -385,13 +393,9 @@ namespace EGTTools::SED {
         * @tparam S : group container
         * @param groups : vector of groups
         * @param strategies : vector of the current proportions of each strategy in the population
-        * @param q : split probability
         * @param lambda : migration probability
-        * @param kappa : fraction of groups that enter in conflict
-        * @param z : importance of payoffs
         */
-        inline void _reproduce(std::vector<S> &groups, VectorXui &strategies, const double &q, const double &lambda,
-                               const double &kappa, const double &z);
+        inline void _reproduce_garcia(std::vector<S> &groups, VectorXui &strategies, const double &lambda);
 
         /**
         * @brief Migrates an individual from a group to another
@@ -521,6 +525,9 @@ namespace EGTTools::SED {
         if (static_cast<size_t>(_payoff_matrix.rows() * _payoff_matrix.cols()) != (_nb_strategies * _nb_strategies))
             throw std::invalid_argument(
                     "Payoff matrix has wrong dimensions it must have shape (nb_strategies, nb_strategies)");
+        if (group_size < 4)
+            throw std::invalid_argument(
+                    "The maximum group size must be at least 4.");
         _pop_size = _nb_groups * _group_size;
         // calculate the frequencies of each strategy in the population
         _strategies = VectorXui::Zero(_nb_strategies);
@@ -796,7 +803,7 @@ namespace EGTTools::SED {
         group_strategies(resident) = _group_size;
 
         // This loop can be done in parallel
-#pragma omp parallel for shared(group_strategies) reduction(+:r2m, r2r)
+//#pragma omp parallel for shared(group_strategies) reduction(+:r2m, r2r)
         for (size_t i = 0; i < runs; ++i) {
             // First we initialize a homogeneous population with the resident strategy
             SED::Group group(_nb_strategies, _group_size, w, group_strategies, _payoff_matrix);
@@ -1031,7 +1038,18 @@ namespace EGTTools::SED {
     template<typename S>
     void
     MLS<S>::_update(double q, double lambda, double kappa, double z, std::vector<S> &groups, VectorXui &strategies) {
-        _reproduce(groups, strategies, q, lambda, kappa, z);
+        _reproduce_garcia(groups, strategies, lambda);
+        _resolve_conflict(kappa, z, groups, strategies);
+        for (size_t i = 0; i < _nb_groups; ++i) {
+            if (groups[i].isGroupOversize()) {
+                if (_real_rand(_mt) < q) { // split group
+                    _splitGroup(i, groups, strategies);
+                } else { // remove individual
+                    size_t deleted_strategy = groups[i].deleteMember(_mt);
+                    --strategies(deleted_strategy);
+                }
+            }
+        }
     }
 
     template<typename S>
@@ -1116,23 +1134,11 @@ namespace EGTTools::SED {
     }
 
     template<typename S>
-    void MLS<S>::_reproduce(std::vector<S> &groups, VectorXui &strategies, const double &q, const double &lambda,
-                            const double &kappa, const double &z) {
+    void MLS<S>::_reproduce_garcia(std::vector<S> &groups, VectorXui &strategies, const double &lambda) {
         auto parent_group = _payoffProportionalSelection(groups);
         auto[split, new_strategy] = groups[parent_group].createOffspring(_mt);
         ++strategies(new_strategy);
         if (_real_rand(_mt) < lambda) _migrate(parent_group, new_strategy, groups);
-        _resolve_conflict(kappa, z, groups, strategies);
-        for (size_t i = 0; i < _nb_groups; ++i) {
-            if (groups[i].isGroupOversize()) {
-                if (_real_rand(_mt) < q) { // split group
-                    _splitGroup(parent_group, groups, strategies);
-                } else { // remove individual
-                    size_t deleted_strategy = groups[parent_group].deleteMember(_mt);
-                    --strategies(deleted_strategy);
-                }
-            }
-        }
     }
 
     template<typename S>
@@ -1189,6 +1195,8 @@ namespace EGTTools::SED {
         // Now we split the group
         VectorXui &strategies_parent = groups[parent_group].strategies();
         VectorXui &strategies_child = groups[child_group].strategies();
+        // Parent group size
+        auto parent_group_size = groups[parent_group].group_size();
 
         // update strategies with the eliminated strategies from the child group
         strategies -= strategies_child;
@@ -1197,7 +1205,7 @@ namespace EGTTools::SED {
         // that go to the child group
         std::binomial_distribution<size_t> binomial(_group_size, 0.5);
         size_t sum = 0;
-        while ((sum == 0) || (sum > _group_size)) {
+        while ((sum < 2) || (sum > parent_group_size - 2) || sum > _group_size) {
             sum = 0;
             for (size_t i = 0; i < _nb_strategies; ++i) {
                 if (strategies_parent(i) > 0) {
@@ -1303,50 +1311,76 @@ namespace EGTTools::SED {
         // The winner is duplicated, and replaces the losing group. If the groups
         // selected for conflict have the same sum of payoffs one is chosen randomly to be
         // the winner with probability 0.5.
-        std::vector<size_t> conflicts;
+        double fitness_group1, fitness_group2, prob;
+
+        std::vector<size_t> conflicts, no_conflicts;
         conflicts.reserve(_nb_groups);
+        no_conflicts.reserve(_nb_groups);
+
         // Build conflict list
-        for (size_t i = 0; i < _nb_groups; ++i) if (_real_rand(_mt) < kappa) conflicts.push_back(i);
-        // If there are no conflicts we return
-        if (conflicts.size() == 0) return;
-        // If number of groups is odd
+        for (size_t i = 0; i < _nb_groups; ++i) {
+            if (_real_rand(_mt) < kappa) conflicts.push_back(i);
+            else no_conflicts.push_back(i);
+        }
+        // If no conflicts return
+        if (conflicts.empty()) return;
+        // Update if odd number of groups
         if (conflicts.size() % 2 != 0) {
-            // select a new group randomly
-            if (_real_rand(_mt) < 0.5) conflicts.push_back(_uint_rand(_mt));
-            else {
-                // eliminate a group
+            if ((_real_rand(_mt) < 0.5) && (!no_conflicts.empty())) {
+                std::uniform_int_distribution<size_t> dist(0, no_conflicts.size() - 1);
+                conflicts.push_back(no_conflicts[dist(_mt)]);
+            } else if (conflicts.size() > 1) {
                 std::uniform_int_distribution<size_t> dist(0, conflicts.size() - 1);
                 conflicts.erase(conflicts.begin() + dist(_mt));
-            }
+            } else return;
         }
+
         // Resolve conflicts
-        if (z == 0) {
-            for (size_t i = 0; i < conflicts.size(); i += 2) {
-                if (groups[conflicts[i]].totalPayoff() > groups[conflicts[i + 1]].totalPayoff()) {
-                    strategies -= groups[conflicts[i + 1]].strategies();
-                    strategies += groups[conflicts[i]].strategies();
+        if (z > 0) {
+            for (size_t i = 0; i < conflicts.size() - 1; i += 2) {
+                prob = EGTTools::SED::contest_success(z, groups[conflicts[i]].totalPayoff(),
+                                                      groups[conflicts[i + 1]].totalPayoff());
+
+                if (_real_rand(_mt) < prob) {
+                    strategies.array() -= groups[conflicts[i + 1]].strategies().array();
+                    strategies.array() += groups[conflicts[i]].strategies().array();
                     // Second group is replaced by the first
                     groups[conflicts[i + 1]] = groups[conflicts[i]];
                 } else {
-                    strategies -= groups[conflicts[i]].strategies();
-                    strategies += groups[conflicts[i + 1]].strategies();
-                    // First group is replaced by the second
+                    strategies.array() -= groups[conflicts[i]].strategies().array();
+                    strategies.array() += groups[conflicts[i + 1]].strategies().array();
+                    // Second group is replaced by the first
                     groups[conflicts[i]] = groups[conflicts[i + 1]];
                 }
             }
         } else {
-            for (size_t i = 0; i < conflicts.size(); i += 2) {
-                if (_real_rand(_mt) < EGTTools::SED::contest_success(z, groups[conflicts[i]].totalPayoff(),
-                                                                     groups[conflicts[i + 1]].totalPayoff())) {
-                    strategies -= groups[conflicts[i + 1]].strategies();
-                    strategies += groups[conflicts[i]].strategies();
+            for (size_t i = 0; i < conflicts.size() - 1; i += 2) {
+                fitness_group1 = groups[conflicts[i]].totalPayoff();
+                fitness_group2 = groups[conflicts[i + 1]].totalPayoff();
+
+                if (fitness_group1 > fitness_group2) {
+                    strategies.array() -= groups[conflicts[i + 1]].strategies().array();
+                    strategies.array() += groups[conflicts[i]].strategies().array();
                     // Second group is replaced by the first
                     groups[conflicts[i + 1]] = groups[conflicts[i]];
-                } else {
-                    strategies -= groups[conflicts[i]].strategies();
-                    strategies += groups[conflicts[i + 1]].strategies();
-                    // First group is replaced by the second
+                } else if (fitness_group1 < fitness_group2) {
+                    strategies.array() -= groups[conflicts[i]].strategies().array();
+                    strategies.array() += groups[conflicts[i + 1]].strategies().array();
+                    // Second group is replaced by the first
                     groups[conflicts[i]] = groups[conflicts[i + 1]];
+                } else {
+                    // A random group wins
+                    if (_real_rand(_mt) < 0.5) {
+                        strategies.array() -= groups[conflicts[i + 1]].strategies().array();
+                        strategies.array() += groups[conflicts[i]].strategies().array();
+                        // Second group is replaced by the first
+                        groups[conflicts[i + 1]] = groups[conflicts[i]];
+                    } else {
+                        strategies.array() -= groups[conflicts[i]].strategies().array();
+                        strategies.array() += groups[conflicts[i + 1]].strategies().array();
+                        // Second group is replaced by the first
+                        groups[conflicts[i]] = groups[conflicts[i + 1]];
+                    }
                 }
             }
         }
