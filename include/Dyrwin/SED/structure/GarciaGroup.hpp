@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <Dyrwin/Types.h>
+#include <iostream>
 
 namespace EGTTools::SED {
     class GarciaGroup {

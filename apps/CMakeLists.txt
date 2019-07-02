@@ -20,7 +20,7 @@ cmake_minimum_required(VERSION 3.9)
 add_executable(pmoran SED/pmain.cpp)
 target_link_libraries(pmoran ${Boost_LIBRARIES} boost_program_options)
 set_target_properties(pmoran PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
-set_target_properties(pmoran PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
+#set_target_properties(pmoran PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(pmoran EGTTools)
 
 add_executable(behaviors SED/crd_behaviors.cpp)

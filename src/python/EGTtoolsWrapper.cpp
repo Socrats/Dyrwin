@@ -211,7 +211,7 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("runs"), py::arg("w"), py::arg("q"))
             .def("__repr__", &SED::MLS<SED::Group>::toString);
 
-    py::class_<SED::MLS<SED::GarciaGroup>>(m, "MLSGarcia")
+    py::class_<SED::MLS<SED::GarciaGroup>>(m, "GarciaMLS")
             .def(py::init<size_t, size_t, size_t, size_t>(),
                  "Implement the Multi-level Selection process described in [Traulsen & Nowak 2006].",
                  py::arg("generations"), py::arg("nb_strategies"), py::arg("group_size"), py::arg("nb_groups"))

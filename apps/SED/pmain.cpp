@@ -7,6 +7,7 @@
 #include <Dyrwin/SED/TraulsenMoran.h>
 #include <Dyrwin/SED/MoranProcess.hpp>
 #include <Dyrwin/SED/MLS.hpp>
+#include <Dyrwin/SED/structure/GarciaGroup.hpp>
 #include <Dyrwin/CommandLineParsing.h>
 
 using namespace std;
@@ -22,6 +23,9 @@ int main(int argc, char *argv[]) {
     float coop_freq = 0.5;
     Eigen::Matrix2d payoff_matrix;
     payoff_matrix << 1, 4,
+            0, 3;
+    Eigen::Matrix2d payoff_matrix2;
+    payoff_matrix2 << 1, 4,
             0, 3;
     std::vector<float> betas(nb_betas);
     Vector strategy_freq(2);
@@ -50,6 +54,7 @@ int main(int argc, char *argv[]) {
     TraulsenMoran ts(generations, group_size, nb_groups, beta, mu, coop_freq, split_prob, payoff_matrix);
     MoranProcess mp(generations, 2, pop_size, beta, strategy_freq, payoff_matrix);
     SED::MLS<> multi_sel(10000000, 2, group_size, nb_groups, 0.1, strategy_freq, payoff_matrix);
+    SED::MLS<SED::GarciaGroup> mls_garcia(10000000, 2, 10, 10);
 
     clock_t tStart = clock();
     betas[0] = beta;
@@ -62,15 +67,17 @@ int main(int argc, char *argv[]) {
     double fix_prob = 0;
     EGTTools::Vector gradient;
     try {
-        fix_prob = multi_sel.fixationProbability(1, 0, 10000, split_prob, 0.1);
-        multi_sel.set_group_size(10);
-        multi_sel.set_nb_groups(10);
-        fix_prob = multi_sel.fixationProbability(1, 0, 10000, 0.01, 0., 0.1, 0.025, 0.);
-        multi_sel.set_group_size(50);
-        multi_sel.set_nb_groups(1);
-        multi_sel.fixationProbability(1, (EGTTools::VectorXui(2) << 25, 25).finished(), 10000, split_prob, 0.1);
-        gradient = multi_sel.gradientOfSelection(1, 0, runs_grad, 0.1, split_prob);
-    } catch (const std::invalid_argument& ia) {
+//        fix_prob = multi_sel.fixationProbability(1, 0, 10000, split_prob, 0.1);
+//        multi_sel.set_group_size(10);
+//        multi_sel.set_nb_groups(10);
+//        fix_prob = multi_sel.fixationProbability(1, 0, 10000, 0.01, 0., 0.1, 0.025, 0.);
+        fix_prob = mls_garcia.fixationProbability(1, 0, 10000, 0.01, 0., 0.1, 0.8, 0.025, 0.5, payoff_matrix,
+                                                  payoff_matrix2);
+//        multi_sel.set_group_size(50);
+//        multi_sel.set_nb_groups(1);
+//        multi_sel.fixationProbability(1, (EGTTools::VectorXui(2) << 25, 25).finished(), 10000, split_prob, 0.1);
+//        gradient = multi_sel.gradientOfSelection(1, 0, runs_grad, 0.1, split_prob);
+    } catch (const std::invalid_argument &ia) {
         cerr << "\033[1;31m[EXCEPTION] Invalid argument: " << ia.what() << "\033[0m" << endl;
         return -1;
     }

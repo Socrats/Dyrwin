@@ -42,12 +42,15 @@ double SED::MLS<SED::GarciaGroup>::fixationProbability(size_t invader, size_t re
     VectorXui group_strategies = VectorXui::Zero(_nb_strategies);
     group_strategies(resident) = _group_size;
 
+    Matrix2D payoff_in = payoff_matrix_in;
+    Matrix2D payoff_out = payoff_matrix_out;
+
     // This loop can be done in parallel
-#pragma omp parallel for shared(group_strategies) reduction(+:r2m, r2r)
+//#pragma omp parallel for shared(group_strategies) reduction(+:r2m, r2r)
     for (size_t i = 0; i < runs; ++i) {
         // First we initialize a homogeneous population with the resident strategy
-        SED::GarciaGroup group(_nb_strategies, _group_size, w, group_strategies, payoff_matrix_in,
-                               payoff_matrix_out);
+        SED::GarciaGroup group(_nb_strategies, _group_size, w, group_strategies, payoff_in,
+                               payoff_out);
         std::vector<SED::GarciaGroup> groups(_nb_groups, group);
         VectorXui strategies = VectorXui::Zero(_nb_strategies);
         strategies(resident) = _pop_size;
@@ -120,10 +123,11 @@ SED::MLS<SED::GarciaGroup>::_reproduce_garcia(std::vector<SED::GarciaGroup> &gro
     auto parent_group = _payoffProportionalSelection(alpha, groups, strategies);
     auto[split, new_strategy] = groups[parent_group].createOffspring(_mt);
     ++strategies(new_strategy);
-    if (_real_rand(_mt) < lambda) _migrate(parent_group, new_strategy, groups);
+    if (_real_rand(_mt) < lambda) groups[_migrate(parent_group, new_strategy, groups)].totalPayoff(alpha, strategies);
+    else groups[parent_group].totalPayoff(alpha, strategies); // update total fitness of the group
 }
 
-void
+size_t
 SED::MLS<SED::GarciaGroup>::_migrate(const size_t &parent_group, const size_t &migrating_strategy,
                                      std::vector<SED::GarciaGroup> &groups) {
     size_t child_group = _uint_rand(_mt);
@@ -132,6 +136,7 @@ SED::MLS<SED::GarciaGroup>::_migrate(const size_t &parent_group, const size_t &m
     groups[parent_group].deleteMember(migrating_strategy);
     // Then add the member to the randomly selected group
     groups[child_group].addMember(migrating_strategy);
+    return child_group;
 }
 
 void SED::MLS<SED::GarciaGroup>::_mutate(std::vector<SED::GarciaGroup> &groups, VectorXui &strategies) {

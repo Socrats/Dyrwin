@@ -19,7 +19,9 @@ void SED::GarciaGroup::createMutant(size_t invader, size_t resident) {
 
 
 double SED::GarciaGroup::totalPayoff(const double &alpha, EGTTools::VectorXui &strategies) {
+    double tmp1, tmp2;
     size_t out_pop_size = strategies.sum() - _group_size;
+    assert (out_pop_size > 0);
     if (_group_size == 1) return (1.0 - _w);
     _group_fitness = 0.0;
 
@@ -28,19 +30,22 @@ double SED::GarciaGroup::totalPayoff(const double &alpha, EGTTools::VectorXui &s
             _fitness(i) = 0;
             continue;
         }
-        _fitness(i) = 0.0;
+        tmp1 = 0.0;
+        tmp2 = 0.0;
         for (size_t j = 0; j < _nb_strategies; ++j) {
             if (j == i) {
-                _fitness(i) += alpha * ((_payoff_matrix_in(i, i) * (_strategies(i) - 1)) / (_group_size - 1)) +
-                               (1 - alpha) *
-                               ((_payoff_matrix_out(i, i) * (strategies(i) - _strategies(i))) / out_pop_size);
+                tmp1 += _payoff_matrix_in(i, i) * static_cast<double>(_strategies(i) - 1);
+                tmp2 += _payoff_matrix_out(i, i) * (strategies(i) - _strategies(i));
             } else {
-                _fitness(i) += alpha * (_payoff_matrix_in(i, j) * _strategies(j) / (_group_size - 1)) +
-                               (1 - alpha) *
-                               ((_payoff_matrix_out(i, j) * (strategies(j) - _strategies(j))) / out_pop_size);
+                tmp1 += _payoff_matrix_in(i, j) * _strategies(j);
+                tmp2 += _payoff_matrix_out(i, j) * (strategies(j) - _strategies(j));
             }
         }
-        _fitness(i) = ((1.0 - _w) + _w * (_fitness(i) / (_group_size - 1))) * static_cast<double>(_strategies(i));
+        tmp1 /= (_group_size - 1);
+        tmp2 /= out_pop_size;
+        _fitness(i) = alpha * tmp1 + (1.0 - alpha) * tmp2;
+        _fitness(i) = ((1.0 - _w) + _w * _fitness(i)) * _strategies(i);
+        assert (_fitness(i) >= 0);
         _group_fitness += _fitness(i);
     }
 

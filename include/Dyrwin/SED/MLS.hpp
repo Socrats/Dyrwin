@@ -722,12 +722,13 @@ namespace EGTTools::SED {
         /**
          * @brief Migrates an individual from a group to another
          *
-         * @param parent_group : group of the invididual that will migrate
+         * @param parent_group : group of the individual that will migrate
          * @param individual : strategy of the migrating individual
          * @param q : splitting probability
          * @param groups : vector of groups
+         * @return index of the child group
          */
-        inline void
+        inline size_t
         _migrate(const size_t &parent_group, const size_t &migrating_strategy, std::vector<GarciaGroup> &groups);
 
         /**
