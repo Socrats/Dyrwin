@@ -1484,6 +1484,7 @@ namespace EGTTools::SED {
         auto[split, new_strategy] = groups[parent_group].createOffspring(_mt);
         ++strategies(new_strategy);
         if (_real_rand(_mt) < lambda) _migrate(parent_group, new_strategy, groups);
+        else groups[parent_group].totalPayoff();
     }
 
     template<typename S>
@@ -1517,6 +1518,8 @@ namespace EGTTools::SED {
         groups[parent_group].deleteMember(migrating_strategy);
         // Then add the member to the randomly selected group
         groups[child_group].addMember(migrating_strategy);
+        // Update group payoffs
+        groups[child_group].totalPayoff();
     }
 
     template<typename S>

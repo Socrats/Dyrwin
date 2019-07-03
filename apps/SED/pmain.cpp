@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
 //        multi_sel.set_group_size(10);
 //        multi_sel.set_nb_groups(10);
 //        fix_prob = multi_sel.fixationProbability(1, 0, 10000, 0.01, 0., 0.1, 0.025, 0.);
-        fix_prob = mls_garcia.fixationProbability(1, 0, 10000, 0.01, 0., 0.1, 0.8, 0.025, 0.5, payoff_matrix,
+        fix_prob = mls_garcia.fixationProbability(1, 0, 10000, 0.01, 0., 0.1, 1.0, 0.025, 0.5, payoff_matrix,
                                                   payoff_matrix2);
 //        multi_sel.set_group_size(50);
 //        multi_sel.set_nb_groups(1);
