@@ -46,7 +46,7 @@ double SED::MLS<SED::GarciaGroup>::fixationProbability(size_t invader, size_t re
     Matrix2D payoff_out = payoff_matrix_out;
 
     // This loop can be done in parallel
-//#pragma omp parallel for shared(group_strategies) reduction(+:r2m, r2r)
+#pragma omp parallel for shared(group_strategies) reduction(+:r2m, r2r)
     for (size_t i = 0; i < runs; ++i) {
         // First we initialize a homogeneous population with the resident strategy
         SED::GarciaGroup group(_nb_strategies, _group_size, w, group_strategies, payoff_in,
