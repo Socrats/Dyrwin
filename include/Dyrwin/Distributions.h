@@ -42,6 +42,7 @@ namespace EGTTools {
      * @tparam G Type of random number generator
      * @param d vector size
      * @param in probability vector
+     * @param dist uniform distribution [0, 1)
      * @param generator random number generator
      * @return An index in range [0, d-1].
      */

@@ -261,24 +261,17 @@ namespace EGTTools::SED {
     Vector PairwiseMoran<Cache>::stationaryDistribution(size_t nb_runs, size_t nb_generations, double beta,
                                                         double mu) {
         // First we initialise the container for the stationary distribution
-//        auto total_nb_states = EGTTools::binomialCoeff(_nb_strategies + _pop_size - 1, _pop_size);
-//        auto sampler = std::uniform_int_distribution<size_t>(0, total_nb_states - 1);
+        auto total_nb_states = EGTTools::binomialCoeff(_nb_strategies + _pop_size - 1, _pop_size);
+        auto sampler = std::uniform_int_distribution<size_t>(0, total_nb_states - 1);
         VectorXui sdist = VectorXui::Zero(_nb_strategies);
 
-#pragma omp parallel for reduction(+:sdist)
+//#pragma omp parallel for reduction(+:sdist)
         for (size_t i = 0; i < nb_runs; ++i) {
             // Then we sample a random population state
             VectorXui init_state = VectorXui::Zero(_nb_strategies);
-            auto sum = _pop_sampler(_mt);
-            init_state(0) = sum;
-            for (size_t j = 1; j < _nb_strategies; j++) {
-                init_state(j) = _pop_sampler(_mt);
-                sum += init_state(j);
-                if (sum >= _pop_size) {
-                    init_state(j) -= sum - _pop_size;
-                    break;
-                }
-            }
+            // Sample state
+            EGTTools::SED::sample_simplex(sampler(_mt), _pop_size, _nb_strategies, init_state);
+//            assert(init_state.sum() == _pop_size);
 
             // Finally we call the evolve function
             sdist += evolve(nb_generations, beta, mu, init_state);

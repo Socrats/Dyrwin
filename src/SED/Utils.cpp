@@ -58,3 +58,21 @@ size_t EGTTools::SED::calculate_state(const size_t &group_size, const size_t &nb
 
     return nb_states - retval - 1;
 }
+
+void EGTTools::SED::sample_simplex(size_t i, const size_t &pop_size, const size_t &nb_strategies,
+                                   EGTTools::VectorXui &state) {
+    auto remaining = pop_size;
+
+    for (size_t a = 0; a < nb_strategies; ++a) {
+        for (size_t j = remaining; j > 0; --j) {
+            auto count = EGTTools::starsBars(remaining - j, nb_strategies - a - 1);
+            if (i >= count) {
+                i -= count;
+            } else {
+                state(a) = j;
+                remaining -= j;
+                break;
+            }
+        }
+    }
+}

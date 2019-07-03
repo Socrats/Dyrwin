@@ -62,6 +62,16 @@ namespace EGTTools::SED {
     size_t calculate_state(const size_t &group_size, const size_t &nb_states, const EGTTools::Factors &current_group);
 
     /**
+     * @brief Transforms and state index into a vector.
+     *
+     * @param i : state index
+     * @param pop_size : size of the population
+     * @param nb_strategies : number of strategies
+     * @param state : container for the sampled state
+     */
+    void sample_simplex(size_t i, const size_t &pop_size, const size_t &nb_strategies, VectorXui &state);
+
+    /**
      * @brief Defines the numeric limit of floating points
      */
     constexpr double_t doubleEpsilon = std::numeric_limits<double>::digits10;
