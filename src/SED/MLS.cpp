@@ -36,6 +36,9 @@ double SED::MLS<SED::GarciaGroup>::fixationProbability(size_t invader, size_t re
     if ((_nb_groups == 1) && q != 0.)
         throw std::invalid_argument(
                 "The splitting probability must be zero when there is only 1 group in the population");
+    if ((_nb_groups == 1) && alpha != 1.)
+        throw std::invalid_argument(
+                "The probability of ingroup interactions must be 1 when there is only one group in the population.");
 
     double r2m = 0; // resident to mutant count
     double r2r = 0; // resident to resident count
