@@ -71,6 +71,16 @@ namespace EGTTools::SED {
      */
     void sample_simplex(size_t i, const size_t &pop_size, const size_t &nb_strategies, VectorXui &state);
 
+    template<typename G>
+    void sample_simplex(size_t nb_strategies, Vector &state, std::uniform_real_distribution<double> prob_dist,
+                        G &generator) {
+        for (size_t i = 0; i < nb_strategies; ++i) {
+            state(i) = - std::log(prob_dist(generator));
+        }
+        state.array() /= state.sum();
+        assert(state.sum() == 1.0);
+    }
+
     /**
      * @brief Defines the numeric limit of floating points
      */

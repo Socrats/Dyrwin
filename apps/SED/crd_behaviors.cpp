@@ -97,17 +97,17 @@ int main(int argc, char *argv[]) {
     for (size_t i = 0; i < nb_strategies; ++i) init_state(i) = strategies[i];
 
 //    init_state = smProcess.evolve(nb_generations, beta, mu, init_state);
-    auto distribution = smProcess.stationaryDistribution(30, nb_generations, beta, mu);
+    auto distribution = smProcess.stationaryDistribution(100, nb_generations, beta, mu);
 
     std::cout << "final state: (";
     for (size_t i = 0; i < nb_strategies; ++i)
-        std::cout << distribution(i) << ", ";
+        std::cout << distribution(i) / static_cast<double>(pop_size) << ", ";
     std::cout << ")" << std::endl;
 
     if (file.is_open()) {
         file << "final state: (";
         for (size_t i = 0; i < nb_strategies; ++i)
-            file << distribution(i) << ", ";
+            file << distribution(i) / static_cast<double>(pop_size) << ", ";
         file << ")" << std::endl;
         file.close();
     }
