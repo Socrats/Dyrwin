@@ -8,6 +8,7 @@
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/Types.h>
 #include <Dyrwin/LruCache.hpp>
+#include <Dyrwin/SED/games/AbstractGame.hpp>
 #include <Dyrwin/SED/Utils.hpp>
 #include <Dyrwin/OpenMPUtils.hpp>
 
