@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
     for (size_t i = 0; i < nb_strategies; ++i) init_state(i) = strategies[i];
 
 //    init_state = smProcess.evolve(nb_generations, beta, mu, init_state);
-    auto distribution = smProcess.stationaryDistribution(100, nb_generations, beta, mu);
+    auto distribution = smProcess.stationaryDistribution(10, nb_generations, beta, mu);
 
     std::cout << "final state: (";
     for (size_t i = 0; i < nb_strategies; ++i)

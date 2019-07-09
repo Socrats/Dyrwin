@@ -277,9 +277,9 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("save_payoffs", &EGTTools::SED::CRD::CrdGameTU::save_payoffs);
 
     py::class_<PairwiseComparison>(m, "PairwiseMoran")
-            .def(py::init<size_t, EGTTools::SED::AbstractGame &>(),
+            .def(py::init<size_t, EGTTools::SED::AbstractGame &, size_t>(),
                  "Runs a moran process with pairwise comparison and calculates fitness according to game",
-                 py::arg("pop_size"), py::arg("game"), py::keep_alive<1, 3>())
+                 py::arg("pop_size"), py::arg("game"), py::arg("cache_size"), py::keep_alive<1, 3>())
             .def("evolve", &PairwiseComparison::evolve, py::keep_alive<1, 5>(),
                  "evolves the strategies for a maximum of nb_generations", py::arg("nb_generations"), py::arg("beta"),
                  py::arg("mu"), py::arg("init_state"))
@@ -293,8 +293,8 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("nb_runs"), py::arg("nb_generations"), py::arg("beta"), py::arg("mu"))
             .def_property_readonly("nb_strategies", &PairwiseComparison::nb_strategies)
             .def_property_readonly("payoffs", &PairwiseComparison::payoffs)
-            .def_property("pop_size", &PairwiseComparison::population_size,
-                          &PairwiseComparison::set_population_size);
+            .def_property("pop_size", &PairwiseComparison::population_size, &PairwiseComparison::set_population_size)
+            .def_property("cache_size", &PairwiseComparison::cache_size, &PairwiseComparison::set_cache_size);
 
     mCRD.def("cooperator", &EGTTools::SED::CRD::cooperator, "returns the actions of a cooperator player.",
              py::arg("prev_donation"), py::arg("threshold"), py::arg("current_round"));

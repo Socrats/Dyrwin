@@ -38,8 +38,9 @@ namespace EGTTools::SED {
          * @param pop_size
          * @param group_size : size of the group
          * @param game : pointer to the game class (it must be a child of AbstractGame)
+         * @param cache_size : maximum number of elements in the cache
          */
-        PairwiseMoran(size_t pop_size, EGTTools::SED::AbstractGame &game);
+        PairwiseMoran(size_t pop_size, EGTTools::SED::AbstractGame &game, size_t cache_size = 1000000);
 
         /**
          * Runs the moran process for a given number of generations or until it reaches a monomorphic state
@@ -88,6 +89,8 @@ namespace EGTTools::SED {
 
         size_t population_size() const;
 
+        size_t cache_size() const;
+
         std::string game_type() const;
 
         const GroupPayoffs &payoffs() const;
@@ -95,11 +98,13 @@ namespace EGTTools::SED {
         // Setters
         void set_population_size(size_t pop_size);
 
+        void set_cache_size(size_t cache_size);
+
         void change_game(EGTTools::SED::AbstractGame &game);
 
 
     private:
-        size_t _nb_strategies, _pop_size;
+        size_t _nb_strategies, _pop_size, _cache_size;
         EGTTools::SED::AbstractGame &_game;
 
         // Random distributions
@@ -122,9 +127,11 @@ namespace EGTTools::SED {
 
     template<class Cache>
     PairwiseMoran<Cache>::PairwiseMoran(size_t pop_size,
-                                        EGTTools::SED::AbstractGame &game) : _nb_strategies(game.nb_strategies()),
-                                                                             _pop_size(pop_size),
-                                                                             _game(game) {
+                                        EGTTools::SED::AbstractGame &game,
+                                        size_t cache_size) : _nb_strategies(game.nb_strategies()),
+                                                             _pop_size(pop_size),
+                                                             _cache_size(cache_size),
+                                                             _game(game) {
         // Initialize random uniform distribution
         _pop_sampler = std::uniform_int_distribution<size_t>(0, _pop_size - 1);
         _strategy_sampler = std::uniform_int_distribution<size_t>(0, _nb_strategies - 1);
@@ -160,7 +167,7 @@ namespace EGTTools::SED {
         auto[homogeneous, idx_homo] = _is_homogeneous(strategies);
 
         // Creates a cache for the fitness data
-        EGTTools::Utils::LRUCache<std::string, double> cache(10000000);
+        EGTTools::Utils::LRUCache<std::string, double> cache(_cache_size);
 
         // initialise population
         _initialise_population(strategies, population);
@@ -334,6 +341,11 @@ namespace EGTTools::SED {
     }
 
     template<class Cache>
+    size_t PairwiseMoran<Cache>::cache_size() const {
+        return _cache_size;
+    }
+
+    template<class Cache>
     std::string PairwiseMoran<Cache>::game_type() const {
         return _game.type();
     }
@@ -346,6 +358,11 @@ namespace EGTTools::SED {
     template<class Cache>
     void PairwiseMoran<Cache>::set_population_size(size_t pop_size) {
         _pop_size = pop_size;
+    }
+
+    template<class Cache>
+    void PairwiseMoran<Cache>::set_cache_size(size_t cache_size) {
+        _cache_size = cache_size;
     }
 
     template<class Cache>
