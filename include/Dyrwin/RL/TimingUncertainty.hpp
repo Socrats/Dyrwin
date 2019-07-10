@@ -11,9 +11,7 @@ namespace EGTTools {
     template<typename R, typename G = std::geometric_distribution<size_t>>
     class TimingUncertainty {
     public:
-        TimingUncertainty(double p) : _p(p), _max_rounds(0) {};
-
-        TimingUncertainty(double p, size_t max_rounds) : _p(p), _max_rounds(max_rounds) {};
+        explicit TimingUncertainty(double p, size_t max_rounds=0) : _p(p), _max_rounds(max_rounds) {};
 
         size_t calculateEnd( size_t min_rounds, R& generator ) {
             G d(_p);

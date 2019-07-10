@@ -239,6 +239,15 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("kappa"), py::arg("z"), py::arg("payoff_matrix_in"), py::arg("payoff_matrix_out"))
             .def("__repr__", &SED::MLS<SED::GarciaGroup>::toString);
 
+    py::class_<EGTTools::TimingUncertainty<std::mt19937_64>>(m, "TimingUncertainty")
+            .def(py::init<double, size_t>(), "Timing uncertainty object", py::arg("p"), py::arg("max_rounds"))
+            .def("calculateEnd", &EGTTools::TimingUncertainty<std::mt19937_64>::calculateEnd)
+            .def("calculateFullEnd", &EGTTools::TimingUncertainty<std::mt19937_64>::calculateFullEnd)
+            .def_property("p", &EGTTools::TimingUncertainty<std::mt19937_64>::probability,
+                          &EGTTools::TimingUncertainty<std::mt19937_64>::setProbability)
+            .def_property("max_rounds", &EGTTools::TimingUncertainty<std::mt19937_64>::max_rounds,
+                          &EGTTools::TimingUncertainty<std::mt19937_64>::setMaxRounds);
+
     py::class_<EGTTools::SED::AbstractGame>(m, "AbstractGame")
             .def("play", &EGTTools::SED::AbstractGame::play)
             .def("calculate_payoffs", &EGTTools::SED::AbstractGame::calculate_payoffs)
@@ -247,6 +256,7 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("type", &EGTTools::SED::AbstractGame::type)
             .def("payoffs", &EGTTools::SED::AbstractGame::payoffs)
             .def("payoff", &EGTTools::SED::AbstractGame::payoff)
+            .def_property_readonly("nb_strategies", &EGTTools::SED::AbstractGame::nb_strategies)
             .def("save_payoffs", &EGTTools::SED::AbstractGame::save_payoffs);
 
     // Now we define a submodule
@@ -263,6 +273,7 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("payoffs", &EGTTools::SED::CRD::CrdGame::payoffs)
             .def("payoff", &EGTTools::SED::CRD::CrdGame::payoff,
                  "returns the payoff of a strategy given a group state.")
+            .def_property_readonly("nb_strategies", &EGTTools::SED::AbstractGame::nb_strategies)
             .def("save_payoffs", &EGTTools::SED::CRD::CrdGame::save_payoffs);
 
     py::class_<EGTTools::SED::CRD::CrdGameTU, EGTTools::SED::AbstractGame>(mCRD, "CRDGameTU")
@@ -279,6 +290,7 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("payoffs", &EGTTools::SED::CRD::CrdGameTU::payoffs)
             .def("payoff", &EGTTools::SED::CRD::CrdGameTU::payoff,
                  "returns the payoff of a strategy given a group state.")
+            .def_property_readonly("nb_strategies", &EGTTools::SED::AbstractGame::nb_strategies)
             .def("save_payoffs", &EGTTools::SED::CRD::CrdGameTU::save_payoffs);
 
     py::class_<PairwiseComparison>(m, "PairwiseMoran")

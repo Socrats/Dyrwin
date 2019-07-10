@@ -104,11 +104,16 @@ const EGTTools::SED::GroupPayoffs &EGTTools::SED::CRD::CrdGameTU::calculate_payo
         // Update group composition from current state
         EGTTools::SED::sample_simplex(i, group_size_, nb_strategies_, group_composition);
 
-        // play game and update game_payoffs
-        play(group_composition, game_payoffs);
+        // Since the number of rounds of the game is stochastic
+        // we repeat the game a 1000 times to obtain a good estimation
+        for (size_t z = 0; z < 1000; ++z) {
+            // play game and update game_payoffs
+            play(group_composition, game_payoffs);
 
-        // Fill payoff table
-        for (size_t j = 0; j < nb_strategies_; ++j) payoffs_(j, i) = game_payoffs[j];
+            // Fill payoff table
+            for (size_t j = 0; j < nb_strategies_; ++j) payoffs_(j, i) += game_payoffs[j];
+        }
+        payoffs_.col(i) /= 1000;
     }
 
     return payoffs_;
