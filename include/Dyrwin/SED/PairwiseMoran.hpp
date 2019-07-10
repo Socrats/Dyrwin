@@ -273,16 +273,16 @@ namespace EGTTools::SED {
         auto sampler = std::uniform_int_distribution<size_t>(0, total_nb_states - 1);
         VectorXui sdist = VectorXui::Zero(_nb_strategies);
 
-//#pragma omp parallel for reduction(+:sdist)
+#pragma omp parallel for reduction(+:sdist)
         for (size_t i = 0; i < nb_runs; ++i) {
             // Then we sample a random population state
             VectorXui init_state = VectorXui::Zero(_nb_strategies);
             // Sample state
             EGTTools::SED::sample_simplex(sampler(_mt), _pop_size, _nb_strategies, init_state);
-            std::cout << "init state: (";
-            for (size_t z = 0; z < _nb_strategies; ++z)
-                std::cout << init_state(z) << ", ";
-            std::cout << ")" << std::endl;
+//            std::cout << "init state: (";
+//            for (size_t z = 0; z < _nb_strategies; ++z)
+//                std::cout << init_state(z) << ", ";
+//            std::cout << ")" << std::endl;
 
             // Finally we call the evolve function
             sdist += evolve(nb_generations, beta, mu, init_state);
