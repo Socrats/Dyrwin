@@ -166,3 +166,8 @@ void EGTTools::SED::CRD::CrdGame::save_payoffs(std::string file_name) const {
 const EGTTools::SED::GroupPayoffs &EGTTools::SED::CRD::CrdGame::payoffs() const {
     return payoffs_;
 }
+
+double
+EGTTools::SED::CRD::CrdGame::payoff(size_t strategy, const EGTTools::SED::StrategyCounts &group_composition) const {
+    return payoffs_(strategy, EGTTools::SED::calculate_state(group_size_, group_composition));
+}

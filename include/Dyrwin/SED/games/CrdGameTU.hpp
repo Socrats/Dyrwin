@@ -62,6 +62,8 @@ namespace EGTTools::SED::CRD {
 
         const GroupPayoffs &payoffs() const override;
 
+        double payoff(size_t strategy, const EGTTools::SED::StrategyCounts &group_composition) const override;
+
         void save_payoffs(std::string file_name) const override;
 
     private:

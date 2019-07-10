@@ -77,6 +77,17 @@ namespace EGTTools::SED {
         virtual const GroupPayoffs &payoffs() const = 0;
 
         /**
+         * @brief returns the payoff of a strategy given a group composition
+         *
+         * If the group composition does not include the strategy, the payoff should be zero
+         *
+         * @param strategy : index of the strategy
+         * @param group_composition : vector with the group composition
+         * @return the payoff value
+         */
+        virtual double payoff(size_t strategy, const EGTTools::SED::StrategyCounts &group_composition) const = 0;
+
+        /**
          * @brief stores the payoff matrix in a txt file
          *
          * @param file_name : name of the file in which the data will be stored

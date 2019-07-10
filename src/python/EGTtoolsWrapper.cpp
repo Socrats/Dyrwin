@@ -246,6 +246,7 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("to_string", &EGTTools::SED::AbstractGame::toString)
             .def("type", &EGTTools::SED::AbstractGame::type)
             .def("payoffs", &EGTTools::SED::AbstractGame::payoffs)
+            .def("payoff", &EGTTools::SED::AbstractGame::payoff)
             .def("save_payoffs", &EGTTools::SED::AbstractGame::save_payoffs);
 
     // Now we define a submodule
@@ -260,6 +261,8 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("to_string", &EGTTools::SED::CRD::CrdGame::toString)
             .def("type", &EGTTools::SED::CRD::CrdGame::type)
             .def("payoffs", &EGTTools::SED::CRD::CrdGame::payoffs)
+            .def("payoff", &EGTTools::SED::CRD::CrdGame::payoff,
+                 "returns the payoff of a strategy given a group state.")
             .def("save_payoffs", &EGTTools::SED::CRD::CrdGame::save_payoffs);
 
     py::class_<EGTTools::SED::CRD::CrdGameTU, EGTTools::SED::AbstractGame>(mCRD, "CRDGameTU")
@@ -274,6 +277,8 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("to_string", &EGTTools::SED::CRD::CrdGameTU::toString)
             .def("type", &EGTTools::SED::CRD::CrdGameTU::type)
             .def("payoffs", &EGTTools::SED::CRD::CrdGameTU::payoffs)
+            .def("payoff", &EGTTools::SED::CRD::CrdGameTU::payoff,
+                 "returns the payoff of a strategy given a group state.")
             .def("save_payoffs", &EGTTools::SED::CRD::CrdGameTU::save_payoffs);
 
     py::class_<PairwiseComparison>(m, "PairwiseMoran")
