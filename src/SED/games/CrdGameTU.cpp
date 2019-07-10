@@ -57,7 +57,7 @@ EGTTools::SED::CRD::CrdGameTU::play(const EGTTools::SED::StrategyCounts &group_c
     }
 
     if (public_account < threshold_)
-        if (real_rand_(generator_) < risk_) for (auto &type: game_payoffs) type = 0;
+        for (auto &type: game_payoffs) type *= risk_;
 }
 
 size_t
