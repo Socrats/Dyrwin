@@ -47,6 +47,9 @@ namespace EGTTools::SED {
         /**
          * @brief Estimates the fitness for a @param player_type in the population with state @param strategies.
          *
+         * This function assumes that the player with strategy @param player_type is not included in
+         * the vector of strategy counts @param strategies.
+         *
          * @param player_type : index of the strategy used by the player
          * @param pop_size : size of the population
          * @param strategies : current state of the population

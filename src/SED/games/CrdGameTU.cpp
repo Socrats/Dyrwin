@@ -5,8 +5,8 @@
 #include <Dyrwin/SED/games/CrdGameTU.hpp>
 
 EGTTools::SED::CRD::CrdGameTU::CrdGameTU(size_t endowment, size_t threshold, size_t min_rounds, size_t group_size,
-                                    double risk,
-                                    EGTTools::TimingUncertainty<std::mt19937_64> &tu)
+                                         double risk,
+                                         EGTTools::TimingUncertainty<std::mt19937_64> &tu)
         : endowment_(endowment),
           threshold_(threshold), min_rounds_(min_rounds), group_size_(group_size), risk_(risk), tu_(tu) {
     nb_strategies_ = nb_strategies();
@@ -24,7 +24,8 @@ EGTTools::SED::CRD::CrdGameTU::CrdGameTU(size_t endowment, size_t threshold, siz
 }
 
 void
-EGTTools::SED::CRD::CrdGameTU::play(const EGTTools::SED::StrategyCounts &group_composition, PayoffVector &game_payoffs) {
+EGTTools::SED::CRD::CrdGameTU::play(const EGTTools::SED::StrategyCounts &group_composition,
+                                    PayoffVector &game_payoffs) {
     size_t prev_donation = 0, current_donation = 0;
     size_t public_account = 0;
     size_t action = 0;
@@ -61,8 +62,9 @@ EGTTools::SED::CRD::CrdGameTU::play(const EGTTools::SED::StrategyCounts &group_c
 }
 
 size_t
-EGTTools::SED::CRD::CrdGameTU::get_action(const size_t &player_type, const size_t &prev_donation, const size_t &threshold,
-                                     const size_t &current_round) {
+EGTTools::SED::CRD::CrdGameTU::get_action(const size_t &player_type, const size_t &prev_donation,
+                                          const size_t &threshold,
+                                          const size_t &current_round) {
     switch (player_type) {
         case 0:
             return EGTTools::SED::CRD::cooperator(prev_donation, threshold, current_round);
@@ -114,6 +116,9 @@ const EGTTools::SED::GroupPayoffs &EGTTools::SED::CRD::CrdGameTU::calculate_payo
 
 double EGTTools::SED::CRD::CrdGameTU::calculate_fitness(const size_t &player_type, const size_t &pop_size,
                                                         const Eigen::Ref<const VectorXui> &strategies) {
+    // This function assumes that the strategy counts given in @param strategies does not include
+    // the player with @param player_type strategy.
+
     double fitness = 0.0, payoff;
     std::vector<size_t> sample_counts(nb_strategies_, 0);
 
@@ -123,19 +128,20 @@ double EGTTools::SED::CRD::CrdGameTU::calculate_fitness(const size_t &player_typ
         EGTTools::SED::sample_simplex(i, group_size_, nb_strategies_, sample_counts);
 
         // If the focal player is not in the group, then the payoff should be zero
-        if (sample_counts[player_type] == 0) continue;
+        if (sample_counts[player_type] > 0) {
 
-        // First update sample_counts with new group composition
-        payoff = payoffs_(player_type, EGTTools::SED::calculate_state(group_size_, sample_counts));
-        sample_counts[player_type] -= 1;
+            // First update sample_counts with new group composition
+            payoff = payoffs_(player_type, EGTTools::SED::calculate_state(group_size_, sample_counts));
+            sample_counts[player_type] -= 1;
 
-        // Calculate probability of encountering a the current group
-        auto prob = EGTTools::multivariateHypergeometricPDF(pop_size - 1, nb_strategies_, group_size_ - 1,
-                                                            sample_counts,
-                                                            strategies);
-        sample_counts[player_type] += 1;
+            // Calculate probability of encountering a the current group
+            auto prob = EGTTools::multivariateHypergeometricPDF(pop_size - 1, nb_strategies_, group_size_ - 1,
+                                                                sample_counts,
+                                                                strategies);
+            sample_counts[player_type] += 1;
 
-        fitness += payoff * prob;
+            fitness += payoff * prob;
+        }
     }
 
     return fitness;

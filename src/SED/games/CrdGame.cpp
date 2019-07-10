@@ -112,6 +112,9 @@ const EGTTools::SED::GroupPayoffs &EGTTools::SED::CRD::CrdGame::calculate_payoff
 
 double EGTTools::SED::CRD::CrdGame::calculate_fitness(const size_t &player_type, const size_t &pop_size,
                                                       const Eigen::Ref<const VectorXui> &strategies) {
+    // This function assumes that the strategy counts given in @param strategies does not include
+    // the player with @param player_type strategy.
+
     double fitness = 0.0, payoff;
     std::vector<size_t> sample_counts(nb_strategies_, 0);
 
@@ -120,25 +123,20 @@ double EGTTools::SED::CRD::CrdGame::calculate_fitness(const size_t &player_type,
         // Update sample counts based on the current state
         EGTTools::SED::sample_simplex(i, group_size_, nb_strategies_, sample_counts);
 
-//        std::cout << "calculate fitness: [" << player_type << "] (";
-//        for (size_t z = 0; z < nb_strategies_; ++z)
-//            std::cout << sample_counts[z] << ", ";
-//        std::cout << ")" << std::endl;
-
         // If the focal player is not in the group, then the payoff should be zero
-        if (sample_counts[player_type] == 0) continue;
+        if (sample_counts[player_type] > 0) {
+            // First update sample_counts with new group composition
+            payoff = payoffs_(player_type, EGTTools::SED::calculate_state(group_size_, sample_counts));
+            sample_counts[player_type] -= 1;
 
-        // First update sample_counts with new group composition
-        payoff = payoffs_(player_type, EGTTools::SED::calculate_state(group_size_, sample_counts));
-        sample_counts[player_type] -= 1;
+            // Calculate probability of encountering a the current group
+            auto prob = EGTTools::multivariateHypergeometricPDF(pop_size - 1, nb_strategies_, group_size_ - 1,
+                                                                sample_counts,
+                                                                strategies);
+            sample_counts[player_type] += 1;
 
-        // Calculate probability of encountering a the current group
-        auto prob = EGTTools::multivariateHypergeometricPDF(pop_size - 1, nb_strategies_, group_size_ - 1,
-                                                            sample_counts,
-                                                            strategies);
-        sample_counts[player_type] += 1;
-
-        fitness += payoff * prob;
+            fitness += payoff * prob;
+        }
 
     }
 
