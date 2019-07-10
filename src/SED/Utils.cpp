@@ -76,3 +76,22 @@ void EGTTools::SED::sample_simplex(size_t i, const size_t &pop_size, const size_
         }
     }
 }
+
+void EGTTools::SED::sample_simplex(size_t i, const size_t &pop_size, const size_t &nb_strategies,
+                                   std::vector<size_t> &state) {
+    auto remaining = pop_size;
+
+    for (size_t a = 0; a < nb_strategies; ++a) {
+        for (size_t j = remaining; j > 0; --j) {
+            auto count = EGTTools::starsBars(remaining - j, nb_strategies - a - 1);
+            if (i >= count) {
+                i -= count;
+                state[a] = 0;
+            } else {
+                state[a] = j;
+                remaining -= j;
+                break;
+            }
+        }
+    }
+}
