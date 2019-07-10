@@ -10,7 +10,9 @@ EGTTools::SED::CRD::CrdGame::CrdGame(size_t endowment, size_t threshold, size_t 
           threshold_(threshold), nb_rounds_(nb_rounds), group_size_(group_size), risk_(risk) {
     nb_strategies_ = nb_strategies();
     // number of possible group combinations
-    nb_states_ = EGTTools::binomialCoeff(nb_strategies_ + group_size_ - 1, group_size_);
+    nb_states_ = EGTTools::starsBars(group_size_, nb_strategies_);
+    // number of possible group combinations without the focal player
+    nb_states_player_ = EGTTools::starsBars(group_size - 1, nb_strategies_);
     payoffs_ = GroupPayoffs::Zero(nb_strategies_, nb_states_);
 
     // initialise random distribution
@@ -92,32 +94,17 @@ size_t EGTTools::SED::CRD::CrdGame::nb_strategies() const {
 const EGTTools::SED::GroupPayoffs &EGTTools::SED::CRD::CrdGame::calculate_payoffs() {
     StrategyCounts group_composition(nb_strategies_, 0);
     std::vector<double> game_payoffs(nb_strategies_, 0);
-    size_t sum = 0;
 
     // For every possible group composition run the game and store the payoff of each strategy
     for (size_t i = 0; i < nb_states_; ++i) {
-        group_composition.back() = group_size_ - sum;
+        // Update group composition from current state
+        EGTTools::SED::sample_simplex(i, group_size_, nb_strategies_, group_composition);
+
+        // play game and update game_payoffs
         play(group_composition, game_payoffs);
 
         // Fill payoff table
         for (size_t j = 0; j < nb_strategies_; ++j) payoffs_(j, i) = game_payoffs[j];
-
-        // update group composition
-        for (size_t k = 0; k < group_size_ - 1; ++k) {
-            if (sum < group_size_) {
-                if (group_composition[k] < group_size_) {
-                    group_composition[k] += 1;
-                    sum += 1;
-                    break;
-                } else {
-                    sum -= group_composition[k];
-                    group_composition[k] = 0;
-                }
-            } else {
-                sum -= group_composition[k];
-                group_composition[k] = 0;
-            }
-        }
     }
 
     return payoffs_;
@@ -125,48 +112,33 @@ const EGTTools::SED::GroupPayoffs &EGTTools::SED::CRD::CrdGame::calculate_payoff
 
 double EGTTools::SED::CRD::CrdGame::calculate_fitness(const size_t &player_type, const size_t &pop_size,
                                                       const Eigen::Ref<const VectorXui> &strategies) {
-    double fitness, payoff;
-    size_t sum;
-
-    fitness = 0.0;
-    sum = 0;
+    double fitness = 0.0, payoff;
     std::vector<size_t> sample_counts(nb_strategies_, 0);
 
-    // number of possible group combinations
-    auto total_nb_states = EGTTools::binomialCoeff(nb_strategies_ + group_size_ - 1, group_size_);
-    size_t nb_states = EGTTools::binomialCoeff(nb_strategies_ + group_size_ - 2, group_size_ - 1);
-
     // If it isn't, then we must calculate the fitness for every possible group combination
-    for (size_t i = 0; i < nb_states; ++i) {
-        sample_counts[player_type] += 1;
-        sample_counts.back() = group_size_ - 1 - sum;
+    for (size_t i = 0; i < nb_states_; ++i) {
+        // Update sample counts based on the current state
+        EGTTools::SED::sample_simplex(i, group_size_, nb_strategies_, sample_counts);
+
+//        std::cout << "calculate fitness: [" << player_type << "] (";
+//        for (size_t z = 0; z < nb_strategies_; ++z)
+//            std::cout << sample_counts[z] << ", ";
+//        std::cout << ")" << std::endl;
+
+        // If the focal player is not in the group, then the payoff should be zero
+        if (sample_counts[player_type] == 0) continue;
 
         // First update sample_counts with new group composition
-        payoff = payoffs_(player_type, EGTTools::SED::calculate_state(group_size_, total_nb_states, sample_counts));
+        payoff = payoffs_(player_type, EGTTools::SED::calculate_state(group_size_, sample_counts));
         sample_counts[player_type] -= 1;
 
+        // Calculate probability of encountering a the current group
         auto prob = EGTTools::multivariateHypergeometricPDF(pop_size - 1, nb_strategies_, group_size_ - 1,
                                                             sample_counts,
                                                             strategies);
+        sample_counts[player_type] += 1;
 
         fitness += payoff * prob;
-
-        // update group composition
-        for (size_t k = 0; k < nb_strategies_ - 1; ++k) {
-            if (sum < group_size_ - 1) {
-                if (sample_counts[k] < group_size_ - 1) {
-                    sample_counts[k] += 1;
-                    sum += 1;
-                    break;
-                } else {
-                    sum -= sample_counts[k];
-                    sample_counts[k] = 0;
-                }
-            } else {
-                sum -= sample_counts[k];
-                sample_counts[k] = 0;
-            }
-        }
 
     }
 

@@ -20,6 +20,7 @@ int main(int argc, char *argv[]) {
     size_t nb_strategies = EGTTools::SED::CRD::nb_strategies;
     size_t pop_size;
     size_t nb_generations;
+    size_t nb_runs;
     size_t group_size;
 //    size_t die, birth;
     size_t nb_rounds, min_rounds, endowment, threshold;
@@ -33,6 +34,8 @@ int main(int argc, char *argv[]) {
 
     options.push_back(
             makeDefaultedOption<size_t>("generations,g", &nb_generations, "set the number of generations", 1000u));
+    options.push_back(
+            makeDefaultedOption<size_t>("runs,a", &nb_runs, "set the number of independent runs", 100u));
     options.push_back(makeDefaultedOption<size_t>("popSize,Z", &pop_size, "set the size of the population", 100u));
     options.push_back(
             makeRequiredOption<std::vector<size_t>>("strategies,s", &strategies, "the counts of each strategy"));
@@ -97,7 +100,7 @@ int main(int argc, char *argv[]) {
     for (size_t i = 0; i < nb_strategies; ++i) init_state(i) = strategies[i];
 
 //    init_state = smProcess.evolve(nb_generations, beta, mu, init_state);
-    auto distribution = smProcess.stationaryDistribution(10, nb_generations, beta, mu);
+    auto distribution = smProcess.stationaryDistribution(nb_runs, nb_generations, beta, mu);
 
     std::cout << "final state: (";
     for (size_t i = 0; i < nb_strategies; ++i)

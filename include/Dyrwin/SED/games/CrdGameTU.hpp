@@ -65,7 +65,7 @@ namespace EGTTools::SED::CRD {
         void save_payoffs(std::string file_name) const override;
 
     private:
-        size_t endowment_, threshold_, min_rounds_, group_size_, nb_strategies_, nb_states_;
+        size_t endowment_, threshold_, min_rounds_, group_size_, nb_strategies_, nb_states_, nb_states_player_;
         double risk_;
         GroupPayoffs payoffs_;
         EGTTools::TimingUncertainty<std::mt19937_64> tu_;

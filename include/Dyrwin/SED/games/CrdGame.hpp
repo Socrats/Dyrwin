@@ -60,7 +60,7 @@ namespace EGTTools::SED::CRD {
         void save_payoffs(std::string file_name) const override;
 
     protected:
-        size_t endowment_, threshold_, nb_rounds_, group_size_, nb_strategies_, nb_states_;
+        size_t endowment_, threshold_, nb_rounds_, group_size_, nb_strategies_, nb_states_, nb_states_player_;
         double risk_;
         GroupPayoffs payoffs_;
 

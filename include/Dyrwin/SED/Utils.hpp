@@ -52,14 +52,14 @@ namespace EGTTools::SED {
     /**
     * @brief This function converts a vector containing counts into an index.
     *
-    * This method was copies from @ebargiac
+    * This method was copied from @ebargiac
     *
-    * @param data The vector to convert.
-    * @param history The sum of the values contained in data.
+    * @param group_size The sum of the values contained in data.
+    * @param current_group The vector to convert.
     *
     * @return The unique index in [0, starsBars(history, data.size() - 1)) representing data.
     */
-    size_t calculate_state(const size_t &group_size, const size_t &nb_states, const EGTTools::Factors &current_group);
+    size_t calculate_state(const size_t &group_size, const EGTTools::Factors &current_group);
 
     /**
      * @brief Transforms and state index into a vector.
@@ -71,11 +71,14 @@ namespace EGTTools::SED {
      */
     void sample_simplex(size_t i, const size_t &pop_size, const size_t &nb_strategies, VectorXui &state);
 
+    void
+    sample_simplex(size_t i, const size_t &pop_size, const size_t &nb_strategies, std::vector<size_t> &state);
+
     template<typename G>
     void sample_simplex(size_t nb_strategies, Vector &state, std::uniform_real_distribution<double> prob_dist,
                         G &generator) {
         for (size_t i = 0; i < nb_strategies; ++i) {
-            state(i) = - std::log(prob_dist(generator));
+            state(i) = -std::log(prob_dist(generator));
         }
         state.array() /= state.sum();
         assert(state.sum() == 1.0);

@@ -19,8 +19,7 @@ double EGTTools::SED::contest_success(double a, double b) {
     else return 0.0;
 }
 
-size_t EGTTools::SED::calculate_state(const size_t &group_size, const size_t &nb_states,
-                                      const EGTTools::Factors &current_group) {
+size_t EGTTools::SED::calculate_state(const size_t &group_size, const EGTTools::Factors &current_group) {
     size_t retval = 0;
     auto remaining = group_size;
 
@@ -47,16 +46,16 @@ size_t EGTTools::SED::calculate_state(const size_t &group_size, const size_t &nb
     // have no remaining elements to parse we can just break.
     for (size_t i = 0; i < current_group.size() - 1; ++i) {
         auto h = remaining;
-        while (h > current_group[current_group.size() - i - 2]) {
+        while (h > current_group[i]) {
             retval += EGTTools::starsBars(remaining - h, current_group.size() - i - 1);
             --h;
         }
-        if (remaining == current_group[current_group.size() - i - 2])
+        if (remaining == current_group[i])
             break;
-        remaining -= current_group[current_group.size() - i - 2];
+        remaining -= current_group[i];
     }
 
-    return nb_states - retval - 1;
+    return retval;
 }
 
 void EGTTools::SED::sample_simplex(size_t i, const size_t &pop_size, const size_t &nb_strategies,
@@ -79,14 +78,19 @@ void EGTTools::SED::sample_simplex(size_t i, const size_t &pop_size, const size_
 
 void EGTTools::SED::sample_simplex(size_t i, const size_t &pop_size, const size_t &nb_strategies,
                                    std::vector<size_t> &state) {
+    // To be able to infer the multi-dimensional state from the index
+    // we apply a recursive algorithm that will complete a vector of size
+    // nb_strategies from right to left
+
     auto remaining = pop_size;
 
     for (size_t a = 0; a < nb_strategies; ++a) {
+        // reset the state container
+        state[a] = 0;
         for (size_t j = remaining; j > 0; --j) {
             auto count = EGTTools::starsBars(remaining - j, nb_strategies - a - 1);
             if (i >= count) {
                 i -= count;
-                state[a] = 0;
             } else {
                 state[a] = j;
                 remaining -= j;

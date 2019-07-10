@@ -28,19 +28,19 @@ size_t EGTTools::SED::CRD::altruist(size_t prev_donation, size_t threshold, size
 size_t EGTTools::SED::CRD::reciprocal(size_t prev_donation, size_t threshold, size_t current_round) {
     if (current_round == 0)
         return 2;
-    else if (prev_donation >= threshold)
-        return 4;
-    else
+    else if (prev_donation < threshold)
         return 0;
+    else
+        return 4;
 }
 
 size_t EGTTools::SED::CRD::compensator(size_t prev_donation, size_t threshold, size_t current_round) {
     if (current_round == 0)
         return 2;
-    else if (prev_donation > threshold)
-        return 0;
-    else
+    else if (prev_donation <= threshold)
         return 4;
+    else
+        return 0;
 }
 
 size_t EGTTools::SED::CRD::conditional_cooperator(size_t prev_donation, size_t threshold, size_t current_round) {
