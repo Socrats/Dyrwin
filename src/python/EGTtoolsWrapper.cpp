@@ -298,7 +298,10 @@ PYBIND11_MODULE(EGTtools, m) {
             .def(py::init<size_t, EGTTools::SED::AbstractGame &, size_t>(),
                  "Runs a moran process with pairwise comparison and calculates fitness according to game",
                  py::arg("pop_size"), py::arg("game"), py::arg("cache_size"), py::keep_alive<1, 3>())
-            .def("evolve", &PairwiseComparison::evolve, py::keep_alive<1, 5>(),
+            .def("evolve",
+                 static_cast<EGTTools::VectorXui (PairwiseComparison::*)(size_t, double, double,
+                                                                         const Eigen::Ref<const EGTTools::VectorXui> &)>( &PairwiseComparison::evolve ),
+                 py::keep_alive<1, 5>(),
                  "evolves the strategies for a maximum of nb_generations", py::arg("nb_generations"), py::arg("beta"),
                  py::arg("mu"), py::arg("init_state"))
             .def("fixation_probability", &PairwiseComparison::fixationProbability,

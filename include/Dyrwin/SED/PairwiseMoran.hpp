@@ -79,10 +79,11 @@ namespace EGTTools::SED {
          * @param runs : number of independent runs (the estimation improves with the number of runs)
          * @param nb_generations : maximum number of generations per run
          * @param beta : intensity of selection
+         * @param mu : mutation probability
          * @return the fixation probability of the invader strategy
          */
         double fixationProbability(size_t invader, size_t resident, size_t runs, size_t nb_generations, double beta,
-                                   double mu);
+                                   double mu = 0.0);
 
         /**
          * @brief Estimates the stationary distribution of the population of strategies in the game.
