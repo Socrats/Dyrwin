@@ -240,6 +240,7 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("__repr__", &SED::MLS<SED::GarciaGroup>::toString);
 
     py::class_<EGTTools::TimingUncertainty<std::mt19937_64>>(m, "TimingUncertainty")
+            .def(py::init<double>(), "Timing uncertainty object", py::arg("p"))
             .def(py::init<double, size_t>(), "Timing uncertainty object", py::arg("p"), py::arg("max_rounds"))
             .def("calculateEnd", &EGTTools::TimingUncertainty<std::mt19937_64>::calculateEnd)
             .def("calculateFullEnd", &EGTTools::TimingUncertainty<std::mt19937_64>::calculateFullEnd)

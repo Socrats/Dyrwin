@@ -55,6 +55,20 @@ namespace EGTTools::SED {
         evolve(size_t nb_generations, double beta, double mu, const Eigen::Ref<const VectorXui> &init_state);
 
         /**
+         * Runs the moran process for a given number of generations or until it reaches a monomorphic state
+         *
+         * @param nb_generations : maximum number of generations
+         * @param beta : intensity of selection
+         * @param mu: mutation probability
+         * @param init_state : initial state of the population
+         * @param generator : random engine
+         * @return a vector with the final state of the population
+         */
+        VectorXui
+        evolve(size_t nb_generations, double beta, double mu, const Eigen::Ref<const VectorXui> &init_state,
+               std::mt19937_64 &generator);
+
+        /**
          * @brief Estimates the fixation probability of the invading strategy over the resident strategy.
          *
          * This function will estimate numerically the fixation probability of an @param invader strategy
@@ -116,6 +130,8 @@ namespace EGTTools::SED {
         std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 
         inline std::pair<size_t, size_t> _sample_players();
+
+        inline std::pair<size_t, size_t> _sample_players(std::mt19937_64 &generator);
 
         inline double
         _calculate_fitness(const size_t &player_type, VectorXui &strategies, Cache &cache);
@@ -233,6 +249,86 @@ namespace EGTTools::SED {
     }
 
     template<class Cache>
+    VectorXui
+    PairwiseMoran<Cache>::evolve(size_t nb_generations, double beta, double mu,
+                                 const Eigen::Ref<const VectorXui> &init_state, std::mt19937_64 &generator) {
+        size_t die, birth;
+        std::vector<size_t> population(_pop_size, 0);
+        VectorXui strategies(_nb_strategies);
+        // Initialise strategies from init_state
+        strategies.array() = init_state;
+
+        // Avg. number of rounds for a mutation to happen
+        std::geometric_distribution<size_t> geometric(1 - mu);
+        auto[homogeneous, idx_homo] = _is_homogeneous(strategies);
+
+        // Creates a cache for the fitness data
+        EGTTools::Utils::LRUCache<std::string, double> cache(_cache_size);
+
+        // initialise population
+        _initialise_population(strategies, population);
+
+        // Now we start the imitation process
+        for (size_t i = 0; i < nb_generations; ++i) {
+            // First we pick 2 players randomly
+            auto[player1, player2] = _sample_players(generator);
+
+            if (homogeneous) {
+                if (mu > 0) {
+                    i += geometric(generator);
+                    // mutate
+                    birth = _strategy_sampler(generator);
+                    // If population still homogeneous we wait for another mutation
+                    while (birth == idx_homo) {
+                        i += geometric(generator);
+                        birth = _strategy_sampler(generator);
+                    }
+                    if (i < nb_generations) {
+                        population[player1] = birth;
+                        strategies(birth) += 1;
+                        strategies(idx_homo) -= 1;
+                        homogeneous = false;
+                    }
+                    continue;
+                } else break;
+            }
+
+            // Check if player mutates
+            if (_real_rand(generator) < mu) {
+                die = population[player1];
+                birth = _strategy_sampler(generator);
+                population[player1] = birth;
+            } else { // If no mutation, player imitates
+                // Then we let them play to calculate their payoffs
+                auto fitness_p1 = _calculate_fitness(population[player1], strategies, cache);
+                auto fitness_p2 = _calculate_fitness(population[player2], strategies, cache);
+
+                // Then we apply the moran process with mutation
+                if (_real_rand(generator) < EGTTools::SED::fermi(beta, fitness_p1, fitness_p2)) {
+                    // player 1 copies player 2
+                    die = population[player1];
+                    birth = population[player2];
+                    population[player1] = birth;
+                } else {
+                    // player 2 copies player 1
+                    die = population[player2];
+                    birth = population[player1];
+                    population[player2] = birth;
+                }
+            }
+            strategies(birth) += 1;
+            strategies(die) -= 1;
+            // Check if population is homogeneous
+            if (strategies(birth) == _pop_size) {
+                homogeneous = true;
+                idx_homo = birth;
+            }
+        }
+
+        return strategies;
+    }
+
+    template<class Cache>
     double
     PairwiseMoran<Cache>::fixationProbability(size_t invader, size_t resident, size_t runs, size_t nb_generations,
                                               double beta, double mu) {
@@ -247,13 +343,16 @@ namespace EGTTools::SED {
         // This loop can be done in parallel
 #pragma omp parallel for reduction(+:r2m, r2r)
         for (size_t i = 0; i < runs; ++i) {
+            // Random generators - each thread should have its own generator
+            std::mt19937_64 generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+
             // First we initialize a homogeneous population with the resident strategy
             VectorXui strategies = VectorXui::Zero(_nb_strategies);
             strategies(resident) = _pop_size - 1;
             strategies(invader) = 1;
 
             // Then we run the Moran Process
-            auto final_state = evolve(nb_generations, beta, mu, strategies);
+            auto final_state = evolve(nb_generations, beta, mu, strategies, generator);
 
             if (final_state(invader) == 0) {
                 r2r += 1.0;
@@ -275,17 +374,16 @@ namespace EGTTools::SED {
 
 #pragma omp parallel for reduction(+:sdist)
         for (size_t i = 0; i < nb_runs; ++i) {
+            // Random generators - each thread should have its own generator
+            std::mt19937_64 generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+
             // Then we sample a random population state
             VectorXui init_state = VectorXui::Zero(_nb_strategies);
             // Sample state
-            EGTTools::SED::sample_simplex(sampler(_mt), _pop_size, _nb_strategies, init_state);
-//            std::cout << "init state: (";
-//            for (size_t z = 0; z < _nb_strategies; ++z)
-//                std::cout << init_state(z) << ", ";
-//            std::cout << ")" << std::endl;
+            EGTTools::SED::sample_simplex(sampler(generator), _pop_size, _nb_strategies, init_state);
 
             // Finally we call the evolve function
-            sdist += evolve(nb_generations, beta, mu, init_state);
+            sdist += evolve(nb_generations, beta, mu, init_state, generator);
         }
         return sdist.cast<double>() / nb_runs;
     }
@@ -295,6 +393,14 @@ namespace EGTTools::SED {
         auto player1 = _pop_sampler(_mt);
         auto player2 = _pop_sampler(_mt);
         while (player2 == player1) player2 = _pop_sampler(_mt);
+        return std::make_pair(player1, player2);
+    }
+
+    template<class Cache>
+    std::pair<size_t, size_t> PairwiseMoran<Cache>::_sample_players(std::mt19937_64 &generator) {
+        auto player1 = _pop_sampler(generator);
+        auto player2 = _pop_sampler(generator);
+        while (player2 == player1) player2 = _pop_sampler(generator);
         return std::make_pair(player1, player2);
     }
 
