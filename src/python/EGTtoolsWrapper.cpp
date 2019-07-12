@@ -273,7 +273,8 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("type", &EGTTools::SED::CRD::CrdGame::type)
             .def("payoffs", &EGTTools::SED::CRD::CrdGame::payoffs)
             .def("payoff", &EGTTools::SED::CRD::CrdGame::payoff,
-                 "returns the payoff of a strategy given a group state.")
+                 "returns the payoff of a strategy given a group state.", py::arg("strategy"),
+                 py::arg("group_composition"))
             .def_property_readonly("nb_strategies", &EGTTools::SED::AbstractGame::nb_strategies)
             .def("save_payoffs", &EGTTools::SED::CRD::CrdGame::save_payoffs);
 
@@ -290,7 +291,8 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("type", &EGTTools::SED::CRD::CrdGameTU::type)
             .def("payoffs", &EGTTools::SED::CRD::CrdGameTU::payoffs)
             .def("payoff", &EGTTools::SED::CRD::CrdGameTU::payoff,
-                 "returns the payoff of a strategy given a group state.")
+                 "returns the payoff of a strategy given a group state.", py::arg("strategy"),
+                 py::arg("group_composition"))
             .def_property_readonly("nb_strategies", &EGTTools::SED::AbstractGame::nb_strategies)
             .def("save_payoffs", &EGTTools::SED::CRD::CrdGameTU::save_payoffs);
 
