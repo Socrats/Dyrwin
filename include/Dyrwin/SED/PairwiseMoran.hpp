@@ -294,7 +294,7 @@ namespace EGTTools::SED {
         size_t die, birth, strategy_p1 = 0, strategy_p2 = 0;
 
         // Check if initial state is already homogeneous, in which case return
-        if ((strategies.array() != _pop_size).any()) return;
+        if ((strategies.array() == _pop_size).any()) return;
 
         // Creates a cache for the fitness data
         EGTTools::Utils::LRUCache<std::string, double> cache(_cache_size);
