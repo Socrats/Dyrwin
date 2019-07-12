@@ -402,8 +402,8 @@ namespace EGTTools::SED {
                     ")");
         if (invader == resident) throw std::invalid_argument("mutant must be different from resident");
 
-        double r2m = 0; // resident to mutant count
-        double r2r = 0; // resident to resident count
+        size_t r2m = 0; // resident to mutant count
+        size_t r2r = 0; // resident to resident count
 
         // This loop can be done in parallel
 #pragma omp parallel for reduction(+:r2m, r2r)
@@ -420,13 +420,13 @@ namespace EGTTools::SED {
             evolve(nb_generations, beta, strategies, generator);
 
             if (strategies(invader) == 0) {
-                r2r += 1.0;
+                ++r2r;
             } else if (strategies(resident) == 0) {
-                r2m += 1.0;
+                ++r2m;
             }
         } // end runs loop
-        if ((r2m == 0.0) && (r2r == 0.0)) return 0.0;
-        else return r2m / (r2m + r2r);
+        if ((r2m == 0) && (r2r == 0)) return 0.0;
+        else return static_cast<double>(r2m) / (r2m + r2r);
     }
 
     template<class Cache>
