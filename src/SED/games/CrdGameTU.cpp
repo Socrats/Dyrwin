@@ -28,10 +28,9 @@ EGTTools::SED::CRD::CrdGameTU::play(const EGTTools::SED::StrategyCounts &group_c
                                     PayoffVector &game_payoffs) {
     size_t prev_donation = 0, current_donation = 0;
     size_t public_account = 0;
-    size_t action = 0;
     size_t player_aspiration = (group_size_ - 1) * 2;
     size_t game_rounds = tu_.calculateFullEnd(min_rounds_, generator_);
-
+    VectorXui actions = VectorXui::Zero(nb_strategies_);
     // Initialize payoffs
     for (size_t j = 0; j < EGTTools::SED::CRD::nb_strategies; ++j) {
         if (group_composition[j] > 0) {
@@ -44,10 +43,10 @@ EGTTools::SED::CRD::CrdGameTU::play(const EGTTools::SED::StrategyCounts &group_c
     for (size_t i = 0; i < game_rounds; ++i) {
         for (size_t j = 0; j < EGTTools::SED::CRD::nb_strategies; ++j) {
             if (group_composition[j] > 0) {
-                action = get_action(j, prev_donation - action, player_aspiration, i);
-                if (game_payoffs[j] - action >= 0) {
-                    game_payoffs[j] -= action;
-                    current_donation += group_composition[j] * action;
+                actions(j) = get_action(j, prev_donation - actions(j), player_aspiration, i);
+                if (game_payoffs[j] - actions(j) >= 0) {
+                    game_payoffs[j] -= actions(j);
+                    current_donation += group_composition[j] * actions(j);
                 }
             }
         }
