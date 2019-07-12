@@ -42,7 +42,7 @@ void EGTTools::SED::CRD::CrdGame::play(const EGTTools::SED::StrategyCounts &grou
         for (size_t j = 0; j < EGTTools::SED::CRD::nb_strategies; ++j) {
             if (group_composition[j] > 0) {
                 action = get_action(j, prev_donation - action, player_aspiration, i);
-                if (game_payoffs[j] - action > 0) {
+                if (game_payoffs[j] - action >= 0) {
                     game_payoffs[j] -= action;
                     current_donation += group_composition[j] * action;
                 }
