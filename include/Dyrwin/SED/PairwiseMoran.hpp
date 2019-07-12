@@ -59,6 +59,16 @@ namespace EGTTools::SED {
          *
          * @param nb_generations : maximum number of generations
          * @param beta : intensity of selection
+         * @param strategies : reference vector with the initial state of the population
+         * @param generator : random engine
+         */
+        void evolve(size_t nb_generations, double beta, VectorXui &strategies, std::mt19937_64 &generator);
+
+        /**
+         * Runs the moran process for a given number of generations or until it reaches a monomorphic state
+         *
+         * @param nb_generations : maximum number of generations
+         * @param beta : intensity of selection
          * @param mu: mutation probability
          * @param init_state : initial state of the population
          * @param generator : random engine
@@ -82,8 +92,7 @@ namespace EGTTools::SED {
          * @param mu : mutation probability
          * @return the fixation probability of the invader strategy
          */
-        double fixationProbability(size_t invader, size_t resident, size_t runs, size_t nb_generations, double beta,
-                                   double mu = 0.0);
+        double fixationProbability(size_t invader, size_t resident, size_t runs, size_t nb_generations, double beta);
 
         /**
          * @brief Estimates the stationary distribution of the population of strategies in the game.
@@ -130,9 +139,35 @@ namespace EGTTools::SED {
         // Random generators
         std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 
+        /**
+         * @brief updates the population of strategies one step
+         * @param s1 : index of strategy 1
+         * @param s2 : index of strategy 2
+         * @param beta : intensity of selection
+         * @param birth : container for the index of the birth strategy
+         * @param die : container for the index of the die strategy
+         * @param strategies : vector of strategy counts
+         * @param cache : reference to cache container
+         * @param generator : random generator
+         */
+        inline void
+        update_step(size_t s1, size_t s2, double beta, size_t &birth, size_t &die, VectorXui &strategies,
+                    EGTTools::Utils::LRUCache<std::string, double> &cache,
+                    std::mt19937_64 &generator);
+
         inline std::pair<size_t, size_t> _sample_players();
 
         inline std::pair<size_t, size_t> _sample_players(std::mt19937_64 &generator);
+
+        /**
+         * @brief samples 2 players from the population of strategies and updates references @param s1 and s2.
+         * @param s1 : reference container for strategy 1
+         * @param s2 : reference container for strategy 2
+         * @param strategies : vector of strategy counts
+         * @param generator : random generator
+         * @return true if the sampled strategies are equal, otherwise false
+         */
+        inline bool _sample_players(size_t &s1, size_t &s2, VectorXui &strategies, std::mt19937_64 &generator);
 
         inline double
         _calculate_fitness(const size_t &player_type, VectorXui &strategies, Cache &cache);
@@ -180,7 +215,7 @@ namespace EGTTools::SED {
         strategies.array() = init_state;
 
         // Avg. number of rounds for a mutation to happen
-        size_t nb_generations_for_mutation = std::floor(1 / mu);
+        std::geometric_distribution<size_t> geometric(1 - mu);
         auto[homogeneous, idx_homo] = _is_homogeneous(strategies);
 
         // Creates a cache for the fitness data
@@ -196,12 +231,12 @@ namespace EGTTools::SED {
 
             if (homogeneous) {
                 if (mu > 0) {
-                    i += nb_generations_for_mutation;
+                    i += geometric(_mt);
                     // mutate
                     birth = _strategy_sampler(_mt);
                     // If population still homogeneous we wait for another mutation
                     while (birth == idx_homo) {
-                        i += nb_generations_for_mutation;
+                        i += geometric(_mt);
                         birth = _strategy_sampler(_mt);
                     }
                     if (i < nb_generations) {
@@ -247,6 +282,34 @@ namespace EGTTools::SED {
         }
 
         return strategies;
+    }
+
+    template<class Cache>
+    void
+    PairwiseMoran<Cache>::evolve(size_t nb_generations, double beta, VectorXui &strategies,
+                                 std::mt19937_64 &generator) {
+        // This method runs a Moran process with pairwise comparisson
+        // using the fermi rule and no mutation
+
+        size_t die, birth, strategy_p1 = 0, strategy_p2 = 0;
+
+        // Check if initial state is already homogeneous, in which case return
+        if ((strategies.array() != _pop_size).any()) return;
+
+        // Creates a cache for the fitness data
+        EGTTools::Utils::LRUCache<std::string, double> cache(_cache_size);
+
+        // Now we start the imitation process
+        for (size_t i = 0; i < nb_generations; ++i) {
+            // First we pick 2 players randomly
+            // If the strategies are the same, there will be no change in the population
+            if (_sample_players(strategy_p1, strategy_p2, strategies, generator)) continue;
+
+            update_step(strategy_p1, strategy_p2, beta, birth, die, strategies, cache, generator);
+
+            // Check if population is homogeneous
+            if (strategies(birth) == _pop_size) break;
+        }
     }
 
     template<class Cache>
@@ -332,7 +395,7 @@ namespace EGTTools::SED {
     template<class Cache>
     double
     PairwiseMoran<Cache>::fixationProbability(size_t invader, size_t resident, size_t runs, size_t nb_generations,
-                                              double beta, double mu) {
+                                              double beta) {
         if (invader > _nb_strategies || resident > _nb_strategies)
             throw std::invalid_argument(
                     "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
@@ -353,11 +416,11 @@ namespace EGTTools::SED {
             strategies(invader) = 1;
 
             // Then we run the Moran Process
-            auto final_state = evolve(nb_generations, beta, mu, strategies, generator);
+            evolve(nb_generations, beta, strategies, generator);
 
-            if (final_state(invader) == 0) {
+            if (strategies(invader) == 0) {
                 r2r += 1.0;
-            } else if (final_state(resident) == 0) {
+            } else if (strategies(resident) == 0) {
                 r2m += 1.0;
             }
         } // end runs loop
@@ -390,6 +453,30 @@ namespace EGTTools::SED {
     }
 
     template<class Cache>
+    void PairwiseMoran<Cache>::update_step(size_t s1, size_t s2, double beta, size_t &birth, size_t &die,
+                                           VectorXui &strategies,
+                                           EGTTools::Utils::LRUCache<std::string, double> &cache,
+                                           std::mt19937_64 &generator) {
+        // Then we let them play to calculate their payoffs
+        auto fitness_p1 = _calculate_fitness(s1, strategies, cache);
+        auto fitness_p2 = _calculate_fitness(s2, strategies, cache);
+
+        // Then we apply the moran process with mutation
+        if (_real_rand(generator) < EGTTools::SED::fermi(beta, fitness_p1, fitness_p2)) {
+            // player 1 copies player 2
+            die = s1;
+            birth = s2;
+        } else {
+            // player 2 copies player 1
+            die = s1;
+            birth = s2;
+        }
+
+        strategies(birth) += 1;
+        strategies(die) -= 1;
+    }
+
+    template<class Cache>
     std::pair<size_t, size_t> PairwiseMoran<Cache>::_sample_players() {
         auto player1 = _pop_sampler(_mt);
         auto player2 = _pop_sampler(_mt);
@@ -403,6 +490,34 @@ namespace EGTTools::SED {
         auto player2 = _pop_sampler(generator);
         while (player2 == player1) player2 = _pop_sampler(generator);
         return std::make_pair(player1, player2);
+    }
+
+    template<class Cache>
+    bool
+    PairwiseMoran<Cache>::_sample_players(size_t &s1, size_t &s2, VectorXui &strategies, std::mt19937_64 &generator) {
+        // sample 2 strategies from the pool
+        auto player1 = _pop_sampler(generator);
+        auto player2 = _pop_sampler(generator);
+        while (player2 == player1) player2 = _pop_sampler(generator);
+
+        size_t tmp = 0;
+        s1 = 0;
+        s2 = 0;
+        bool unset_p1 = true, unset_p2 = true;
+
+        for (size_t i = 0; i < _nb_strategies; ++i) {
+            tmp += strategies(i);
+            if (tmp > player1 && unset_p1) {
+                s1 = i;
+                unset_p1 = false;
+            }
+            if (tmp > player2 && unset_p2) {
+                s2 = i;
+                unset_p2 = false;
+            }
+            if (!unset_p1 && !unset_p2) break;
+        }
+        return s1 == s2;
     }
 
     template<class Cache>

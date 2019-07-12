@@ -306,8 +306,7 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("mu"), py::arg("init_state"))
             .def("fixation_probability", &PairwiseComparison::fixationProbability,
                  "Estimates the fixation probability of an strategy in the population.",
-                 py::arg("mutant"), py::arg("resident"), py::arg("nb_runs"), py::arg("nb_generations"), py::arg("beta"),
-                 py::arg("mu"))
+                 py::arg("mutant"), py::arg("resident"), py::arg("nb_runs"), py::arg("nb_generations"), py::arg("beta"))
             .def("stationary_distribution", &PairwiseComparison::stationaryDistribution,
                  py::call_guard<py::gil_scoped_release>(),
                  "Estimates the stationary distribution of the population of strategies given the game.",
