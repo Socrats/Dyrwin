@@ -180,11 +180,11 @@ namespace EGTTools::SED {
     template<class Cache>
     PairwiseMoran<Cache>::PairwiseMoran(size_t pop_size,
                                         EGTTools::SED::AbstractGame &game,
-                                        size_t cache_size) : _nb_strategies(game.nb_strategies()),
-                                                             _pop_size(pop_size),
+                                        size_t cache_size) : _pop_size(pop_size),
                                                              _cache_size(cache_size),
                                                              _game(game) {
         // Initialize random uniform distribution
+        _nb_strategies = game.nb_strategies();
         _pop_sampler = std::uniform_int_distribution<size_t>(0, _pop_size - 1);
         _strategy_sampler = std::uniform_int_distribution<size_t>(0, _nb_strategies - 1);
         _real_rand = std::uniform_real_distribution<double>(0.0, 1.0);
@@ -396,10 +396,11 @@ namespace EGTTools::SED {
     double
     PairwiseMoran<Cache>::fixationProbability(size_t invader, size_t resident, size_t runs, size_t nb_generations,
                                               double beta) {
-        if (invader > _nb_strategies || resident > _nb_strategies)
+        if (invader >= _nb_strategies || resident >= _nb_strategies)
             throw std::invalid_argument(
                     "you must specify a valid index for invader and resident [0, " + std::to_string(_nb_strategies) +
                     ")");
+        if (invader == resident) throw std::invalid_argument("mutant must be different from resident");
 
         double r2m = 0; // resident to mutant count
         double r2r = 0; // resident to resident count
