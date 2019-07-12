@@ -58,12 +58,13 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules/
 ##############################
 
 # Default is to build everything
-if (NOT MAKE_ALL AND NOT MAKE_PYTHON AND NOT MAKE_APPS)
+if (NOT MAKE_ALL AND NOT MAKE_PYTHON AND NOT MAKE_APPS AND NOT MAKE_TESTS)
     set(MAKE_ALL 1)
 endif ()
 
 if (MAKE_ALL)
     set(MAKE_APPS 1)
+    set(MAKE_TESTS 1)
     set(MAKE_PYTHON 1)
 endif ()
 
@@ -117,6 +118,10 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/src)
 if (MAKE_APPS)
     add_subdirectory(${PROJECT_SOURCE_DIR}/apps)
 endif ()
+
+if (MAKE_TESTS)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/tests)
+endif()
 
 # Python bindings
 if (MAKE_PYTHON)
