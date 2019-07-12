@@ -67,6 +67,16 @@ namespace EGTTools::SED {
      * @param i : state index
      * @param pop_size : size of the population
      * @param nb_strategies : number of strategies
+     * @return vector with the sampled state
+     */
+    VectorXui sample_simplex(size_t i, const size_t &pop_size, const size_t &nb_strategies);
+
+    /**
+     * @brief Transforms and state index into a vector.
+     *
+     * @param i : state index
+     * @param pop_size : size of the population
+     * @param nb_strategies : number of strategies
      * @param state : container for the sampled state
      */
     void sample_simplex(size_t i, const size_t &pop_size, const size_t &nb_strategies, VectorXui &state);

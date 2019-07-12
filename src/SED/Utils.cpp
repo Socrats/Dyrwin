@@ -58,11 +58,41 @@ size_t EGTTools::SED::calculate_state(const size_t &group_size, const EGTTools::
     return retval;
 }
 
-void EGTTools::SED::sample_simplex(size_t i, const size_t &pop_size, const size_t &nb_strategies,
-                                   EGTTools::VectorXui &state) {
+EGTTools::VectorXui EGTTools::SED::sample_simplex(size_t i, const size_t &pop_size, const size_t &nb_strategies) {
+    // To be able to infer the multi-dimensional state from the index
+    // we apply a recursive algorithm that will complete a vector of size
+    // nb_strategies from right to left
+
+    EGTTools::VectorXui state = EGTTools::VectorXui::Zero(nb_strategies);
     auto remaining = pop_size;
 
     for (size_t a = 0; a < nb_strategies; ++a) {
+        // reset the state container
+        for (size_t j = remaining; j > 0; --j) {
+            auto count = EGTTools::starsBars(remaining - j, nb_strategies - a - 1);
+            if (i >= count) {
+                i -= count;
+            } else {
+                state(a) = j;
+                remaining -= j;
+                break;
+            }
+        }
+    }
+    return state;
+}
+
+void EGTTools::SED::sample_simplex(size_t i, const size_t &pop_size, const size_t &nb_strategies,
+                                   EGTTools::VectorXui &state) {
+    // To be able to infer the multi-dimensional state from the index
+    // we apply a recursive algorithm that will complete a vector of size
+    // nb_strategies from right to left
+
+    auto remaining = pop_size;
+
+    for (size_t a = 0; a < nb_strategies; ++a) {
+        // reset the state container
+        state(a) = 0;
         for (size_t j = remaining; j > 0; --j) {
             auto count = EGTTools::starsBars(remaining - j, nb_strategies - a - 1);
             if (i >= count) {

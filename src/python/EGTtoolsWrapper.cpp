@@ -260,6 +260,13 @@ PYBIND11_MODULE(EGTtools, m) {
             .def_property_readonly("nb_strategies", &EGTTools::SED::AbstractGame::nb_strategies)
             .def("save_payoffs", &EGTTools::SED::AbstractGame::save_payoffs);
 
+    m.def("calculate_state", &EGTTools::SED::calculate_state, "calculates an index given a simplex state",
+          py::arg("group_size"), py::arg("group_composition"));
+    m.def("sample_simplex",
+          static_cast<EGTTools::VectorXui (*)(size_t, const size_t &, const size_t &)>(&EGTTools::SED::sample_simplex),
+          "returns a point in the simplex given an index", py::arg("index"), py::arg("pop_size"),
+          py::arg("nb_strategies"));
+
     // Now we define a submodule
     auto mCRD = m.def_submodule("CRD");
 
