@@ -167,5 +167,11 @@ const EGTTools::SED::GroupPayoffs &EGTTools::SED::CRD::CrdGame::payoffs() const 
 
 double
 EGTTools::SED::CRD::CrdGame::payoff(size_t strategy, const EGTTools::SED::StrategyCounts &group_composition) const {
+    if (strategy > nb_strategies_)
+        throw std::invalid_argument(
+                "you must specify a valid index for the strategy [0, " + std::to_string(nb_strategies_) +
+                ")");
+    if (group_composition.size() != nb_strategies_)
+        throw std::invalid_argument("The group composition must be of size " + std::to_string(nb_strategies_));
     return payoffs_(strategy, EGTTools::SED::calculate_state(group_size_, group_composition));
 }
