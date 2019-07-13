@@ -406,7 +406,7 @@ namespace EGTTools::SED {
         long int r2r = 0; // resident to resident count
 
         // This loop can be done in parallel
-#pragma omp parallel for reduction(+:r2m, r2r)
+//#pragma omp parallel for reduction(+:r2m, r2r)
         for (size_t i = 0; i < runs; ++i) {
             // Random generators - each thread should have its own generator
             std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
@@ -469,8 +469,8 @@ namespace EGTTools::SED {
             birth = s2;
         } else {
             // player 2 copies player 1
-            die = s1;
-            birth = s2;
+            die = s2;
+            birth = s1;
         }
 
         strategies(birth) += 1;
