@@ -100,21 +100,6 @@ namespace EGTTools::SED {
          * The estimation of the stationary distribution is done by calculating averaging the fraction of
          * the population of each strategy at the end of each trial over all trials.
          *
-         * This method assumes the low mutation limit (no mutation in this simulation).
-         *
-         * @param nb_runs : number of trials used to estimate the stationary distribution
-         * @param nb_generations : number of generations per trial
-         * @param beta : intensity of selection
-         * @return the stationary distribution
-         */
-        Vector stationaryDistribution(size_t nb_runs, size_t nb_generations, double beta);
-
-        /**
-         * @brief Estimates the stationary distribution of the population of strategies in the game.
-         *
-         * The estimation of the stationary distribution is done by calculating averaging the fraction of
-         * the population of each strategy at the end of each trial over all trials.
-         *
          * @param nb_runs : number of trials used to estimate the stationary distribution
          * @param nb_generations : number of generations per trial
          * @param beta : intensity of selection
@@ -169,6 +154,31 @@ namespace EGTTools::SED {
         _update_step(size_t s1, size_t s2, double beta, size_t &birth, size_t &die, VectorXui &strategies,
                      Cache &cache,
                      std::mt19937_64 &generator);
+
+        /**
+         * @brief updates the population of strategies and return the number of steps
+         * @param s1 : index of strategy 1
+         * @param s2 : index of strategy 2
+         * @param beta : intensity of selection
+         * @param mu : mutation probability
+         * @param birth : container for the index of the birth strategy
+         * @param die : container for the index of the die strategy
+         * @param homogeneous : container indicating whether the population is homogeneous
+         * @param idx_homo : container indicating the index of the homogeneous strategy
+         * @param nb_generations : maximum number of generations
+         * @param strategies : vector of strategy counts
+         * @param cache : reference to cache container
+         * @param geometric : geometric distribution of steps for a mutation to occur
+         * @param generator : random generator
+         * @return the number of steps that the update takes.
+         */
+        inline size_t
+        _update_multi_step(size_t s1, size_t s2, double beta, double mu,
+                           size_t &birth, size_t &die, bool &homogeneous, size_t &idx_homo,
+                           const size_t &nb_generations,
+                           VectorXui &strategies,
+                           Cache &cache, std::geometric_distribution<size_t> &geometric,
+                           std::mt19937_64 &generator);
 
         inline std::pair<size_t, size_t> _sample_players();
 
@@ -445,52 +455,75 @@ namespace EGTTools::SED {
     }
 
     template<class Cache>
-    Vector PairwiseMoran<Cache>::stationaryDistribution(size_t nb_runs, size_t nb_generations, double beta) {
+    Vector PairwiseMoran<Cache>::stationaryDistribution(size_t nb_runs, size_t nb_generations, double beta, double mu) {
         // First we initialise the container for the stationary distribution
         auto total_nb_states = EGTTools::starsBars(_pop_size, _nb_strategies);
         auto sampler = std::uniform_int_distribution<size_t>(0, total_nb_states - 1);
-        VectorXui sdist = VectorXui::Zero(_nb_strategies);
+        VectorXui avg_stationary_distribution = VectorXui::Zero(total_nb_states);
+        // Distribution number of generations for a mutation to happen
+        std::geometric_distribution<size_t> geometric(mu);
 
-#pragma omp parallel for reduction(+:sdist)
+#pragma omp parallel for reduction(+:avg_stationary_distribution)
         for (size_t i = 0; i < nb_runs; ++i) {
+            VectorXui sdist = VectorXui::Zero(total_nb_states);
             // Random generators - each thread should have its own generator
             std::mt19937_64 generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 
             // Then we sample a random population state
             VectorXui strategies = VectorXui::Zero(_nb_strategies);
             // Sample state
-            EGTTools::SED::sample_simplex(sampler(generator), _pop_size, _nb_strategies, strategies);
+            auto current_state = sampler(generator);
+            EGTTools::SED::sample_simplex(current_state, _pop_size, _nb_strategies, strategies);
+            ++sdist(current_state);
 
-            // Then we run the Moran Process
-            evolve(nb_generations, beta, strategies, generator);
-            // Update the strategy counts
-            sdist += strategies;
+            size_t die, birth, strategy_p1 = 0, strategy_p2 = 0, current_generation = 0;
+            // Check if state is homogeneous
+            auto[homogeneous, idx_homo] = _is_homogeneous(strategies);
+
+            if (homogeneous) {
+                current_generation += geometric(_mt);
+                // mutate
+                birth = _strategy_sampler(_mt);
+                // If population still homogeneous we wait for another mutation
+                while (birth == idx_homo) {
+                    current_generation += geometric(_mt);
+                    birth = _strategy_sampler(_mt);
+                }
+                if (current_generation < nb_generations) {
+                    strategies(birth) += 1;
+                    strategies(idx_homo) -= 1;
+                    homogeneous = false;
+                    current_state = EGTTools::SED::calculate_state(_pop_size, strategies);
+                    sdist(current_state) += current_generation;
+                }
+            }
+
+            // Creates a cache for the fitness data
+            Cache cache(_cache_size);
+
+            for (size_t j = current_generation; j < nb_generations; ++j) {
+                // First we pick 2 players randomly
+                // If the strategies are the same, there will be no change in the population
+                if (_sample_players(strategy_p1, strategy_p2, strategies, generator)) {
+                    ++sdist(current_state);
+                    continue;
+                }
+
+                // Update with mutation and return how many steps should be added to the current
+                // generation if the only change in the population could have been a mutation
+                auto k = _update_multi_step(strategy_p1, strategy_p2, beta, mu, birth, die, homogeneous, idx_homo,
+                                            nb_generations,
+                                            strategies, cache,
+                                            geometric, generator);
+
+                // Update state count by k steps
+                current_state = EGTTools::SED::calculate_state(_pop_size, strategies);
+                sdist(current_state) += k;
+                j += k;
+            }
+            avg_stationary_distribution += sdist;
         }
-        return sdist.cast<double>() / nb_runs;
-    }
-
-    template<class Cache>
-    Vector PairwiseMoran<Cache>::stationaryDistribution(size_t nb_runs, size_t nb_generations, double beta,
-                                                        double mu) {
-        // First we initialise the container for the stationary distribution
-        auto total_nb_states = EGTTools::starsBars(_pop_size, _nb_strategies);
-        auto sampler = std::uniform_int_distribution<size_t>(0, total_nb_states - 1);
-        VectorXui sdist = VectorXui::Zero(_nb_strategies);
-
-#pragma omp parallel for reduction(+:sdist)
-        for (size_t i = 0; i < nb_runs; ++i) {
-            // Random generators - each thread should have its own generator
-            std::mt19937_64 generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
-
-            // Then we sample a random population state
-            VectorXui init_state = VectorXui::Zero(_nb_strategies);
-            // Sample state
-            EGTTools::SED::sample_simplex(sampler(generator), _pop_size, _nb_strategies, init_state);
-
-            // Finally we call the evolve function
-            sdist += evolve(nb_generations, beta, mu, init_state, generator);
-        }
-        return sdist.cast<double>() / nb_runs;
+        return avg_stationary_distribution.cast<double>() / (nb_runs * nb_generations);
     }
 
     template<class Cache>
@@ -515,6 +548,66 @@ namespace EGTTools::SED {
 
         strategies(birth) += 1;
         strategies(die) -= 1;
+    }
+
+    template<class Cache>
+    size_t
+    PairwiseMoran<Cache>::_update_multi_step(size_t s1, size_t s2, double beta, double mu, size_t &birth, size_t &die,
+                                             bool &homogeneous, size_t &idx_homo, const size_t &nb_generations,
+                                             VectorXui &strategies,
+                                             Cache &cache,
+                                             std::geometric_distribution<size_t> &geometric,
+                                             std::mt19937_64 &generator) {
+
+        size_t k = 0;
+
+        if (homogeneous) {
+            k += geometric(_mt);
+            // mutate
+            die = idx_homo;
+            birth = _strategy_sampler(_mt);
+            // If population still homogeneous we wait for another mutation
+            while (birth == die) {
+                k += geometric(_mt);
+                birth = _strategy_sampler(_mt);
+            }
+            if (k < nb_generations) {
+                strategies(birth) += 1;
+                strategies(die) -= 1;
+                homogeneous = false;
+            }
+        } else {
+            // Check if player mutates
+            if (_real_rand(_mt) < mu) {
+                die = s1;
+                birth = _strategy_sampler(_mt);
+            } else { // If no mutation, player imitates
+
+                // Then we let them play to calculate their payoffs
+                auto fitness_p1 = _calculate_fitness(s1, strategies, cache);
+                auto fitness_p2 = _calculate_fitness(s2, strategies, cache);
+
+                // Then we apply the moran process with mutation
+                if (_real_rand(generator) < EGTTools::SED::fermi(beta, fitness_p1, fitness_p2)) {
+                    // player 1 copies player 2
+                    die = s1;
+                    birth = s2;
+                } else {
+                    // player 2 copies player 1
+                    die = s2;
+                    birth = s1;
+                }
+            }
+            strategies(birth) += 1;
+            strategies(die) -= 1;
+
+            // Check if population is homogeneous
+            if (strategies(birth) == _pop_size) {
+                homogeneous = true;
+                idx_homo = birth;
+            }
+        }
+        return k;
     }
 
     template<class Cache>

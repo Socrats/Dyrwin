@@ -260,7 +260,14 @@ PYBIND11_MODULE(EGTtools, m) {
             .def_property_readonly("nb_strategies", &EGTTools::SED::AbstractGame::nb_strategies)
             .def("save_payoffs", &EGTTools::SED::AbstractGame::save_payoffs);
 
-    m.def("calculate_state", &EGTTools::SED::calculate_state, "calculates an index given a simplex state",
+    m.def("calculate_state",
+          static_cast<size_t (*)(const size_t &, const EGTTools::Factors &)>(&EGTTools::SED::calculate_state),
+          "calculates an index given a simplex state",
+          py::arg("group_size"), py::arg("group_composition"));
+    m.def("calculate_state",
+          static_cast<size_t (*)(const size_t &,
+                                 const Eigen::Ref<const EGTTools::VectorXui> &)>(&EGTTools::SED::calculate_state),
+          "calculates an index given a simplex state",
           py::arg("group_size"), py::arg("group_composition"));
     m.def("sample_simplex",
           static_cast<EGTTools::VectorXui (*)(size_t, const size_t &, const size_t &)>(&EGTTools::SED::sample_simplex),
@@ -322,13 +329,7 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("fixation_probability", &PairwiseComparison::fixationProbability,
                  "Estimates the fixation probability of an strategy in the population.",
                  py::arg("mutant"), py::arg("resident"), py::arg("nb_runs"), py::arg("nb_generations"), py::arg("beta"))
-            .def("stationary_distribution", static_cast<EGTTools::Vector (PairwiseComparison::*)(size_t, size_t,
-                                                                                                 double)>(&PairwiseComparison::stationaryDistribution),
-                 py::call_guard<py::gil_scoped_release>(),
-                 "Estimates the stationary distribution of the population of strategies given the game.",
-                 py::arg("nb_runs"), py::arg("nb_generations"), py::arg("beta"))
-            .def("stationary_distribution", static_cast<EGTTools::Vector (PairwiseComparison::*)(size_t, size_t, double,
-                                                                                                 double)>(&PairwiseComparison::stationaryDistribution),
+            .def("stationary_distribution", &PairwiseComparison::stationaryDistribution,
                  py::call_guard<py::gil_scoped_release>(),
                  "Estimates the stationary distribution of the population of strategies given the game.",
                  py::arg("nb_runs"), py::arg("nb_generations"), py::arg("beta"), py::arg("mu"))

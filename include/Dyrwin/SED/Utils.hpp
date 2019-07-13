@@ -62,6 +62,18 @@ namespace EGTTools::SED {
     size_t calculate_state(const size_t &group_size, const EGTTools::Factors &current_group);
 
     /**
+    * @brief This function converts a vector containing counts into an index.
+    *
+    * This method was copied from @ebargiac
+    *
+    * @param group_size The sum of the values contained in data.
+    * @param current_group The vector to convert.
+    *
+    * @return The unique index in [0, starsBars(history, data.size() - 1)) representing data.
+    */
+    size_t calculate_state(const size_t &group_size, const Eigen::Ref<const EGTTools::VectorXui> &current_group);
+
+    /**
      * @brief Transforms and state index into a vector.
      *
      * @param i : state index
