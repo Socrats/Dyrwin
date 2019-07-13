@@ -100,6 +100,21 @@ namespace EGTTools::SED {
          * The estimation of the stationary distribution is done by calculating averaging the fraction of
          * the population of each strategy at the end of each trial over all trials.
          *
+         * This method assumes the low mutation limit (no mutation in this simulation).
+         *
+         * @param nb_runs : number of trials used to estimate the stationary distribution
+         * @param nb_generations : number of generations per trial
+         * @param beta : intensity of selection
+         * @return the stationary distribution
+         */
+        Vector stationaryDistribution(size_t nb_runs, size_t nb_generations, double beta);
+
+        /**
+         * @brief Estimates the stationary distribution of the population of strategies in the game.
+         *
+         * The estimation of the stationary distribution is done by calculating averaging the fraction of
+         * the population of each strategy at the end of each trial over all trials.
+         *
          * @param nb_runs : number of trials used to estimate the stationary distribution
          * @param nb_generations : number of generations per trial
          * @param beta : intensity of selection
@@ -427,6 +442,31 @@ namespace EGTTools::SED {
         } // end runs loop
         if ((r2m == 0) && (r2r == 0)) return 0.0;
         else return static_cast<double>(r2m) / (r2m + r2r);
+    }
+
+    template<class Cache>
+    Vector PairwiseMoran<Cache>::stationaryDistribution(size_t nb_runs, size_t nb_generations, double beta) {
+        // First we initialise the container for the stationary distribution
+        auto total_nb_states = EGTTools::starsBars(_pop_size, _nb_strategies);
+        auto sampler = std::uniform_int_distribution<size_t>(0, total_nb_states - 1);
+        VectorXui sdist = VectorXui::Zero(_nb_strategies);
+
+#pragma omp parallel for reduction(+:sdist)
+        for (size_t i = 0; i < nb_runs; ++i) {
+            // Random generators - each thread should have its own generator
+            std::mt19937_64 generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+
+            // Then we sample a random population state
+            VectorXui strategies = VectorXui::Zero(_nb_strategies);
+            // Sample state
+            EGTTools::SED::sample_simplex(sampler(generator), _pop_size, _nb_strategies, strategies);
+
+            // Then we run the Moran Process
+            evolve(nb_generations, beta, strategies, generator);
+            // Update the strategy counts
+            sdist += strategies;
+        }
+        return sdist.cast<double>() / nb_runs;
     }
 
     template<class Cache>
