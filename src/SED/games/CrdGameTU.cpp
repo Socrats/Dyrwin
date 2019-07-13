@@ -31,6 +31,7 @@ EGTTools::SED::CRD::CrdGameTU::play(const EGTTools::SED::StrategyCounts &group_c
     size_t player_aspiration = (group_size_ - 1) * 2;
     size_t game_rounds = tu_.calculateFullEnd(min_rounds_, generator_);
     VectorXui actions = VectorXui::Zero(nb_strategies_);
+
     // Initialize payoffs
     for (size_t j = 0; j < EGTTools::SED::CRD::nb_strategies; ++j) {
         if (group_composition[j] > 0) {
@@ -44,7 +45,7 @@ EGTTools::SED::CRD::CrdGameTU::play(const EGTTools::SED::StrategyCounts &group_c
         for (size_t j = 0; j < EGTTools::SED::CRD::nb_strategies; ++j) {
             if (group_composition[j] > 0) {
                 actions(j) = get_action(j, prev_donation - actions(j), player_aspiration, i);
-                if (game_payoffs[j] - actions(j) >= 0) {
+                if (game_payoffs[j] >= actions(j)) {
                     game_payoffs[j] -= actions(j);
                     current_donation += group_composition[j] * actions(j);
                 }
@@ -57,7 +58,7 @@ EGTTools::SED::CRD::CrdGameTU::play(const EGTTools::SED::StrategyCounts &group_c
     }
 
     if (public_account < threshold_)
-        for (auto &type: game_payoffs) type *= risk_;
+        for (auto &type: game_payoffs) type *= (1.0 - risk_);
 }
 
 size_t
@@ -97,6 +98,8 @@ size_t EGTTools::SED::CRD::CrdGameTU::nb_strategies() const {
 const EGTTools::SED::GroupPayoffs &EGTTools::SED::CRD::CrdGameTU::calculate_payoffs() {
     StrategyCounts group_composition(nb_strategies_, 0);
     std::vector<double> game_payoffs(nb_strategies_, 0);
+    // Initialise matrix
+    payoffs_.setZero();
 
     // For every possible group composition run the game and store the payoff of each strategy
     for (size_t i = 0; i < nb_states_; ++i) {
@@ -104,15 +107,15 @@ const EGTTools::SED::GroupPayoffs &EGTTools::SED::CRD::CrdGameTU::calculate_payo
         EGTTools::SED::sample_simplex(i, group_size_, nb_strategies_, group_composition);
 
         // Since the number of rounds of the game is stochastic
-        // we repeat the game a 1000 times to obtain a good estimation
-        for (size_t z = 0; z < 1000; ++z) {
+        // we repeat the game a 10000 times to obtain a good estimation
+        for (size_t z = 0; z < 10000; ++z) {
             // play game and update game_payoffs
             play(group_composition, game_payoffs);
 
             // Fill payoff table
             for (size_t j = 0; j < nb_strategies_; ++j) payoffs_(j, i) += game_payoffs[j];
         }
-        payoffs_.col(i) /= 1000;
+        payoffs_.col(i) /= 10000;
     }
 
     return payoffs_;
