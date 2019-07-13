@@ -151,9 +151,9 @@ namespace EGTTools::SED {
          * @param generator : random generator
          */
         inline void
-        update_step(size_t s1, size_t s2, double beta, size_t &birth, size_t &die, VectorXui &strategies,
-                    EGTTools::Utils::LRUCache<std::string, double> &cache,
-                    std::mt19937_64 &generator);
+        _update_step(size_t s1, size_t s2, double beta, size_t &birth, size_t &die, VectorXui &strategies,
+                     Cache &cache,
+                     std::mt19937_64 &generator);
 
         inline std::pair<size_t, size_t> _sample_players();
 
@@ -219,7 +219,7 @@ namespace EGTTools::SED {
         auto[homogeneous, idx_homo] = _is_homogeneous(strategies);
 
         // Creates a cache for the fitness data
-        EGTTools::Utils::LRUCache<std::string, double> cache(_cache_size);
+        Cache cache(_cache_size);
 
         // initialise population
         _initialise_population(strategies, population);
@@ -288,7 +288,7 @@ namespace EGTTools::SED {
     void
     PairwiseMoran<Cache>::evolve(size_t nb_generations, double beta, VectorXui &strategies,
                                  std::mt19937_64 &generator) {
-        // This method runs a Moran process with pairwise comparisson
+        // This method runs a Moran process with pairwise comparison
         // using the fermi rule and no mutation
 
         size_t die, birth, strategy_p1 = 0, strategy_p2 = 0;
@@ -297,7 +297,7 @@ namespace EGTTools::SED {
         if ((strategies.array() == _pop_size).any()) return;
 
         // Creates a cache for the fitness data
-        EGTTools::Utils::LRUCache<std::string, double> cache(_cache_size);
+        Cache cache(_cache_size);
 
         // Now we start the imitation process
         for (size_t i = 0; i < nb_generations; ++i) {
@@ -305,7 +305,7 @@ namespace EGTTools::SED {
             // If the strategies are the same, there will be no change in the population
             if (_sample_players(strategy_p1, strategy_p2, strategies, generator)) continue;
 
-            update_step(strategy_p1, strategy_p2, beta, birth, die, strategies, cache, generator);
+            _update_step(strategy_p1, strategy_p2, beta, birth, die, strategies, cache, generator);
 
             // Check if population is homogeneous
             if (strategies(birth) == _pop_size) break;
@@ -327,7 +327,7 @@ namespace EGTTools::SED {
         auto[homogeneous, idx_homo] = _is_homogeneous(strategies);
 
         // Creates a cache for the fitness data
-        EGTTools::Utils::LRUCache<std::string, double> cache(_cache_size);
+        Cache cache(_cache_size);
 
         // initialise population
         _initialise_population(strategies, population);
@@ -454,10 +454,10 @@ namespace EGTTools::SED {
     }
 
     template<class Cache>
-    void PairwiseMoran<Cache>::update_step(size_t s1, size_t s2, double beta, size_t &birth, size_t &die,
-                                           VectorXui &strategies,
-                                           EGTTools::Utils::LRUCache<std::string, double> &cache,
-                                           std::mt19937_64 &generator) {
+    void PairwiseMoran<Cache>::_update_step(size_t s1, size_t s2, double beta, size_t &birth, size_t &die,
+                                            VectorXui &strategies,
+                                            Cache &cache,
+                                            std::mt19937_64 &generator) {
         // Then we let them play to calculate their payoffs
         auto fitness_p1 = _calculate_fitness(s1, strategies, cache);
         auto fitness_p2 = _calculate_fitness(s2, strategies, cache);

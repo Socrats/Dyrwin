@@ -274,8 +274,14 @@ PYBIND11_MODULE(EGTtools, m) {
             .def(py::init<size_t, size_t, size_t, size_t, double>(), "Collective-risk game", py::arg("endowment"),
                  py::arg("threshold"), py::arg("nb_rounds"), py::arg("group_size"), py::arg("risk"))
             .def("play", &EGTTools::SED::CRD::CrdGame::play)
-            .def("calculate_payoffs", &EGTTools::SED::CRD::CrdGame::calculate_payoffs)
-            .def("calculate_fitness", &EGTTools::SED::CRD::CrdGame::calculate_fitness)
+            .def("calculate_payoffs", &EGTTools::SED::CRD::CrdGame::calculate_payoffs,
+                 "updates the internal payoff matrix by calculating the payoff of each strategy "
+                 "given any possible group composition")
+            .def("calculate_fitness", &EGTTools::SED::CRD::CrdGame::calculate_fitness,
+                 "calculates the fitness of an individual of a given strategy given a population state."
+                 "It always assumes that the population state does not contain the current individual",
+                 py::arg("player_strategy"),
+                 py::arg("pop_size"), py::arg("population_state"))
             .def("to_string", &EGTTools::SED::CRD::CrdGame::toString)
             .def("type", &EGTTools::SED::CRD::CrdGame::type)
             .def("payoffs", &EGTTools::SED::CRD::CrdGame::payoffs)

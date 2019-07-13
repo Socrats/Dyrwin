@@ -6,5 +6,5 @@ set_target_properties(testTU PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPO
 target_link_libraries(testTU EGTTools)
 
 add_executable(testCrdGame TestCrdGame.cpp)
-#set_target_properties(testCrdGame PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
+set_target_properties(testCrdGame PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(testCrdGame EGTTools)
