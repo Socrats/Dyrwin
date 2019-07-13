@@ -402,14 +402,14 @@ namespace EGTTools::SED {
                     ")");
         if (invader == resident) throw std::invalid_argument("mutant must be different from resident");
 
-        size_t r2m = 0; // resident to mutant count
-        size_t r2r = 0; // resident to resident count
+        long int r2m = 0; // resident to mutant count
+        long int r2r = 0; // resident to resident count
 
         // This loop can be done in parallel
 #pragma omp parallel for reduction(+:r2m, r2r)
         for (size_t i = 0; i < runs; ++i) {
             // Random generators - each thread should have its own generator
-            std::mt19937_64 generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+            std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
             // First we initialize a homogeneous population with the resident strategy
             VectorXui strategies = VectorXui::Zero(_nb_strategies);

@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
 
 //    init_state = smProcess.evolve(nb_generations, beta, mu, init_state);
     auto distribution = smProcess.stationaryDistribution(nb_runs, nb_generations, beta, mu);
-    auto fp = smProcess.fixationProbability(0, 1, 100, 1000000, 0.05);
+    auto fp = smProcess.fixationProbability(1, 2, 1000, 1000000000, 0.1);
     std::cout << "fixation probability = " << fp << std::endl;
 
     std::cout << "final state: (";
