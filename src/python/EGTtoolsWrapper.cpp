@@ -353,11 +353,11 @@ PYBIND11_MODULE(EGTtools, m) {
              py::arg("prev_donation"), py::arg("threshold"), py::arg("current_round"));
 
     py::list strategies_CRD;
-    strategies_CRD.append("Fair");
-    strategies_CRD.append("Free-rider");
-    strategies_CRD.append("Altruist");
-    strategies_CRD.append("Reciprocal");
-    strategies_CRD.append("Compensator");
+    strategies_CRD.append("FAIR");
+    strategies_CRD.append("FREE-RIDER");
+    strategies_CRD.append("ALTRUIST");
+    strategies_CRD.append("RECIPROCAL");
+    strategies_CRD.append("COMPENSATOR");
     mCRD.attr("strategies") = strategies_CRD;
 
     // Bind the enum class so that it's clear from python which are the indexes of each strategy

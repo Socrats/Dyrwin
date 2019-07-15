@@ -473,6 +473,7 @@ namespace EGTTools::SED {
             // First we pick 2 players randomly
             // If the strategies are the same, there will be no change in the population
             if (_sample_players(strategy_p1, strategy_p2, strategies, _mt)) {
+                states.row(j) = strategies;
                 continue;
             }
 
