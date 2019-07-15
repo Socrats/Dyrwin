@@ -27,6 +27,7 @@ namespace EGTTools {
     using MatrixXd       = Eigen::MatrixXd;
     using Matrix2D       = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor | Eigen::AutoAlign>;
     using SparseMatrix2D = Eigen::SparseMatrix<double, Eigen::RowMajor>;
+    using MatrixXui2D = Eigen::Matrix<size_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor | Eigen::AutoAlign>;
 
     using Matrix3D       = std::vector<Matrix2D>;
     using SparseMatrix3D = std::vector<SparseMatrix2D>;

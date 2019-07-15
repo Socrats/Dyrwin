@@ -89,7 +89,9 @@ namespace EGTTools::SED::CRD {
         size_t (*act)(size_t, size_t, size_t);
     };
 
-    enum class CRDBehaviors {cooperator=0, defector, altruist, reciprocal, compensator};
+    enum class CRDBehaviors {
+        cooperator = 0, defector, altruist, reciprocal, compensator
+    };
 }
 
 #endif //DYRWIN_CRDBEHAVIORS_HPP

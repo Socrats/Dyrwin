@@ -326,6 +326,9 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::keep_alive<1, 5>(),
                  "evolves the strategies for a maximum of nb_generations", py::arg("nb_generations"), py::arg("beta"),
                  py::arg("mu"), py::arg("init_state"))
+            .def("run", &PairwiseComparison::run,
+                 "runs the moran process with social imitation and returns a matrix with all the states the system went through",
+                 py::arg("nb_generations"), py::arg("beta"), py::arg("mu"), py::arg("init_state"))
             .def("fixation_probability", &PairwiseComparison::fixationProbability,
                  "Estimates the fixation probability of an strategy in the population.",
                  py::arg("mutant"), py::arg("resident"), py::arg("nb_runs"), py::arg("nb_generations"), py::arg("beta"))
@@ -348,6 +351,14 @@ PYBIND11_MODULE(EGTtools, m) {
              py::arg("prev_donation"), py::arg("threshold"), py::arg("current_round"));
     mCRD.def("compensator", &EGTTools::SED::CRD::compensator, "returns the actions of a compensator player.",
              py::arg("prev_donation"), py::arg("threshold"), py::arg("current_round"));
+
+    py::list strategies_CRD;
+    strategies_CRD.append("Fair");
+    strategies_CRD.append("Free-rider");
+    strategies_CRD.append("Altruist");
+    strategies_CRD.append("Reciprocal");
+    strategies_CRD.append("Compensator");
+    mCRD.attr("strategies") = strategies_CRD;
 
     // Bind the enum class so that it's clear from python which are the indexes of each strategy
     py::enum_<EGTTools::SED::CRD::CRDBehaviors>(mCRD, "CRDBehaviors", py::arithmetic(), "Indexes of CRD behaviors")

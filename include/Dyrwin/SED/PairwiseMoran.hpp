@@ -79,6 +79,20 @@ namespace EGTTools::SED {
                std::mt19937_64 &generator);
 
         /**
+         * @brief Runs a moran process with social imitation
+         *
+         * Runs the moran process for a given number of generations and returns
+         * all the states the simulation went through.
+         *
+         * @param nb_generations : maximum number of generations
+         * @param beta : intensity of selection
+         * @param mu: mutation probability
+         * @param init_state : initial state of the population
+         * @return a matrix with all the states the system went through during the simulation
+         */
+        MatrixXui2D run(size_t nb_generations, double beta, double mu, const Eigen::Ref<const VectorXui> &init_state);
+
+        /**
          * @brief Estimates the fixation probability of the invading strategy over the resident strategy.
          *
          * This function will estimate numerically the fixation probability of an @param invader strategy
@@ -417,6 +431,68 @@ namespace EGTTools::SED {
     }
 
     template<class Cache>
+    MatrixXui2D PairwiseMoran<Cache>::run(size_t nb_generations, double beta, double mu,
+                                          const Eigen::Ref<const EGTTools::VectorXui> &init_state) {
+        size_t die, birth, strategy_p1 = 0, strategy_p2 = 0, current_generation = 1;
+        std::vector<size_t> population(_pop_size, 0);
+        MatrixXui2D states = MatrixXui2D::Zero(nb_generations, _nb_strategies);
+        VectorXui strategies(_nb_strategies);
+        // initialise initial state
+        states.row(0) = init_state;
+        strategies = init_state;
+
+        // Distribution number of generations for a mutation to happen
+        std::geometric_distribution<size_t> geometric(mu);
+
+        // Check if state is homogeneous
+        auto[homogeneous, idx_homo] = _is_homogeneous(strategies);
+
+        // If it is we add a random mutant
+        if (homogeneous) {
+            current_generation += geometric(_mt);
+            // mutate
+            die = idx_homo;
+            birth = _strategy_sampler(_mt);
+            // If population still homogeneous we wait for another mutation
+            while (birth == die) {
+                current_generation += geometric(_mt);
+                birth = _strategy_sampler(_mt);
+            }
+            if (current_generation < nb_generations) {
+                strategies(birth) += 1;
+                strategies(die) -= 1;
+                homogeneous = false;
+                states.block(1, 0, current_generation, _nb_strategies) = strategies;
+            }
+        }
+
+        // Creates a cache for the fitness data
+        Cache cache(_cache_size);
+
+        for (size_t j = current_generation; j < nb_generations; ++j) {
+            // First we pick 2 players randomly
+            // If the strategies are the same, there will be no change in the population
+            if (_sample_players(strategy_p1, strategy_p2, strategies, _mt)) {
+                continue;
+            }
+
+            // Update with mutation and return how many steps should be added to the current
+            // generation if the only change in the population could have been a mutation
+            auto k = _update_multi_step(strategy_p1, strategy_p2, beta, mu, nb_generations,
+                                        birth, die, homogeneous, idx_homo,
+                                        strategies, cache,
+                                        geometric, _mt);
+
+            // Update state count by k steps
+            j += k;
+            // update all states until k + 1
+            if (k > 0) states.block(j, 0, k, _nb_strategies) = strategies;
+            else states.row(j) = strategies;
+        }
+        return states;
+    }
+
+    template<class Cache>
     double
     PairwiseMoran<Cache>::fixationProbability(size_t invader, size_t resident, size_t runs, size_t nb_generations,
                                               double beta) {
@@ -556,14 +632,14 @@ namespace EGTTools::SED {
         size_t k = 0;
 
         if (homogeneous) {
-            k += geometric(_mt);
+            k += geometric(generator);
             // mutate
             die = idx_homo;
-            birth = _strategy_sampler(_mt);
+            birth = _strategy_sampler(generator);
             // If population still homogeneous we wait for another mutation
             while (birth == die) {
                 k += geometric(_mt);
-                birth = _strategy_sampler(_mt);
+                birth = _strategy_sampler(generator);
             }
             if (k < nb_generations) {
                 strategies(birth) += 1;
@@ -572,9 +648,9 @@ namespace EGTTools::SED {
             }
         } else {
             // Check if player mutates
-            if (_real_rand(_mt) < mu) {
+            if (_real_rand(generator) < mu) {
                 die = s1;
-                birth = _strategy_sampler(_mt);
+                birth = _strategy_sampler(generator);
             } else { // If no mutation, player imitates
 
                 // Then we let them play to calculate their payoffs
