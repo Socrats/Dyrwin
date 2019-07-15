@@ -8,3 +8,7 @@ target_link_libraries(testTU EGTTools)
 add_executable(testCrdGame TestCrdGame.cpp)
 set_target_properties(testCrdGame PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(testCrdGame EGTTools)
+
+add_executable(testGeometric TestGeometric.cpp)
+set_target_properties(testGeometric PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
+target_link_libraries(testGeometric EGTTools)

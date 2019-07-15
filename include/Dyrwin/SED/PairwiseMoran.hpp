@@ -161,11 +161,11 @@ namespace EGTTools::SED {
          * @param s2 : index of strategy 2
          * @param beta : intensity of selection
          * @param mu : mutation probability
+         * @param nb_generations : maximum number of generations
          * @param birth : container for the index of the birth strategy
          * @param die : container for the index of the die strategy
          * @param homogeneous : container indicating whether the population is homogeneous
          * @param idx_homo : container indicating the index of the homogeneous strategy
-         * @param nb_generations : maximum number of generations
          * @param strategies : vector of strategy counts
          * @param cache : reference to cache container
          * @param geometric : geometric distribution of steps for a mutation to occur
@@ -173,9 +173,8 @@ namespace EGTTools::SED {
          * @return the number of steps that the update takes.
          */
         inline size_t
-        _update_multi_step(size_t s1, size_t s2, double beta, double mu,
+        _update_multi_step(size_t s1, size_t s2, double beta, double mu, size_t nb_generations,
                            size_t &birth, size_t &die, bool &homogeneous, size_t &idx_homo,
-                           const size_t &nb_generations,
                            VectorXui &strategies,
                            Cache &cache, std::geometric_distribution<size_t> &geometric,
                            std::mt19937_64 &generator);
@@ -511,8 +510,8 @@ namespace EGTTools::SED {
 
                 // Update with mutation and return how many steps should be added to the current
                 // generation if the only change in the population could have been a mutation
-                auto k = _update_multi_step(strategy_p1, strategy_p2, beta, mu, birth, die, homogeneous, idx_homo,
-                                            nb_generations,
+                auto k = _update_multi_step(strategy_p1, strategy_p2, beta, mu, nb_generations,
+                                            birth, die, homogeneous, idx_homo,
                                             strategies, cache,
                                             geometric, generator);
 
@@ -552,8 +551,9 @@ namespace EGTTools::SED {
 
     template<class Cache>
     size_t
-    PairwiseMoran<Cache>::_update_multi_step(size_t s1, size_t s2, double beta, double mu, size_t &birth, size_t &die,
-                                             bool &homogeneous, size_t &idx_homo, const size_t &nb_generations,
+    PairwiseMoran<Cache>::_update_multi_step(size_t s1, size_t s2, double beta, double mu, size_t nb_generations,
+                                             size_t &birth, size_t &die,
+                                             bool &homogeneous, size_t &idx_homo,
                                              VectorXui &strategies,
                                              Cache &cache,
                                              std::geometric_distribution<size_t> &geometric,
