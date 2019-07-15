@@ -479,22 +479,16 @@ namespace EGTTools::SED {
             // Check if state is homogeneous
             auto[homogeneous, idx_homo] = _is_homogeneous(strategies);
 
+            // If it is we add a random mutant
             if (homogeneous) {
-                current_generation += geometric(_mt);
                 // mutate
                 birth = _strategy_sampler(_mt);
                 // If population still homogeneous we wait for another mutation
-                while (birth == idx_homo) {
-                    current_generation += geometric(_mt);
-                    birth = _strategy_sampler(_mt);
-                }
-                if (current_generation < nb_generations) {
-                    strategies(birth) += 1;
-                    strategies(idx_homo) -= 1;
-                    homogeneous = false;
-                    current_state = EGTTools::SED::calculate_state(_pop_size, strategies);
-                    sdist(current_state) += current_generation;
-                }
+                while (birth == idx_homo) birth = _strategy_sampler(_mt);
+                strategies(birth) += 1;
+                strategies(idx_homo) -= 1;
+                homogeneous = false;
+                current_state = EGTTools::SED::calculate_state(_pop_size, strategies);
             }
 
             // Creates a cache for the fitness data
