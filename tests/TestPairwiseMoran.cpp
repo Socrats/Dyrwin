@@ -24,14 +24,14 @@ int main() {
     size_t nb_rounds = 10, endowment = 40, threshold = 120;
     double risk = 0.9;
     EGTTools::VectorXui init_state(nb_strategies);
-    init_state << 25, 25, 25, 25, 0;
+    init_state << 0, 100, 0, 0, 0;
 
     EGTTools::SED::CRD::CrdGame game(endowment, threshold, nb_rounds, group_size, risk);
 
     // Initialise selection mutation process
     auto smProcess = EGTTools::SED::PairwiseMoran(pop_size, game, 10000);
 
-    auto dist = smProcess.run(1000, 0.05, 0.0001, init_state);
+    auto dist = smProcess.run(1000, 0.05, 0.05, init_state);
 
     std::cout << dist << std::endl;
 

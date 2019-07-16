@@ -455,16 +455,17 @@ namespace EGTTools::SED {
             birth = _strategy_sampler(_mt);
             // If population still homogeneous we wait for another mutation
             while (birth == die) {
-                current_generation += geometric(_mt);
                 birth = _strategy_sampler(_mt);
             }
             if (current_generation < nb_generations) {
                 strategies(birth) += 1;
                 strategies(die) -= 1;
                 homogeneous = false;
-                states.block(1, 0, current_generation, _nb_strategies) = strategies;
+                for (size_t z = 1; z <= current_generation; ++z)
+                    states.row(z) = strategies;
             } else {
-                states.block(1, 0, nb_generations - 1, _nb_strategies) = strategies;
+                for (size_t z = 1; z < nb_generations; ++z)
+                    states.row(z) = strategies;
             }
             current_generation += 1;
         }
@@ -487,11 +488,17 @@ namespace EGTTools::SED {
                                         strategies, cache,
                                         geometric, _mt);
 
+            // update all states until k + 1]
+            if (k == 0) states.row(j) = strategies;
+            else if ((k > 0) && ((j + k) < nb_generations)) {
+                for (size_t z = j; z <= j + k; ++z)
+                    states.row(z) = strategies;
+            } else {
+                for (size_t z = j; z < nb_generations; ++z)
+                    states.row(z) = strategies;
+            }
             // Update state count by k steps
             j += k;
-            // update all states until k + 1
-            if (k > 0) states.block(j, 0, k, _nb_strategies) = strategies;
-            else states.row(j) = strategies;
         }
         return states;
     }
@@ -642,7 +649,7 @@ namespace EGTTools::SED {
             birth = _strategy_sampler(generator);
             // If population still homogeneous we wait for another mutation
             while (birth == die) {
-                k += geometric(_mt);
+//                k += geometric(_mt);
                 birth = _strategy_sampler(generator);
             }
             if (k < nb_generations) {
