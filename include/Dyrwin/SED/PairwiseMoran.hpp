@@ -463,13 +463,15 @@ namespace EGTTools::SED {
                 strategies(die) -= 1;
                 homogeneous = false;
                 states.block(1, 0, current_generation, _nb_strategies) = strategies;
+            } else {
+                states.block(1, 0, nb_generations - 1, _nb_strategies) = strategies;
             }
         }
 
         // Creates a cache for the fitness data
         Cache cache(_cache_size);
 
-        for (size_t j = current_generation; j < nb_generations; ++j) {
+        for (size_t j = current_generation + 1; j < nb_generations; ++j) {
             // First we pick 2 players randomly
             // If the strategies are the same, there will be no change in the population
             if (_sample_players(strategy_p1, strategy_p2, strategies, _mt)) {
