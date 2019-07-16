@@ -335,7 +335,7 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("stationary_distribution", &PairwiseComparison::stationaryDistribution,
                  py::call_guard<py::gil_scoped_release>(),
                  "Estimates the stationary distribution of the population of strategies given the game.",
-                 py::arg("nb_runs"), py::arg("nb_generations"), py::arg("beta"), py::arg("mu"))
+                 py::arg("nb_runs"), py::arg("nb_generations"), py::arg("transitory"), py::arg("beta"), py::arg("mu"))
             .def_property_readonly("nb_strategies", &PairwiseComparison::nb_strategies)
             .def_property_readonly("payoffs", &PairwiseComparison::payoffs)
             .def_property("pop_size", &PairwiseComparison::population_size, &PairwiseComparison::set_population_size)

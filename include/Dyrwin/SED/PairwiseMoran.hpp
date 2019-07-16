@@ -116,11 +116,12 @@ namespace EGTTools::SED {
          *
          * @param nb_runs : number of trials used to estimate the stationary distribution
          * @param nb_generations : number of generations per trial
+         * @param transitory : transitory period not taken into account for the estimation
          * @param beta : intensity of selection
          * @param mu : mutation probability
          * @return the stationary distribution
          */
-        Vector stationaryDistribution(size_t nb_runs, size_t nb_generations, double beta, double mu);
+        Vector stationaryDistribution(size_t nb_runs, size_t nb_generations, size_t transitory, double beta, double mu);
 
         // Getters
         size_t nb_strategies() const;
@@ -540,9 +541,10 @@ namespace EGTTools::SED {
     }
 
     template<class Cache>
-    Vector PairwiseMoran<Cache>::stationaryDistribution(size_t nb_runs, size_t nb_generations, double beta, double mu) {
+    Vector
+    PairwiseMoran<Cache>::stationaryDistribution(size_t nb_runs, size_t nb_generations, size_t transitory, double beta,
+                                                 double mu) {
         // First we initialise the container for the stationary distribution
-        size_t transitory = 100000;
         auto total_nb_states = EGTTools::starsBars(_pop_size, _nb_strategies);
         auto sampler = std::uniform_int_distribution<size_t>(0, total_nb_states - 1);
         VectorXui avg_stationary_distribution = VectorXui::Zero(total_nb_states);
@@ -595,6 +597,7 @@ namespace EGTTools::SED {
 
                 // Update state count by k steps
                 j += k;
+                current_generation += k;
             }
 
             current_state = EGTTools::SED::calculate_state(_pop_size, strategies);
