@@ -37,7 +37,7 @@ size_t EGTTools::SED::CRD::reciprocal(size_t prev_donation, size_t threshold, si
 size_t EGTTools::SED::CRD::compensator(size_t prev_donation, size_t threshold, size_t current_round) {
     if (current_round == 0)
         return 2;
-    else if (prev_donation <= threshold)
+    else if (prev_donation < threshold)
         return 4;
     else
         return 0;
