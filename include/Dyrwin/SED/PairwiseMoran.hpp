@@ -610,10 +610,10 @@ namespace EGTTools::SED {
 
                 // Update with mutation and return how many steps should be added to the current
                 // generation if the only change in the population could have been a mutation
-                auto k = _update_multi_step(strategy_p1, strategy_p2, beta, mu,
-                                            birth, die, homogeneous, idx_homo,
-                                            strategies, cache,
-                                            geometric, generator);
+                k = _update_multi_step(strategy_p1, strategy_p2, beta, mu,
+                                       birth, die, homogeneous, idx_homo,
+                                       strategies, cache,
+                                       geometric, generator);
 
                 // Update state count by k steps
                 current_state = EGTTools::SED::calculate_state(_pop_size, strategies);
