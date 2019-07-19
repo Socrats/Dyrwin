@@ -472,21 +472,19 @@ namespace EGTTools::SED {
 
         // Creates a cache for the fitness data
         Cache cache(_cache_size);
+        size_t k = 0;
 
         for (size_t j = current_generation; j < nb_generations; ++j) {
             // First we pick 2 players randomly
             // If the strategies are the same, there will be no change in the population
-            if (_sample_players(strategy_p1, strategy_p2, strategies, _mt)) {
-                states.row(j) = strategies;
-                continue;
-            }
+            _sample_players(strategy_p1, strategy_p2, strategies, _mt);
 
             // Update with mutation and return how many steps should be added to the current
             // generation if the only change in the population could have been a mutation
-            auto k = _update_multi_step(strategy_p1, strategy_p2, beta, mu,
-                                        birth, die, homogeneous, idx_homo,
-                                        strategies, cache,
-                                        geometric, _mt);
+            k = _update_multi_step(strategy_p1, strategy_p2, beta, mu,
+                                   birth, die, homogeneous, idx_homo,
+                                   strategies, cache,
+                                   geometric, _mt);
 
             // update all states until k + 1]
             if (k == 0) states.row(j) = strategies;
@@ -581,19 +579,18 @@ namespace EGTTools::SED {
 
             // Creates a cache for the fitness data
             Cache cache(_cache_size);
+            size_t k = 0;
 
             // First we run the simulations for a @param transitory number of generations
             for (size_t j = current_generation; j < transitory; ++j) {
-                if (_sample_players(strategy_p1, strategy_p2, strategies, generator)) {
-                    continue;
-                }
+                _sample_players(strategy_p1, strategy_p2, strategies, generator);
 
                 // Update with mutation and return how many steps should be added to the current
                 // generation if the only change in the population could have been a mutation
-                auto k = _update_multi_step(strategy_p1, strategy_p2, beta, mu,
-                                            birth, die, homogeneous, idx_homo,
-                                            strategies, cache,
-                                            geometric, generator);
+                k = _update_multi_step(strategy_p1, strategy_p2, beta, mu,
+                                       birth, die, homogeneous, idx_homo,
+                                       strategies, cache,
+                                       geometric, generator);
 
                 // Update state count by k steps
                 j += k;
@@ -674,11 +671,26 @@ namespace EGTTools::SED {
             strategies(birth) += 1;
             strategies(die) -= 1;
             homogeneous = false;
+        } else if (s1 == s2) { // if the strategies are the same, the only change is with mutation
+            // Check if player mutates
+            if (_real_rand(generator) < mu) {
+                birth = _strategy_sampler(generator);
+                while (birth == die) birth = _strategy_sampler(generator);
+                strategies(s1) -= 1;
+                strategies(birth) += 1;
+                // Check if population is homogeneous
+                if (strategies(birth) == _pop_size) {
+                    homogeneous = true;
+                    idx_homo = birth;
+                }
+            }
+
         } else {
             // Check if player mutates
             if (_real_rand(generator) < mu) {
                 die = s1;
                 birth = _strategy_sampler(generator);
+                while (birth == die) birth = _strategy_sampler(generator);
             } else { // If no mutation, player imitates
 
                 // Then we let them play to calculate their payoffs
