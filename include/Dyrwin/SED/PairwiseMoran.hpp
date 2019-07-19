@@ -620,7 +620,7 @@ namespace EGTTools::SED {
 
                 // Update state count by k steps
                 current_state = EGTTools::SED::calculate_state(_pop_size, strategies);
-                sdist(current_state) += k;
+                sdist(current_state) += k + 1;
                 j += k;
             }
             avg_stationary_distribution += sdist;
