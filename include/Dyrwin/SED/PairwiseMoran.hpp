@@ -143,12 +143,13 @@ namespace EGTTools::SED {
 
 
     private:
-        size_t _nb_strategies, _pop_size, _cache_size;
+        size_t _nb_strategies, _pop_size, _cache_size, _nb_states;
         EGTTools::SED::AbstractGame &_game;
 
         // Random distributions
         std::uniform_int_distribution<size_t> _pop_sampler;
         std::uniform_int_distribution<size_t> _strategy_sampler;
+        std::uniform_int_distribution<size_t> _state_sampler;
         std::uniform_real_distribution<double> _real_rand;
 
         // Random generators
@@ -226,6 +227,8 @@ namespace EGTTools::SED {
         _pop_sampler = std::uniform_int_distribution<size_t>(0, _pop_size - 1);
         _strategy_sampler = std::uniform_int_distribution<size_t>(0, _nb_strategies - 1);
         _real_rand = std::uniform_real_distribution<double>(0.0, 1.0);
+        _nb_states = EGTTools::starsBars(_pop_size, _nb_strategies);
+        _state_sampler = std::uniform_int_distribution<size_t>(0, _nb_states - 1);
     }
 
     template<class Cache>
@@ -543,22 +546,19 @@ namespace EGTTools::SED {
     PairwiseMoran<Cache>::stationaryDistribution(size_t nb_runs, size_t nb_generations, size_t transitory, double beta,
                                                  double mu) {
         // First we initialise the container for the stationary distribution
-        auto total_nb_states = EGTTools::starsBars(_pop_size, _nb_strategies);
-        auto sampler = std::uniform_int_distribution<size_t>(0, total_nb_states - 1);
-        VectorXui avg_stationary_distribution = VectorXui::Zero(total_nb_states);
+        VectorXui sdist = VectorXui::Zero(_nb_states);
         // Distribution number of generations for a mutation to happen
         std::geometric_distribution<size_t> geometric(mu);
 
-#pragma omp parallel for reduction(+:avg_stationary_distribution)
+#pragma omp parallel for reduction(+:sdist)
         for (size_t i = 0; i < nb_runs; ++i) {
-            VectorXui sdist = VectorXui::Zero(total_nb_states);
             // Random generators - each thread should have its own generator
             std::mt19937_64 generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 
             // Then we sample a random population state
             VectorXui strategies = VectorXui::Zero(_nb_strategies);
             // Sample state
-            auto current_state = sampler(generator);
+            auto current_state = _state_sampler(generator);
             EGTTools::SED::sample_simplex(current_state, _pop_size, _nb_strategies, strategies);
             ++sdist(current_state);
 
@@ -597,16 +597,11 @@ namespace EGTTools::SED {
                 current_generation += k;
             }
 
-            current_state = EGTTools::SED::calculate_state(_pop_size, strategies);
-
             // Then we start counting
             for (size_t j = current_generation; j < nb_generations; ++j) {
                 // First we pick 2 players randomly
                 // If the strategies are the same, there will be no change in the population
-                if (_sample_players(strategy_p1, strategy_p2, strategies, generator)) {
-                    ++sdist(current_state);
-                    continue;
-                }
+                _sample_players(strategy_p1, strategy_p2, strategies, generator);
 
                 // Update with mutation and return how many steps should be added to the current
                 // generation if the only change in the population could have been a mutation
@@ -620,9 +615,8 @@ namespace EGTTools::SED {
                 sdist(current_state) += k + 1;
                 j += k;
             }
-            avg_stationary_distribution += sdist;
         }
-        return avg_stationary_distribution.cast<double>() / (nb_runs * nb_generations);
+        return sdist.cast<double>() / (nb_runs * nb_generations);
     }
 
     template<class Cache>
@@ -824,6 +818,8 @@ namespace EGTTools::SED {
     template<class Cache>
     void PairwiseMoran<Cache>::set_population_size(size_t pop_size) {
         _pop_size = pop_size;
+        _nb_states = EGTTools::starsBars(_pop_size, _nb_strategies);
+        _state_sampler = std::uniform_int_distribution<size_t>(0, _nb_states - 1);
     }
 
     template<class Cache>
