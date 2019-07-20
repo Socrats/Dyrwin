@@ -616,7 +616,7 @@ namespace EGTTools::SED {
                 j += k;
             }
         }
-        return sdist.cast<double>() / (nb_runs * nb_generations);
+        return sdist.cast<double>() / (nb_runs * (nb_generations - transitory));
     }
 
     template<class Cache>
