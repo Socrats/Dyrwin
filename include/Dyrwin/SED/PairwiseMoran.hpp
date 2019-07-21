@@ -445,15 +445,12 @@ namespace EGTTools::SED {
     template<class Cache>
     MatrixXui2D PairwiseMoran<Cache>::run(size_t nb_generations, double beta, double mu,
                                           const Eigen::Ref<const EGTTools::VectorXui> &init_state) {
-        size_t die, birth, strategy_p1 = 0, strategy_p2 = 0, p1 = 0, p2 = 0, current_generation = 1;
-        std::vector<size_t> population(_pop_size, 0);
+        size_t die, birth, strategy_p1 = 0, strategy_p2 = 0, current_generation = 1;
         MatrixXui2D states = MatrixXui2D::Zero(nb_generations, _nb_strategies);
         VectorXui strategies(_nb_strategies);
         // initialise initial state
         states.row(0) = init_state;
         strategies = init_state;
-        // initialise population
-        _initialise_population(strategies, population);
 
         // Distribution number of generations for a mutation to happen
         std::geometric_distribution<size_t> geometric(mu);
@@ -491,9 +488,7 @@ namespace EGTTools::SED {
         for (size_t j = current_generation; j < nb_generations; ++j) {
             // First we pick 2 players randomly
             // If the strategies are the same, there will be no change in the population
-            _sample_players(p1, p2, _mt);
-            strategy_p1 = population[p1];
-            strategy_p2 = population[p2];
+            _sample_players(strategy_p1, strategy_p2, strategies, _mt);
 
             // Update with mutation and return how many steps should be added to the current
             // generation if the only change in the population could have been a mutation
