@@ -19,3 +19,6 @@ set_target_properties(testCounter PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_
 add_executable(testPM TestPairwiseMoran.cpp)
 #set_target_properties(testPM PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(testPM EGTTools)
+
+add_executable(testSP TestIntSampling.cpp)
+set_target_properties(testPM PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})

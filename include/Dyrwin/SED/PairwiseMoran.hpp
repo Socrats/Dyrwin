@@ -200,6 +200,15 @@ namespace EGTTools::SED {
 
         /**
          * @brief samples 2 players from the population of strategies and updates references @param s1 and s2.
+         *
+         * @param s1 : reference container for strategy 1
+         * @param s2 : reference container for strategy 2
+         * @param generator
+         */
+        inline void _sample_players(size_t &s1, size_t &s2, std::mt19937_64 &generator);
+
+        /**
+         * @brief samples 2 players from the population of strategies and updates references @param s1 and s2.
          * @param s1 : reference container for strategy 1
          * @param s2 : reference container for strategy 2
          * @param strategies : vector of strategy counts
@@ -436,13 +445,15 @@ namespace EGTTools::SED {
     template<class Cache>
     MatrixXui2D PairwiseMoran<Cache>::run(size_t nb_generations, double beta, double mu,
                                           const Eigen::Ref<const EGTTools::VectorXui> &init_state) {
-        size_t die, birth, strategy_p1 = 0, strategy_p2 = 0, current_generation = 1;
+        size_t die, birth, strategy_p1 = 0, strategy_p2 = 0, p1 = 0, p2 = 0, current_generation = 1;
         std::vector<size_t> population(_pop_size, 0);
         MatrixXui2D states = MatrixXui2D::Zero(nb_generations, _nb_strategies);
         VectorXui strategies(_nb_strategies);
         // initialise initial state
         states.row(0) = init_state;
         strategies = init_state;
+        // initialise population
+        _initialise_population(strategies, population);
 
         // Distribution number of generations for a mutation to happen
         std::geometric_distribution<size_t> geometric(mu);
@@ -480,7 +491,9 @@ namespace EGTTools::SED {
         for (size_t j = current_generation; j < nb_generations; ++j) {
             // First we pick 2 players randomly
             // If the strategies are the same, there will be no change in the population
-            _sample_players(strategy_p1, strategy_p2, strategies, _mt);
+            _sample_players(p1, p2, _mt);
+            strategy_p1 = population[p1];
+            strategy_p2 = population[p2];
 
             // Update with mutation and return how many steps should be added to the current
             // generation if the only change in the population could have been a mutation
@@ -728,6 +741,13 @@ namespace EGTTools::SED {
         auto player2 = _pop_sampler(generator);
         while (player2 == player1) player2 = _pop_sampler(generator);
         return std::make_pair(player1, player2);
+    }
+
+    template<class Cache>
+    void PairwiseMoran<Cache>::_sample_players(size_t &s1, size_t &s2, std::mt19937_64 &generator) {
+        s1 = _pop_sampler(generator);
+        s2 = _pop_sampler(generator);
+        while (s1 == s2) s2 = _pop_sampler(generator);
     }
 
     template<class Cache>
