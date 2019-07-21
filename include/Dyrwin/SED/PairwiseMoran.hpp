@@ -499,7 +499,7 @@ namespace EGTTools::SED {
 
             // update all states until k + 1]
             if (k == 0) states.row(j) = strategies;
-            else if ((k > 0) && ((j + k) < nb_generations)) {
+            else if ((j + k) < nb_generations) {
                 for (size_t z = j; z <= j + k; ++z)
                     states.row(z) = strategies;
             } else {

@@ -31,7 +31,7 @@ int main() {
     // Initialise selection mutation process
     auto smProcess = EGTTools::SED::PairwiseMoran(pop_size, game, 10000);
 
-    auto dist = smProcess.run(1000, 0.05, 0.05, init_state);
+    auto dist = smProcess.run(100000, 0.05, 0.0001, init_state);
 
     std::cout << dist << std::endl;
 
