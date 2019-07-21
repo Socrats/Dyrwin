@@ -568,7 +568,6 @@ namespace EGTTools::SED {
             // Sample state
             auto current_state = _state_sampler(generator);
             EGTTools::SED::sample_simplex(current_state, _pop_size, _nb_strategies, strategies);
-            ++sdist(current_state);
 
             size_t die, birth, strategy_p1 = 0, strategy_p2 = 0, current_generation = 0;
             // Check if state is homogeneous
