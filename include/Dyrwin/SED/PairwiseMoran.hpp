@@ -171,6 +171,12 @@ namespace EGTTools::SED {
                      Cache &cache,
                      std::mt19937_64 &generator);
 
+        inline void _update_step(size_t s1, size_t s2, double beta, double mu,
+                                 size_t &birth, size_t &die, bool &homogeneous, size_t &idx_homo,
+                                 VectorXui &strategies,
+                                 Cache &cache,
+                                 std::mt19937_64 &generator);
+
         /**
          * @brief updates the population of strategies and return the number of steps
          * @param s1 : index of strategy 1
@@ -486,28 +492,41 @@ namespace EGTTools::SED {
         size_t k = 0;
 
         for (size_t j = current_generation; j < nb_generations; ++j) {
-            // First we pick 2 players randomly
-            // If the strategies are the same, there will be no change in the population
-            _sample_players(strategy_p1, strategy_p2, strategies, _mt);
-
             // Update with mutation and return how many steps should be added to the current
             // generation if the only change in the population could have been a mutation
-            k = _update_multi_step(strategy_p1, strategy_p2, beta, mu,
-                                   birth, die, homogeneous, idx_homo,
-                                   strategies, cache,
-                                   geometric, _mt);
+            if (homogeneous) {
+                k = geometric(_mt);
+                // Update states matrix
+                if (k == 0) states.row(j) = strategies;
+                else if ((j + k) < nb_generations) {
+                    for (size_t z = j; z <= j + k; ++z)
+                        states.row(z) = strategies;
+                } else {
+                    for (size_t z = j; z < nb_generations; ++z)
+                        states.row(z) = strategies;
+                }
 
-            // update all states until k + 1]
-            if (k == 0) states.row(j) = strategies;
-            else if ((j + k) < nb_generations) {
-                for (size_t z = j; z <= j + k; ++z)
-                    states.row(z) = strategies;
+                // mutate
+                birth = _strategy_sampler(_mt);
+                // If population still homogeneous we wait for another mutation
+                while (birth == idx_homo) birth = _strategy_sampler(_mt);
+                strategies(birth) += 1;
+                strategies(idx_homo) -= 1;
+                homogeneous = false;
+
+                // Update state count by k steps
+                j += k;
             } else {
-                for (size_t z = j; z < nb_generations; ++z)
-                    states.row(z) = strategies;
+                // First we pick 2 players randomly
+                _sample_players(strategy_p1, strategy_p2, strategies, _mt);
+
+                _update_step(strategy_p1, strategy_p2, beta, mu,
+                             birth, die, homogeneous, idx_homo,
+                             strategies, cache, _mt);
+
+                // update all states until k + 1]
+                states.row(j) = strategies;
             }
-            // Update state count by k steps
-            j += k;
         }
         return states;
     }
@@ -608,6 +627,37 @@ namespace EGTTools::SED {
             for (size_t j = current_generation; j < nb_generations; ++j) {
                 // First we pick 2 players randomly
                 // If the strategies are the same, there will be no change in the population
+                if (homogeneous) {
+                    k = geometric(_mt);
+                    // Update state count by k steps
+                    current_state = EGTTools::SED::calculate_state(_pop_size, strategies);
+                    sdist(current_state) += k + 1;
+
+                    // mutate
+                    birth = _strategy_sampler(_mt);
+                    // If population still homogeneous we wait for another mutation
+                    while (birth == idx_homo) birth = _strategy_sampler(_mt);
+                    strategies(birth) += 1;
+                    strategies(idx_homo) -= 1;
+                    // Update state count by k steps
+                    current_state = EGTTools::SED::calculate_state(_pop_size, strategies);
+                    // and now update distribution after mutation
+                    ++sdist(current_state);
+                    homogeneous = false;
+
+                    // Update state count by k steps
+                    j += k;
+                } else {
+                    // First we pick 2 players randomly
+                    _sample_players(strategy_p1, strategy_p2, strategies, _mt);
+
+                    _update_step(strategy_p1, strategy_p2, beta, mu,
+                                 birth, die, homogeneous, idx_homo,
+                                 strategies, cache, _mt);
+                    // Update state count by k steps
+                    current_state = EGTTools::SED::calculate_state(_pop_size, strategies);
+                    ++sdist(current_state);
+                }
                 _sample_players(strategy_p1, strategy_p2, strategies, generator);
 
                 // Update with mutation and return how many steps should be added to the current
@@ -648,6 +698,60 @@ namespace EGTTools::SED {
 
         strategies(birth) += 1;
         strategies(die) -= 1;
+    }
+
+    template<class Cache>
+    void PairwiseMoran<Cache>::_update_step(size_t s1, size_t s2, double beta, double mu,
+                                            size_t &birth, size_t &die, bool &homogeneous, size_t &idx_homo,
+                                            VectorXui &strategies,
+                                            Cache &cache,
+                                            std::mt19937_64 &generator) {
+        if (s1 == s2) { // if the strategies are the same, the only change is with mutation
+            // Check if player mutates
+            if (_real_rand(generator) < mu) {
+                birth = _strategy_sampler(generator);
+                while (birth == die) birth = _strategy_sampler(generator);
+                strategies(s1) -= 1;
+                strategies(birth) += 1;
+                // Check if population is homogeneous
+                if (strategies(birth) == _pop_size) {
+                    homogeneous = true;
+                    idx_homo = birth;
+                }
+            }
+
+        } else {
+            // Check if player mutates
+            if (_real_rand(generator) < mu) {
+                die = s1;
+                birth = _strategy_sampler(generator);
+                while (birth == die) birth = _strategy_sampler(generator);
+            } else { // If no mutation, player imitates
+
+                // Then we let them play to calculate their payoffs
+                auto fitness_p1 = _calculate_fitness(s1, strategies, cache);
+                auto fitness_p2 = _calculate_fitness(s2, strategies, cache);
+
+                // Then we apply the moran process with mutation
+                if (_real_rand(generator) < EGTTools::SED::fermi(beta, fitness_p1, fitness_p2)) {
+                    // player 1 copies player 2
+                    die = s1;
+                    birth = s2;
+                } else {
+                    // player 2 copies player 1
+                    die = s2;
+                    birth = s1;
+                }
+            }
+            strategies(birth) += 1;
+            strategies(die) -= 1;
+
+            // Check if population is homogeneous
+            if (strategies(birth) == _pop_size) {
+                homogeneous = true;
+                idx_homo = birth;
+            }
+        }
     }
 
     template<class Cache>
