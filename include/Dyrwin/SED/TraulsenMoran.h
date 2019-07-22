@@ -12,6 +12,7 @@
 #include <iostream>
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/Types.h>
+#include <Dyrwin/OpenMPUtils.hpp>
 
 /**
  * @brief This class implements the moran process described in Traulsen & Nowak 2006.

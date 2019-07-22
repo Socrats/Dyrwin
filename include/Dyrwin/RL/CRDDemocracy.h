@@ -13,6 +13,7 @@
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/RL/Agent.h>
 #include <Dyrwin/RL/TimingUncertainty.hpp>
+#include <Dyrwin/OpenMPUtils.hpp>
 
 
 namespace EGTTools::RL {
