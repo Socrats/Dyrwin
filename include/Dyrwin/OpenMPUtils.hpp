@@ -5,6 +5,7 @@
 #ifndef DYRWIN_OPENMPUTILS_HPP
 #define DYRWIN_OPENMPUTILS_HPP
 
+#include <omp.h>
 #include <Dyrwin/Types.h>
 
 #pragma omp declare reduction (+: EGTTools::Vector: omp_out=omp_out+omp_in)\
