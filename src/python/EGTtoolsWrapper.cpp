@@ -305,7 +305,11 @@ PYBIND11_MODULE(EGTtools, m) {
                  "calculates the group achievement given the stationary distribution of the population",
                  py::arg("pop_size"),
                  py::arg("stationary_distribution"))
-            .def_property_readonly("nb_strategies", &EGTTools::SED::AbstractGame::nb_strategies)
+            .def_property_readonly("nb_strategies", &EGTTools::SED::CRD::CrdGame::nb_strategies)
+            .def_property_readonly("target", &EGTTools::SED::CRD::CrdGame::target)
+            .def_property_readonly("endowment", &EGTTools::SED::CRD::CrdGame::endowment)
+            .def_property_readonly("nb_rounds", &EGTTools::SED::CRD::CrdGame::nb_rounds)
+            .def_property_readonly("group_size", &EGTTools::SED::CRD::CrdGame::group_size)
             .def("save_payoffs", &EGTTools::SED::CRD::CrdGame::save_payoffs);
 
     py::class_<EGTTools::SED::CRD::CrdGameTU, EGTTools::SED::AbstractGame>(mCRD, "CRDGameTU")
@@ -323,7 +327,7 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("payoff", &EGTTools::SED::CRD::CrdGameTU::payoff,
                  "returns the payoff of a strategy given a group state.", py::arg("strategy"),
                  py::arg("group_composition"))
-            .def_property_readonly("nb_strategies", &EGTTools::SED::AbstractGame::nb_strategies)
+            .def_property_readonly("nb_strategies", &EGTTools::SED::CRD::CrdGameTU::nb_strategies)
             .def("save_payoffs", &EGTTools::SED::CRD::CrdGameTU::save_payoffs);
 
     py::class_<PairwiseComparison>(m, "PairwiseMoran")

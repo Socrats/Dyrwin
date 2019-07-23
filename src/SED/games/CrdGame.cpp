@@ -11,8 +11,6 @@ EGTTools::SED::CRD::CrdGame::CrdGame(size_t endowment, size_t threshold, size_t 
     nb_strategies_ = nb_strategies();
     // number of possible group combinations
     nb_states_ = EGTTools::starsBars(group_size_, nb_strategies_);
-    // number of possible group combinations without the focal player
-    nb_states_player_ = EGTTools::starsBars(group_size - 1, nb_strategies_);
     payoffs_ = GroupPayoffs::Zero(nb_strategies_, nb_states_);
     group_achievement_ = EGTTools::Vector::Zero(nb_states_);
 
@@ -275,4 +273,20 @@ double EGTTools::SED::CRD::CrdGame::calculate_group_achievement(size_t pop_size,
 
 const EGTTools::Vector &EGTTools::SED::CRD::CrdGame::group_achievements() const {
     return group_achievement_;
+}
+
+size_t EGTTools::SED::CRD::CrdGame::target() const {
+    return threshold_;
+}
+
+size_t EGTTools::SED::CRD::CrdGame::endowment() const {
+    return endowment_;
+}
+
+size_t EGTTools::SED::CRD::CrdGame::nb_rounds() const {
+    return nb_rounds_;
+}
+
+size_t EGTTools::SED::CRD::CrdGame::group_size() const {
+    return group_size_;
 }

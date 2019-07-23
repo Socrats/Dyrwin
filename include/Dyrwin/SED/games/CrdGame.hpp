@@ -95,7 +95,17 @@ namespace EGTTools::SED::CRD {
          */
         double *calculate_polarization(size_t pop_size, const Eigen::Ref<const VectorXui> &population_state);
 
+        // getters
+        size_t endowment() const;
+        size_t target() const;
+        size_t nb_rounds() const;
+        size_t group_size() const;
+
         size_t nb_strategies() const override;
+
+        size_t nb_states() const;
+
+        double risk() const;
 
         std::string toString() const override;
 
@@ -110,7 +120,7 @@ namespace EGTTools::SED::CRD {
         const Vector &group_achievements() const;
 
     protected:
-        size_t endowment_, threshold_, nb_rounds_, group_size_, nb_strategies_, nb_states_, nb_states_player_;
+        size_t endowment_, threshold_, nb_rounds_, group_size_, nb_strategies_, nb_states_;
         double risk_;
         GroupPayoffs payoffs_;
         Vector group_achievement_;
