@@ -263,9 +263,10 @@ double EGTTools::SED::CRD::CrdGame::calculate_population_group_achievement(size_
 double EGTTools::SED::CRD::CrdGame::calculate_group_achievement(size_t pop_size,
                                                                 const Eigen::Ref<const EGTTools::Vector> &stationary_distribution) {
     double group_achievement = 0;
-    VectorXui strategies = VectorXui::Zero(nb_strategies_);
 
+#pragma omp parallel for reduction(+:group_achievement)
     for (long int i = 0; i < stationary_distribution.size(); ++i) {
+        VectorXui strategies = VectorXui::Zero(nb_strategies_);
         EGTTools::SED::sample_simplex(i, pop_size, nb_strategies_, strategies);
         group_achievement += stationary_distribution(i) * calculate_population_group_achievement(pop_size, strategies);
     }
