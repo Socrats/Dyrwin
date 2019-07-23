@@ -266,7 +266,7 @@ double EGTTools::SED::CRD::CrdGame::calculate_group_achievement(size_t pop_size,
     VectorXui strategies = VectorXui::Zero(nb_strategies_);
 
     for (long int i = 0; i < stationary_distribution.size(); ++i) {
-        EGTTools::SED::sample_simplex(i, group_size_, nb_strategies_, strategies);
+        EGTTools::SED::sample_simplex(i, pop_size, nb_strategies_, strategies);
         group_achievement += stationary_distribution(i) * calculate_population_group_achievement(pop_size, strategies);
     }
     return group_achievement;
