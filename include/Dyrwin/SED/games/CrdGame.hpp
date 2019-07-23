@@ -9,6 +9,7 @@
 #include <Dyrwin/Distributions.h>
 #include <Dyrwin/SED/games/AbstractGame.hpp>
 #include <Dyrwin/SED/behaviors/CrdBehaviors.hpp>
+#include <Dyrwin/OpenMPUtils.hpp>
 
 namespace EGTTools::SED::CRD {
     using PayoffVector = std::vector<double>;
