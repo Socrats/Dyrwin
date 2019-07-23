@@ -653,24 +653,11 @@ namespace EGTTools::SED {
 
                     _update_step(strategy_p1, strategy_p2, beta, mu,
                                  birth, die, homogeneous, idx_homo,
-                                 strategies, cache, _mt);
+                                 strategies, cache, generator);
                     // Update state count by k steps
                     current_state = EGTTools::SED::calculate_state(_pop_size, strategies);
                     ++sdist(current_state);
                 }
-                _sample_players(strategy_p1, strategy_p2, strategies, generator);
-
-                // Update with mutation and return how many steps should be added to the current
-                // generation if the only change in the population could have been a mutation
-                k = _update_multi_step(strategy_p1, strategy_p2, beta, mu,
-                                       birth, die, homogeneous, idx_homo,
-                                       strategies, cache,
-                                       geometric, generator);
-
-                // Update state count by k steps
-                current_state = EGTTools::SED::calculate_state(_pop_size, strategies);
-                sdist(current_state) += k + 1;
-                j += k;
             }
         }
         return sdist.cast<double>() / (nb_runs * (nb_generations - transitory));
