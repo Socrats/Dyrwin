@@ -310,6 +310,8 @@ PYBIND11_MODULE(EGTtools, m) {
             .def_property_readonly("endowment", &EGTTools::SED::CRD::CrdGame::endowment)
             .def_property_readonly("nb_rounds", &EGTTools::SED::CRD::CrdGame::nb_rounds)
             .def_property_readonly("group_size", &EGTTools::SED::CRD::CrdGame::group_size)
+            .def_property_readonly("risk", &EGTTools::SED::CRD::CrdGame::risk)
+            .def_property_readonly("nb_states", &EGTTools::SED::CRD::CrdGame::nb_states)
             .def("save_payoffs", &EGTTools::SED::CRD::CrdGame::save_payoffs);
 
     py::class_<EGTTools::SED::CRD::CrdGameTU, EGTTools::SED::AbstractGame>(mCRD, "CRDGameTU")
@@ -327,7 +329,24 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("payoff", &EGTTools::SED::CRD::CrdGameTU::payoff,
                  "returns the payoff of a strategy given a group state.", py::arg("strategy"),
                  py::arg("group_composition"))
+            .def("group_achievements", &EGTTools::SED::CRD::CrdGameTU::group_achievements)
+            .def("calculate_population_group_achievement",
+                 &EGTTools::SED::CRD::CrdGameTU::calculate_population_group_achievement,
+                 "calculates the group achievement given a population state", py::arg("pop_size"),
+                 py::arg("population_state"))
+            .def("calculate_group_achievement",
+                 &EGTTools::SED::CRD::CrdGameTU::calculate_group_achievement,
+                 "calculates the group achievement given the stationary distribution of the population",
+                 py::arg("pop_size"),
+                 py::arg("stationary_distribution"))
             .def_property_readonly("nb_strategies", &EGTTools::SED::CRD::CrdGameTU::nb_strategies)
+            .def_property_readonly("nb_strategies", &EGTTools::SED::CRD::CrdGameTU::nb_strategies)
+            .def_property_readonly("target", &EGTTools::SED::CRD::CrdGameTU::target)
+            .def_property_readonly("endowment", &EGTTools::SED::CRD::CrdGameTU::endowment)
+            .def_property_readonly("nb_rounds", &EGTTools::SED::CRD::CrdGameTU::min_rounds)
+            .def_property_readonly("group_size", &EGTTools::SED::CRD::CrdGameTU::group_size)
+            .def_property_readonly("risk", &EGTTools::SED::CRD::CrdGameTU::risk)
+            .def_property_readonly("nb_states", &EGTTools::SED::CRD::CrdGameTU::nb_states)
             .def("save_payoffs", &EGTTools::SED::CRD::CrdGameTU::save_payoffs);
 
     py::class_<PairwiseComparison>(m, "PairwiseMoran")

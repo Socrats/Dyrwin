@@ -5,6 +5,7 @@
 #ifndef DYRWIN_SED_GAMES_CRDGAME_HPP
 #define DYRWIN_SED_GAMES_CRDGAME_HPP
 
+#include <cassert>
 #include <Dyrwin/Distributions.h>
 #include <Dyrwin/SED/games/AbstractGame.hpp>
 #include <Dyrwin/SED/behaviors/CrdBehaviors.hpp>
@@ -97,8 +98,11 @@ namespace EGTTools::SED::CRD {
 
         // getters
         size_t endowment() const;
+
         size_t target() const;
+
         size_t nb_rounds() const;
+
         size_t group_size() const;
 
         size_t nb_strategies() const override;
@@ -132,7 +136,8 @@ namespace EGTTools::SED::CRD {
         std::mt19937_64 generator_{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 
         // Check if game is successful and update state in group_achievement_
-        void _check_success(size_t state, PayoffVector &game_payoffs, const EGTTools::SED::StrategyCounts &group_composition);
+        void _check_success(size_t state, PayoffVector &game_payoffs,
+                            const EGTTools::SED::StrategyCounts &group_composition);
     };
 }
 

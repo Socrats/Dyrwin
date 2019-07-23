@@ -12,15 +12,16 @@ EGTTools::SED::CRD::CrdGameTU::CrdGameTU(size_t endowment, size_t threshold, siz
     nb_strategies_ = nb_strategies();
     // number of possible group combinations
     nb_states_ = EGTTools::starsBars(group_size_, nb_strategies_);
-    // number of possible group combinations without the focal player
-    nb_states_player_ = EGTTools::starsBars(group_size - 1, nb_strategies_);
     payoffs_ = GroupPayoffs::Zero(nb_strategies_, nb_states_);
+    group_achievement_ = EGTTools::Vector::Zero(nb_states_);
 
     // initialise random distribution
     real_rand_ = std::uniform_real_distribution<double>(0.0, 1.0);
 
     // Initialise payoff matrix
     calculate_payoffs();
+    // Initialise group achievement vector
+    calculate_success_per_group_composition();
 }
 
 void
@@ -180,4 +181,132 @@ const EGTTools::SED::GroupPayoffs &EGTTools::SED::CRD::CrdGameTU::payoffs() cons
 double
 EGTTools::SED::CRD::CrdGameTU::payoff(size_t strategy, const EGTTools::SED::StrategyCounts &group_composition) const {
     return payoffs_(strategy, EGTTools::SED::calculate_state(group_size_, group_composition));
+}
+
+double EGTTools::SED::CRD::CrdGameTU::_check_success(PayoffVector &game_payoffs,
+                                                 const EGTTools::SED::StrategyCounts &group_composition) {
+    size_t prev_donation = 0, current_donation = 0;
+    size_t public_account = 0;
+    size_t player_aspiration = (group_size_ - 1) * 2;
+    size_t game_rounds = tu_.calculateFullEnd(min_rounds_, generator_);
+    VectorXui actions = VectorXui::Zero(nb_strategies_);
+
+    // Initialize payoffs
+    for (size_t j = 0; j < EGTTools::SED::CRD::nb_strategies; ++j) {
+        if (group_composition[j] > 0) {
+            game_payoffs[j] = endowment_;
+        } else {
+            game_payoffs[j] = 0;
+        }
+    }
+
+    for (size_t i = 0; i < game_rounds; ++i) {
+        for (size_t j = 0; j < EGTTools::SED::CRD::nb_strategies; ++j) {
+            if (group_composition[j] > 0) {
+                actions(j) = get_action(j, prev_donation - actions(j), player_aspiration, i);
+                if (game_payoffs[j] >= actions(j)) {
+                    game_payoffs[j] -= actions(j);
+                    current_donation += group_composition[j] * actions(j);
+                }
+            }
+        }
+        public_account += current_donation;
+        prev_donation = current_donation;
+        current_donation = 0;
+        if (public_account >= threshold_) {
+            return 1.0;
+        }
+    }
+
+    if (public_account < threshold_)
+        return 0.0;
+    else return 1.0;
+}
+
+const EGTTools::Vector &EGTTools::SED::CRD::CrdGameTU::calculate_success_per_group_composition() {
+    StrategyCounts group_composition(nb_strategies_, 0);
+    std::vector<double> game_payoffs(nb_strategies_, 0);
+
+    // For every possible group composition run the game and store the payoff of each strategy
+    for (size_t i = 0; i < nb_states_; ++i) {
+        // Update group composition from current state
+        EGTTools::SED::sample_simplex(i, group_size_, nb_strategies_, group_composition);
+
+        // Since the number of rounds of the game is stochastic
+        // we repeat the game a 10000 times to obtain a good estimation
+        for (size_t z = 0; z < 10000; ++z) {
+            // play game and update group achievement
+            group_achievement_(i) += _check_success(game_payoffs, group_composition);
+        }
+        group_achievement_(i) /= 10000;
+    }
+
+    return group_achievement_;
+}
+
+double EGTTools::SED::CRD::CrdGameTU::calculate_population_group_achievement(size_t pop_size,
+                                                                           const Eigen::Ref<const EGTTools::VectorXui> &population_state) {
+    // This function assumes that the strategy counts given in @param strategies does not include
+    // the player with @param player_type strategy.
+
+    double group_achievement = 0.0, success;
+    std::vector<size_t> sample_counts(nb_strategies_, 0);
+
+    // If it isn't, then we must calculate the fitness for every possible group combination
+    for (size_t i = 0; i < nb_states_; ++i) {
+        // Update sample counts based on the current state
+        EGTTools::SED::sample_simplex(i, group_size_, nb_strategies_, sample_counts);
+
+        // First update sample_counts with new group composition
+        success = group_achievement_(EGTTools::SED::calculate_state(group_size_, sample_counts));
+
+        // Calculate probability of encountering the current group
+        auto prob = EGTTools::multivariateHypergeometricPDF(pop_size, nb_strategies_, group_size_, sample_counts,
+                                                            population_state);
+
+        group_achievement += success * prob;
+    }
+
+    return group_achievement;
+}
+
+double EGTTools::SED::CRD::CrdGameTU::calculate_group_achievement(size_t pop_size,
+                                                                const Eigen::Ref<const EGTTools::Vector> &stationary_distribution) {
+    double group_achievement = 0;
+
+#pragma omp parallel for reduction(+:group_achievement)
+    for (long int i = 0; i < stationary_distribution.size(); ++i) {
+        VectorXui strategies = VectorXui::Zero(nb_strategies_);
+        EGTTools::SED::sample_simplex(i, pop_size, nb_strategies_, strategies);
+        group_achievement += stationary_distribution(i) * calculate_population_group_achievement(pop_size, strategies);
+    }
+    return group_achievement;
+}
+
+const EGTTools::Vector &EGTTools::SED::CRD::CrdGameTU::group_achievements() const {
+    return group_achievement_;
+}
+
+size_t EGTTools::SED::CRD::CrdGameTU::target() const {
+    return threshold_;
+}
+
+size_t EGTTools::SED::CRD::CrdGameTU::endowment() const {
+    return endowment_;
+}
+
+size_t EGTTools::SED::CRD::CrdGameTU::min_rounds() const {
+    return min_rounds_;
+}
+
+size_t EGTTools::SED::CRD::CrdGameTU::group_size() const {
+    return group_size_;
+}
+
+double EGTTools::SED::CRD::CrdGameTU::risk() const {
+    return risk_;
+}
+
+size_t EGTTools::SED::CRD::CrdGameTU::nb_states() const {
+    return nb_states_;
 }

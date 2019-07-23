@@ -290,3 +290,11 @@ size_t EGTTools::SED::CRD::CrdGame::nb_rounds() const {
 size_t EGTTools::SED::CRD::CrdGame::group_size() const {
     return group_size_;
 }
+
+double EGTTools::SED::CRD::CrdGame::risk() const {
+    return risk_;
+}
+
+size_t EGTTools::SED::CRD::CrdGame::nb_states() const {
+    return nb_states_;
+}
