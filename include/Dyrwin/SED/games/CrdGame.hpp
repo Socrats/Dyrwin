@@ -43,11 +43,57 @@ namespace EGTTools::SED::CRD {
         static inline size_t get_action(const size_t &player_type, const size_t &prev_donation, const size_t &threshold,
                                         const size_t &current_round);
 
+        /**
+         * @brief updates private payoff matrix and returns it
+         *
+         * @return payoff matrix of the game
+         */
         const GroupPayoffs &calculate_payoffs() override;
 
         double
         calculate_fitness(const size_t &player_type, const size_t &pop_size,
                           const Eigen::Ref<const VectorXui> &strategies) override;
+
+        /**
+         * @brief Calculates the group achievement for all possible groups
+         *
+         * If the strategies are deterministic, the output matrix will consist
+         * of ones and zeros indicating whether the group reached or not the target.
+         * If they are stochastic, it will indicate the probability of success of
+         * the group.
+         *
+         * @return a matrix with the group achievement for each possible group
+         */
+        const Vector &calculate_success_per_group_composition();
+
+        /**
+         * @brief Calculates the probability of success given a population state
+         * @param pop_size : size of the population
+         * @param population_state : state of the population (number of players of each strategy)
+         * @return the group achievement of that population state
+         */
+        double
+        calculate_population_group_achievement(size_t pop_size, const Eigen::Ref<const VectorXui> &population_state);
+
+        /**
+         * @brief estimates the group achievement from a stationary distribution
+         * @param pop_size : size of the population
+         * @param stationary_distribution
+         * @return group achievement (probability of group success)
+         */
+        double calculate_group_achievement(size_t pop_size, const Eigen::Ref<const Vector> &stationary_distribution);
+
+        /**
+         * @brief Calculates the fraction of players that invest >, < or = to E/2.
+         *
+         * Calculates the fraction of players that invest above, below or equal to the fair donation
+         * given a population state.
+         *
+         * @param pop_size : size of the population
+         * @param population_state : state of the population
+         * @return an array of 3 elements [C < E/2, C = E/2, C > E/2]
+         */
+        double *calculate_polarization(size_t pop_size, const Eigen::Ref<const VectorXui> &population_state);
 
         size_t nb_strategies() const override;
 
@@ -65,12 +111,16 @@ namespace EGTTools::SED::CRD {
         size_t endowment_, threshold_, nb_rounds_, group_size_, nb_strategies_, nb_states_, nb_states_player_;
         double risk_;
         GroupPayoffs payoffs_;
+        Vector group_achievement_;
 
         // Random distributions
         std::uniform_real_distribution<double> real_rand_;
 
         // Random generators
         std::mt19937_64 generator_{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+
+        // Check if game is successful and update state in group_achievement_
+        void _check_success(size_t state, PayoffVector &game_payoffs, const EGTTools::SED::StrategyCounts &group_composition);
     };
 }
 
