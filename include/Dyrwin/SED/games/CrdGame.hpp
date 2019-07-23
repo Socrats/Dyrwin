@@ -134,6 +134,8 @@ namespace EGTTools::SED::CRD {
 
         const Vector &group_achievements() const;
 
+        const MatrixXui2D &contribution_behaviors() const;
+
     protected:
         size_t endowment_, threshold_, nb_rounds_, group_size_, nb_strategies_, nb_states_;
         double risk_;

@@ -211,8 +211,8 @@ void EGTTools::SED::CRD::CrdGame::_check_success(size_t state, PayoffVector &gam
         if (public_account >= threshold_) {
             for (size_t j = 0; j < nb_strategies_; ++j) {
                 if (game_payoffs[j] > fair_endowment) ++c_behaviors_(state, 0);
-                else if (game_payoffs[j] == fair_endowment) ++c_behaviors_(state, 1);
-                else ++c_behaviors_(state, 2);
+                else if (game_payoffs[j] < fair_endowment) ++c_behaviors_(state, 2);
+                else ++c_behaviors_(state, 1);
             }
             group_achievement_(state) = 1.0;
             return;
@@ -285,10 +285,6 @@ double EGTTools::SED::CRD::CrdGame::calculate_group_achievement(size_t pop_size,
     return group_achievement;
 }
 
-const EGTTools::Vector &EGTTools::SED::CRD::CrdGame::group_achievements() const {
-    return group_achievement_;
-}
-
 void EGTTools::SED::CRD::CrdGame::calculate_population_polarization(size_t pop_size,
                                                                     const Eigen::Ref<const EGTTools::VectorXui> &population_state,
                                                                     EGTTools::Vector3d &polarization) {
@@ -322,6 +318,14 @@ EGTTools::Vector3d EGTTools::SED::CRD::CrdGame::calculate_polarization(size_t po
         polarization += stationary_distribution(i) * container;
     }
     return polarization;
+}
+
+const EGTTools::Vector &EGTTools::SED::CRD::CrdGame::group_achievements() const {
+    return group_achievement_;
+}
+
+const EGTTools::MatrixXui2D &EGTTools::SED::CRD::CrdGame::contribution_behaviors() const {
+    return c_behaviors_;
 }
 
 size_t EGTTools::SED::CRD::CrdGame::target() const {
