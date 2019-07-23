@@ -139,7 +139,7 @@ double EGTTools::SED::CRD::CrdGameTU::calculate_fitness(const size_t &player_typ
         if (sample_counts[player_type] > 0) {
 
             // First update sample_counts with new group composition
-            payoff = payoffs_(player_type, EGTTools::SED::calculate_state(group_size_, sample_counts));
+            payoff = payoffs_(player_type, i);
             sample_counts[player_type] -= 1;
 
             // Calculate probability of encountering a the current group
