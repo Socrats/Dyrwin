@@ -210,9 +210,11 @@ void EGTTools::SED::CRD::CrdGame::_check_success(size_t state, PayoffVector &gam
         current_donation = 0;
         if (public_account >= threshold_) {
             for (size_t j = 0; j < nb_strategies_; ++j) {
-                if (game_payoffs[j] > fair_endowment) ++c_behaviors_(state, 0);
-                else if (game_payoffs[j] < fair_endowment) ++c_behaviors_(state, 2);
-                else ++c_behaviors_(state, 1);
+                if (group_composition[j] > 0) {
+                    if (game_payoffs[j] > fair_endowment) ++c_behaviors_(state, 0);
+                    else if (game_payoffs[j] < fair_endowment) ++c_behaviors_(state, 2);
+                    else ++c_behaviors_(state, 1);
+                }
             }
             group_achievement_(state) = 1.0;
             return;
@@ -224,9 +226,11 @@ void EGTTools::SED::CRD::CrdGame::_check_success(size_t state, PayoffVector &gam
     else group_achievement_(state) = 1.0;
 
     for (size_t j = 0; j < nb_strategies_; ++j) {
-        if (game_payoffs[j] > fair_endowment) ++c_behaviors_(state, 0);
-        else if (game_payoffs[j] == fair_endowment) ++c_behaviors_(state, 1);
-        else ++c_behaviors_(state, 2);
+        if (group_composition[j] > 0) {
+            if (game_payoffs[j] > fair_endowment) ++c_behaviors_(state, 0);
+            else if (game_payoffs[j] < fair_endowment) ++c_behaviors_(state, 2);
+            else ++c_behaviors_(state, 1);
+        }
     }
 }
 
