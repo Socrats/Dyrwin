@@ -23,6 +23,8 @@ namespace EGTTools {
     using Vector = Eigen::Matrix<double, Eigen::Dynamic, 1>;
     using VectorXi = Eigen::Matrix<int, Eigen::Dynamic, 1>;
     using VectorXui = Eigen::Matrix<size_t, Eigen::Dynamic, 1>;
+    using Vector2d = Eigen::Matrix<double, 2, 1>;
+    using Vector3d = Eigen::Matrix<double, 3, 1>;
 
     using MatrixXd       = Eigen::MatrixXd;
     using Matrix2D       = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor | Eigen::AutoAlign>;

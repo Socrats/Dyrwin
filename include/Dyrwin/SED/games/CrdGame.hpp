@@ -92,9 +92,19 @@ namespace EGTTools::SED::CRD {
          *
          * @param pop_size : size of the population
          * @param population_state : state of the population
+         * @param polarization : container for polarization data
          * @return an array of 3 elements [C < E/2, C = E/2, C > E/2]
          */
-        double *calculate_polarization(size_t pop_size, const Eigen::Ref<const VectorXui> &population_state);
+        void calculate_population_polarization(size_t pop_size, const Eigen::Ref<const VectorXui> &population_state,
+                                      Vector3d &polarization);
+
+        /**
+         * @brief calculates the fraction of players that invest (<, =, >) than E/2 given a stationary distribution.
+         * @param pop_size : size of the population
+         * @param stationary_distribution
+         * @return the polarization vector
+         */
+        Vector3d calculate_polarization(size_t pop_size, const Eigen::Ref<const Vector> &stationary_distribution);
 
         // getters
         size_t endowment() const;
@@ -128,6 +138,7 @@ namespace EGTTools::SED::CRD {
         double risk_;
         GroupPayoffs payoffs_;
         Vector group_achievement_;
+        MatrixXui2D c_behaviors_;
 
         // Random distributions
         std::uniform_real_distribution<double> real_rand_;
@@ -135,7 +146,16 @@ namespace EGTTools::SED::CRD {
         // Random generators
         std::mt19937_64 generator_{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 
-        // Check if game is successful and update state in group_achievement_
+        /**
+         * @brief Check if game is successful and update state in group_achievement_
+         *
+         * It updates group_achievement_. It also updates c_behaviors_ with the fraction
+         * of players that contributed (<, =, >) than endowment/2.
+         *
+         * @param state : current state index
+         * @param game_payoffs : container for the payoffs
+         * @param group_composition : composition of the group
+         */
         void _check_success(size_t state, PayoffVector &game_payoffs,
                             const EGTTools::SED::StrategyCounts &group_composition);
     };

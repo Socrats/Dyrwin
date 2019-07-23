@@ -305,6 +305,11 @@ PYBIND11_MODULE(EGTtools, m) {
                  "calculates the group achievement given the stationary distribution of the population",
                  py::arg("pop_size"),
                  py::arg("stationary_distribution"))
+            .def("calculate_polarization",
+                 &EGTTools::SED::CRD::CrdGame::calculate_polarization,
+                 "calculates the polarization given the stationary distribution of the population",
+                 py::arg("pop_size"),
+                 py::arg("stationary_distribution"))
             .def_property_readonly("nb_strategies", &EGTTools::SED::CRD::CrdGame::nb_strategies)
             .def_property_readonly("target", &EGTTools::SED::CRD::CrdGame::target)
             .def_property_readonly("endowment", &EGTTools::SED::CRD::CrdGame::endowment)
