@@ -295,6 +295,7 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("payoff", &EGTTools::SED::CRD::CrdGame::payoff,
                  "returns the payoff of a strategy given a group state.", py::arg("strategy"),
                  py::arg("group_composition"))
+            .def("group_achievements", &EGTTools::SED::CRD::CrdGame::group_achievements)
             .def("calculate_population_group_achievement",
                  &EGTTools::SED::CRD::CrdGame::calculate_population_group_achievement,
                  "calculates the group achievement given a population state", py::arg("pop_size"),

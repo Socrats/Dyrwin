@@ -272,3 +272,7 @@ double EGTTools::SED::CRD::CrdGame::calculate_group_achievement(size_t pop_size,
     }
     return group_achievement;
 }
+
+const EGTTools::Vector &EGTTools::SED::CRD::CrdGame::group_achievements() const {
+    return group_achievement_;
+}
