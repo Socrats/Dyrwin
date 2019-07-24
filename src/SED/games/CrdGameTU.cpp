@@ -14,6 +14,7 @@ EGTTools::SED::CRD::CrdGameTU::CrdGameTU(size_t endowment, size_t threshold, siz
     nb_states_ = EGTTools::starsBars(group_size_, nb_strategies_);
     payoffs_ = GroupPayoffs::Zero(nb_strategies_, nb_states_);
     group_achievement_ = EGTTools::Vector::Zero(nb_states_);
+    c_behaviors_ = EGTTools::Matrix2D::Zero(nb_states_, 3);
 
     // initialise random distribution
     real_rand_ = std::uniform_real_distribution<double>(0.0, 1.0);
@@ -184,7 +185,7 @@ EGTTools::SED::CRD::CrdGameTU::payoff(size_t strategy, const EGTTools::SED::Stra
 }
 
 double EGTTools::SED::CRD::CrdGameTU::_check_success(PayoffVector &game_payoffs,
-                                                 const EGTTools::SED::StrategyCounts &group_composition) {
+                                                     const EGTTools::SED::StrategyCounts &group_composition) {
     size_t prev_donation = 0, current_donation = 0;
     size_t public_account = 0;
     size_t player_aspiration = (group_size_ - 1) * 2;
@@ -226,6 +227,7 @@ double EGTTools::SED::CRD::CrdGameTU::_check_success(PayoffVector &game_payoffs,
 const EGTTools::Vector &EGTTools::SED::CRD::CrdGameTU::calculate_success_per_group_composition() {
     StrategyCounts group_composition(nb_strategies_, 0);
     std::vector<double> game_payoffs(nb_strategies_, 0);
+    double fair_endowment = static_cast<double>(endowment_) / 2;
 
     // For every possible group composition run the game and store the payoff of each strategy
     for (size_t i = 0; i < nb_states_; ++i) {
@@ -237,15 +239,23 @@ const EGTTools::Vector &EGTTools::SED::CRD::CrdGameTU::calculate_success_per_gro
         for (size_t z = 0; z < 10000; ++z) {
             // play game and update group achievement
             group_achievement_(i) += _check_success(game_payoffs, group_composition);
+            for (size_t j = 0; j < nb_strategies_; ++j) {
+                if (group_composition[j] > 0) {
+                    if (game_payoffs[j] > fair_endowment) c_behaviors_(i, 0) += group_composition[j];
+                    else if (game_payoffs[j] < fair_endowment) c_behaviors_(i, 2) += group_composition[j];
+                    else c_behaviors_(i, 1) += group_composition[j];
+                }
+            }
         }
         group_achievement_(i) /= 10000;
+        c_behaviors_.row(i) /= (10000 * group_size_);
     }
 
     return group_achievement_;
 }
 
 double EGTTools::SED::CRD::CrdGameTU::calculate_population_group_achievement(size_t pop_size,
-                                                                           const Eigen::Ref<const EGTTools::VectorXui> &population_state) {
+                                                                             const Eigen::Ref<const EGTTools::VectorXui> &population_state) {
     // This function assumes that the strategy counts given in @param strategies does not include
     // the player with @param player_type strategy.
 
@@ -271,7 +281,7 @@ double EGTTools::SED::CRD::CrdGameTU::calculate_population_group_achievement(siz
 }
 
 double EGTTools::SED::CRD::CrdGameTU::calculate_group_achievement(size_t pop_size,
-                                                                const Eigen::Ref<const EGTTools::Vector> &stationary_distribution) {
+                                                                  const Eigen::Ref<const EGTTools::Vector> &stationary_distribution) {
     double group_achievement = 0;
 
 #pragma omp parallel for reduction(+:group_achievement)
@@ -283,8 +293,47 @@ double EGTTools::SED::CRD::CrdGameTU::calculate_group_achievement(size_t pop_siz
     return group_achievement;
 }
 
+void EGTTools::SED::CRD::CrdGameTU::calculate_population_polarization(size_t pop_size,
+                                                                      const Eigen::Ref<const EGTTools::VectorXui> &population_state,
+                                                                      EGTTools::Vector3d &polarization) {
+    polarization.setZero();
+    std::vector<size_t> sample_counts(nb_strategies_, 0);
+
+    // If it isn't, then we must calculate the fitness for every possible group combination
+    for (size_t i = 0; i < nb_states_; ++i) {
+        // Update sample counts based on the current state
+        EGTTools::SED::sample_simplex(i, group_size_, nb_strategies_, sample_counts);
+
+        // Calculate probability of encountering the current group
+        auto prob = EGTTools::multivariateHypergeometricPDF(pop_size, nb_strategies_, group_size_, sample_counts,
+                                                            population_state);
+
+        polarization += prob * c_behaviors_.row(i);
+    }
+}
+
+EGTTools::Vector3d EGTTools::SED::CRD::CrdGameTU::calculate_polarization(size_t pop_size,
+                                                                         const Eigen::Ref<const EGTTools::Vector> &stationary_distribution) {
+    EGTTools::Vector3d polarization = EGTTools::Vector3d::Zero();
+
+#pragma omp parallel for reduction(+:polarization)
+    for (long int i = 0; i < stationary_distribution.size(); ++i) {
+        EGTTools::Vector3d container = EGTTools::Vector3d::Zero();
+        VectorXui strategies = VectorXui::Zero(nb_strategies_);
+
+        EGTTools::SED::sample_simplex(i, pop_size, nb_strategies_, strategies);
+        calculate_population_polarization(pop_size, strategies, container);
+        polarization += stationary_distribution(i) * container;
+    }
+    return polarization;
+}
+
 const EGTTools::Vector &EGTTools::SED::CRD::CrdGameTU::group_achievements() const {
     return group_achievement_;
+}
+
+const EGTTools::Matrix2D &EGTTools::SED::CRD::CrdGameTU::contribution_behaviors() const {
+    return c_behaviors_;
 }
 
 size_t EGTTools::SED::CRD::CrdGameTU::target() const {
