@@ -100,6 +100,21 @@ namespace EGTTools::SED::CRD {
                                                Vector3d &polarization);
 
         /**
+         * @brief Calculates the fraction of players that invest >, < or = to E/2.
+         *
+         * Calculates the fraction of players that invest above, below or equal to the fair donation
+         * given a population state.
+         *
+         * @param pop_size : size of the population
+         * @param population_state : state of the population
+         * @param polarization : container for polarization data
+         * @return an array of 3 elements [C < E/2, C = E/2, C > E/2]
+         */
+        void
+        calculate_population_polarization_success(size_t pop_size, const Eigen::Ref<const VectorXui> &population_state,
+                                                  Vector3d &polarization);
+
+        /**
          * @brief calculates the fraction of players that invest (<, =, >) than E/2 given a stationary distribution.
          * @param pop_size : size of the population
          * @param stationary_distribution
@@ -107,10 +122,21 @@ namespace EGTTools::SED::CRD {
          */
         Vector3d calculate_polarization(size_t pop_size, const Eigen::Ref<const Vector> &stationary_distribution);
 
+        /**
+         * @brief calculates the fraction of players that invest (<, =, >) than E/2 given a stationary distribution.
+         * @param pop_size : size of the population
+         * @param stationary_distribution
+         * @return the polarization vector
+         */
+        Vector3d calculate_polarization_success(size_t pop_size, const Eigen::Ref<const Vector> &stationary_distribution);
+
         // getters
         size_t endowment() const;
+
         size_t target() const;
+
         size_t min_rounds() const;
+
         size_t group_size() const;
 
         size_t nb_strategies() const override;
