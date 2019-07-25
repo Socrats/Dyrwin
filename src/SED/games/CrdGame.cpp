@@ -325,7 +325,8 @@ void EGTTools::SED::CRD::CrdGame::calculate_population_polarization_success(size
 
         polarization += (prob * group_achievement_(i) * c_behaviors_.row(i).cast<double>()) / group_size_;
     }
-    polarization /= polarization.sum();
+    auto sum =  polarization.sum();
+    if (sum > 0) polarization /= sum;
 }
 
 EGTTools::Vector3d EGTTools::SED::CRD::CrdGame::calculate_polarization(size_t pop_size,
