@@ -308,6 +308,26 @@ void EGTTools::SED::CRD::CrdGame::calculate_population_polarization(size_t pop_s
     }
 }
 
+void EGTTools::SED::CRD::CrdGame::calculate_population_polarization_success(size_t pop_size,
+                                                                            const Eigen::Ref<const EGTTools::VectorXui> &population_state,
+                                                                            EGTTools::Vector3d &polarization) {
+    polarization.setZero();
+    std::vector<size_t> sample_counts(nb_strategies_, 0);
+
+    // If it isn't, then we must calculate the fitness for every possible group combination
+    for (size_t i = 0; i < nb_states_; ++i) {
+        // Update sample counts based on the current state
+        EGTTools::SED::sample_simplex(i, group_size_, nb_strategies_, sample_counts);
+
+        // Calculate probability of encountering the current group
+        auto prob = EGTTools::multivariateHypergeometricPDF(pop_size, nb_strategies_, group_size_, sample_counts,
+                                                            population_state);
+
+        polarization += (prob * group_achievement_(i) * c_behaviors_.row(i).cast<double>()) / group_size_;
+    }
+    polarization /= polarization.sum();
+}
+
 EGTTools::Vector3d EGTTools::SED::CRD::CrdGame::calculate_polarization(size_t pop_size,
                                                                        const Eigen::Ref<const EGTTools::Vector> &stationary_distribution) {
     EGTTools::Vector3d polarization = EGTTools::Vector3d::Zero();
@@ -319,6 +339,22 @@ EGTTools::Vector3d EGTTools::SED::CRD::CrdGame::calculate_polarization(size_t po
 
         EGTTools::SED::sample_simplex(i, pop_size, nb_strategies_, strategies);
         calculate_population_polarization(pop_size, strategies, container);
+        polarization += stationary_distribution(i) * container;
+    }
+    return polarization;
+}
+
+EGTTools::Vector3d EGTTools::SED::CRD::CrdGame::calculate_polarization_success(size_t pop_size,
+                                                                               const Eigen::Ref<const EGTTools::Vector> &stationary_distribution) {
+    EGTTools::Vector3d polarization = EGTTools::Vector3d::Zero();
+
+#pragma omp parallel for reduction(+:polarization)
+    for (long int i = 0; i < stationary_distribution.size(); ++i) {
+        EGTTools::Vector3d container = EGTTools::Vector3d::Zero();
+        VectorXui strategies = VectorXui::Zero(nb_strategies_);
+
+        EGTTools::SED::sample_simplex(i, pop_size, nb_strategies_, strategies);
+        calculate_population_polarization_success(pop_size, strategies, container);
         polarization += stationary_distribution(i) * container;
     }
     return polarization;
