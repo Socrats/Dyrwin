@@ -223,15 +223,13 @@ void EGTTools::SED::CRD::CrdGame::_check_success(size_t state, PayoffVector &gam
 
     if (public_account < threshold_)
         group_achievement_(state) = 0.0;
-    else {
-        group_achievement_(state) = 1.0;
+    else group_achievement_(state) = 1.0;
 
-        for (size_t j = 0; j < nb_strategies_; ++j) {
-            if (group_composition[j] > 0) {
-                if (game_payoffs[j] > fair_endowment) c_behaviors_(state, 0) += group_composition[j];
-                else if (game_payoffs[j] < fair_endowment) c_behaviors_(state, 2) += group_composition[j];
-                else c_behaviors_(state, 1) += group_composition[j];
-            }
+    for (size_t j = 0; j < nb_strategies_; ++j) {
+        if (group_composition[j] > 0) {
+            if (game_payoffs[j] > fair_endowment) c_behaviors_(state, 0) += group_composition[j];
+            else if (game_payoffs[j] < fair_endowment) c_behaviors_(state, 2) += group_composition[j];
+            else c_behaviors_(state, 1) += group_composition[j];
         }
     }
 }
