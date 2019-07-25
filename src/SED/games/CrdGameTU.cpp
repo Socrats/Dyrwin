@@ -228,7 +228,6 @@ const EGTTools::Vector &EGTTools::SED::CRD::CrdGameTU::calculate_success_per_gro
     StrategyCounts group_composition(nb_strategies_, 0);
     std::vector<double> game_payoffs(nb_strategies_, 0);
     double fair_endowment = static_cast<double>(endowment_) / 2;
-    long int achievement_counter = 0;
 
     // For every possible group composition run the game and store the payoff of each strategy
     for (size_t i = 0; i < nb_states_; ++i) {
@@ -239,21 +238,17 @@ const EGTTools::Vector &EGTTools::SED::CRD::CrdGameTU::calculate_success_per_gro
         // we repeat the game a 10000 times to obtain a good estimation
         for (size_t z = 0; z < 10000; ++z) {
             // play game and update group achievement
-            auto success = _check_success(game_payoffs, group_composition);
-            group_achievement_(i) += success;
-            if (success == 1.0) {
-                ++achievement_counter;
-                for (size_t j = 0; j < nb_strategies_; ++j) {
-                    if (group_composition[j] > 0) {
-                        if (game_payoffs[j] > fair_endowment) c_behaviors_(i, 0) += group_composition[j];
-                        else if (game_payoffs[j] < fair_endowment) c_behaviors_(i, 2) += group_composition[j];
-                        else c_behaviors_(i, 1) += group_composition[j];
-                    }
+            group_achievement_(i) += _check_success(game_payoffs, group_composition);
+            for (size_t j = 0; j < nb_strategies_; ++j) {
+                if (group_composition[j] > 0) {
+                    if (game_payoffs[j] > fair_endowment) c_behaviors_(i, 0) += group_composition[j];
+                    else if (game_payoffs[j] < fair_endowment) c_behaviors_(i, 2) += group_composition[j];
+                    else c_behaviors_(i, 1) += group_composition[j];
                 }
             }
         }
         group_achievement_(i) /= 10000;
-        c_behaviors_.row(i) /= (achievement_counter * group_size_);
+        c_behaviors_.row(i) /= (10000 * group_size_);
     }
 
     return group_achievement_;
