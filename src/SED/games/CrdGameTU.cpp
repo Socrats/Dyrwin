@@ -363,7 +363,7 @@ EGTTools::Vector3d EGTTools::SED::CRD::CrdGameTU::calculate_polarization_success
         calculate_population_polarization_success(pop_size, strategies, container);
         polarization += stationary_distribution(i) * container;
     }
-    return polarization;
+    return polarization / polarization.sum();
 }
 
 const EGTTools::Vector &EGTTools::SED::CRD::CrdGameTU::group_achievements() const {
