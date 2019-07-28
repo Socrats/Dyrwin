@@ -650,6 +650,7 @@ PYBIND11_MODULE(EGTtools, m) {
                  "Runs a CRD simulation for a single group", py::arg("nb_episodes"), py::arg("nb_games"))
             .def("run", static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, size_t, double,
                                                                        const std::vector<double> &)>(&RL::CRDSim::run),
+                 py::call_guard<py::gil_scoped_release>(),
                  "Runs a CRD simulation for nb_groups",
                  py::arg("nb_episodes"), py::arg("nb_games"), py::arg("nb_groups"), py::arg("risk"),
                  py::arg("*agent_args"))
@@ -663,6 +664,7 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("runWellMixed", static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t,
                                                                                 size_t, size_t, size_t, double,
                                                                                 const std::vector<double> &)>(&RL::CRDSim::runWellMixed),
+                 py::call_guard<py::gil_scoped_release>(),
                  "Runs a simulation with a well mixed population",
                  py::arg("nb_runs"), py::arg("nb_generations"),
                  py::arg("nb_games"), py::arg("nb_groups"), py::arg("group_size"), py::arg("risk"),
