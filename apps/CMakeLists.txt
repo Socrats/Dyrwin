@@ -1,20 +1,10 @@
 cmake_minimum_required(VERSION 3.9)
 
-#set(SOURCE_FILES src/main.cpp
-#        src/CollectiveRiskDilemma.cpp
-#        include/Dyrwin/crd/CollectiveRiskDilemma.h
-#        src/CRDPlayer.cpp src/CRDSimulator.cpp
-#        include/Dyrwin/crd/CRDSimulator.h
-#        include/Dyrwin/Utils.h src/SeedGenerator.cpp
-#        include/Dyrwin/SeedGenerator.h
-#        include/Dyrwin/CommandLineParsing.h
-#        include/Dyrwin/ipd/IteratedPrisonersDilemma.cpp)
-
-#if (MAKE_DYRWIN)
-#    add_executable(Dyrwin ${SOURCE_FILES})
-#    target_link_libraries(Dyrwin ${Boost_LIBRARIES} boost_program_options)
-#    set_target_properties(Dyrwin PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
-#endif ()
+add_executable(AbouCRD AbouCRD/main.cpp)
+target_link_libraries(AbouCRD ${Boost_LIBRARIES} boost_program_options)
+set_target_properties(AbouCRD PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
+set_target_properties(AbouCRD PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
+target_link_libraries(AbouCRD EGTTools)
 
 
 add_executable(pmoran SED/pmain.cpp)

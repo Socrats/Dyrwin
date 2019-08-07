@@ -3,6 +3,7 @@
 #include <Dyrwin/crd/CRDSimulator.h>
 #include <Dyrwin/CommandLineParsing.h>
 #include <Dyrwin/crd/Utils.h>
+#include <Dyrwin/OutputHandlers.hpp>
 
 int main(int argc, char *argv[]) {
 
@@ -31,7 +32,7 @@ int main(int argc, char *argv[]) {
     options.push_back(makeDefaultedOption<double>("mu,m", &mu, "set up the probability of mutation", 0.03f));
     options.push_back(makeDefaultedOption<double>("sigma,s", &sigma, "set up the threshold mutation", 0.15f));
     options.push_back(makeDefaultedOption<double>("beta,b", &beta, "set up intensity of selection", 1.0f));
-    options.push_back(makeRequiredOption("output,o", &filename, "set the final output file"));
+    options.push_back(makeDefaultedOption<std::string>("output,o", &filename, "set the final output file", "results"));
 
     if (!parseCommandLine(argc, argv, options))
         return 1;

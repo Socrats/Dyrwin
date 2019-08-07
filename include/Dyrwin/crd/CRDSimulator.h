@@ -26,8 +26,8 @@
 #include <random>
 #include <vector>
 #include <unordered_map>
-#include "CollectiveRiskDilemma.h"
-#include "../SeedGenerator.h"
+#include <Dyrwin/crd/CollectiveRiskDilemma.h>
+#include <Dyrwin/SeedGenerator.h>
 
 
 struct CRDSimData {
