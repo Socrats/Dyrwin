@@ -15,7 +15,8 @@
 
 #include <random>
 #include <boost/functional/hash.hpp>
-#include "../SeedGenerator.h"
+#include <Dyrwin/SeedGenerator.h>
+#include <Dyrwin/Utils.h>
 
 
 struct Strategy {
@@ -23,7 +24,8 @@ struct Strategy {
     int second;
     double threshold;
 
-    Strategy operator=(const Strategy &other) const {
+    Strategy &operator=(const Strategy &other) {
+        UNUSED(other);
         // Enforces that the reference to the random number generator is not changed
         return *this;
     }
@@ -186,8 +188,9 @@ public:
 	    score.
 	*/
     CRDPlayer(double mu, double sigma) :
-            id(CRDPlayer::GenerateID()), mu(mu), sigma(sigma),
-            payoff(0), strategy(SequentialStrategy(mu, sigma)) {};
+            strategy(SequentialStrategy(mu, sigma)),
+            mu(mu), sigma(sigma), id(CRDPlayer::GenerateID()),
+            payoff(0) {};
 
     virtual ~CRDPlayer() = default;
 
@@ -200,8 +203,7 @@ public:
 	    \param p Player to be copied
 	*/
     CRDPlayer(const CRDPlayer &p) :
-            id(p.id),
-            payoff(p.payoff), strategy(SequentialStrategy(p.mu, p.sigma)) {}
+            strategy(SequentialStrategy(p.mu, p.sigma)), mu(p.mu), sigma(p.sigma), id(p.id), payoff(p.payoff) {}
 
     int getAction();
 
@@ -222,7 +224,8 @@ public:
 
     double mu, sigma;
 
-    CRDPlayer operator=(const CRDPlayer &other) const {
+    CRDPlayer& operator=(const CRDPlayer &other) {
+        UNUSED(other);
         // Enforces that the reference to the random number generator is not changed
         return *this;
     }

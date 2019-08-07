@@ -55,7 +55,7 @@ CRDSimulator::CRDSimulator(unsigned int population_size, unsigned int group_size
  * @param generations - numbers of generations through which the population is evolved
  */
 void CRDSimulator::evolve(unsigned int generations) {
-    int i, j;
+    size_t i, j;
 
     for (j = 0; j < generations; j++) {
         // First play games and calculate fitness
@@ -147,7 +147,7 @@ void CRDSimulator::_update_population_indexes() {
      */
     // the boost way
     std::discrete_distribution<> dist(_fitnessVector.begin(), _fitnessVector.end());
-    for (int i = 0; i < population_size; i++) {
+    for (size_t i = 0; i < population_size; i++) {
         _population_indexes[i] = dist(_mt);
         // Initialize fitness and games played
         _population[i].init();
