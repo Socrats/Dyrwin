@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef DYRWIN_CRDSIMULATOR_H
-#define DYRWIN_CRDSIMULATOR_H
+#ifndef DYRWIN_ABOUCRD_CRDSIMULATOR_H
+#define DYRWIN_ABOUCRD_CRDSIMULATOR_H
 
 #include <fstream>
 #include <random>
@@ -121,4 +121,4 @@ private:
 };
 
 
-#endif //DYRWIN_CRDSIMULATOR_H
+#endif //DYRWIN_ABOUCRD_CRDSIMULATOR_H

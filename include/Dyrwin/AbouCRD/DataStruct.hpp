@@ -2,8 +2,8 @@
 // Created by Elias Fernandez on 2019-08-08.
 //
 
-#ifndef DYRWIN_DATASTRUCT_HPP
-#define DYRWIN_DATASTRUCT_HPP
+#ifndef DYRWIN_ABOUCRD_DATASTRUCT_HPP
+#define DYRWIN_ABOUCRD_DATASTRUCT_HPP
 
 #include <sstream>
 
@@ -64,4 +64,4 @@ struct GameData {
                                                                                 avg_donations(avg_donations) {};
 };
 
-#endif //DYRWIN_DATASTRUCT_HPP
+#endif //DYRWIN_ABOUCRD_DATASTRUCT_HPP

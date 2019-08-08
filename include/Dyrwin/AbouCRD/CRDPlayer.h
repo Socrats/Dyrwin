@@ -10,8 +10,8 @@
  *
  */
 
-#ifndef DYRWIN_CRDPLAYER_H
-#define DYRWIN_CRDPLAYER_H
+#ifndef DYRWIN_ABOUCRD_CRDPLAYER_H
+#define DYRWIN_ABOUCRD_CRDPLAYER_H
 
 #include <random>
 #include <Dyrwin/SeedGenerator.h>
@@ -249,4 +249,4 @@ protected:
 };
 
 
-#endif //DYRWIN_CRDPLAYER_H
+#endif //DYRWIN_ABOUCRD_CRDPLAYER_H
