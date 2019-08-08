@@ -14,7 +14,6 @@
 #define DYRWIN_CRDPLAYER_H
 
 #include <random>
-#include <boost/functional/hash.hpp>
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/Utils.h>
 
@@ -161,7 +160,7 @@ struct SequentialStrategy {
         return *this;
     }
 
-    SequentialStrategy operator++(int) {
+    const SequentialStrategy operator++(int) {
         // Mutate strategy - Postfix
         for (auto &round_strategy: round_strategies) {
             round_strategy++;

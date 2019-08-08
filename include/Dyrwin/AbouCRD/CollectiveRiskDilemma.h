@@ -7,22 +7,11 @@
 
 #include <vector>
 #include <random>
-#include <Dyrwin/crd/Utils.h>
+#include <iostream>
+#include <Dyrwin/AbouCRD/Utils.h>
+#include <Dyrwin/AbouCRD/DataStruct.hpp>
 #include <Dyrwin/SeedGenerator.h>
 
-
-struct GameData {
-    bool met_threshold;
-    double public_account;
-    double avg_donations;
-
-    GameData() : met_threshold(false), public_account(0), avg_donations(0) {};
-    GameData(bool met_threshold, double public_account) : met_threshold(met_threshold), public_account(public_account),
-                                                          avg_donations(0) {};
-    GameData(bool met_threshold, double public_account, double avg_donations) : met_threshold(met_threshold),
-                                                                                public_account(public_account),
-                                                                                avg_donations(avg_donations) {};
-};
 
 class CollectiveRiskDilemma {
     /**

@@ -25,34 +25,12 @@
 #include <fstream>
 #include <random>
 #include <vector>
+#include <iostream>
 #include <unordered_map>
-#include <Dyrwin/crd/CollectiveRiskDilemma.h>
+#include <Dyrwin/AbouCRD/CollectiveRiskDilemma.h>
+#include <Dyrwin/AbouCRD/Utils.h>
+#include <Dyrwin/AbouCRD/DataStruct.hpp>
 #include <Dyrwin/SeedGenerator.h>
-
-
-struct CRDSimData {
-    int generation;
-    double avg_fitness;
-    double avg_contributions;
-    double avg_threshold;
-
-    void update(int generation, double avg_fitness, double avg_contributions, double avg_threshold) {
-        this->generation = generation;
-        this->avg_fitness = avg_fitness;
-        this->avg_contributions = avg_contributions;
-        this->avg_threshold = avg_threshold;
-    }
-
-    std::string getCSVHeader() {
-        return "generation,avg_fitness,avg_contributions,avg_threshold\n";
-    }
-
-    std::string getCSVData() {
-        std::stringstream data;
-        data << generation << "," << avg_fitness << "," << avg_contributions << "," << avg_threshold << "\n";
-        return data.str();
-    }
-};
 
 class CRDSimulator {
 public:

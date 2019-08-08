@@ -22,9 +22,10 @@ add_library(EGTTools
         RL/CrdSim.cpp
         RL/Utils.cpp
         RL/PopContainer.cpp
-        crd/CollectiveRiskDilemma.cpp
-        crd/CRDPlayer.cpp
-        crd/CRDSimulator.cpp)
+        AbouCRD/CollectiveRiskDilemma.cpp
+        AbouCRD/CRDPlayer.cpp
+        AbouCRD/CRDSimulator.cpp
+        AbouCRD/DataStruct.cpp)
 set_target_properties(EGTTools PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(EGTTools Eigen3::Eigen)
 if (OPENMP_FOUND)

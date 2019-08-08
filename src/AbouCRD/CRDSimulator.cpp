@@ -2,8 +2,7 @@
 // Created by Elias Fernandez on 15/03/2018.
 //
 
-#include <iostream>
-#include <Dyrwin/crd/CRDSimulator.h>
+#include <Dyrwin/AbouCRD/CRDSimulator.h>
 
 CRDSimulator::CRDSimulator(unsigned int population_size, unsigned int group_size, unsigned int nb_games,
                            unsigned int game_rounds,
