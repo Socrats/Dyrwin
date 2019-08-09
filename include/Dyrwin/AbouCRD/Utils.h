@@ -2,10 +2,10 @@
 // Created by Elias Fernandez on 09/04/2018.
 //
 
-#ifndef DYRWIN_CRD_UTILS_H
-#define DYRWIN_CRD_UTILS_H
+#ifndef DYRWIN_ABOUCRD_UTILS_H
+#define DYRWIN_ABOUCRD_UTILS_H
 
-#include <Dyrwin/crd/CRDPlayer.h>
+#include <Dyrwin/AbouCRD/CRDPlayer.h>
 
 struct EvoIndividual {
     double *fitness;
@@ -26,5 +26,5 @@ struct EvoIndividual {
     };
 };
 
-#endif //DYRWIN_CRD_UTILS_H
+#endif //DYRWIN_ABOUCRD_UTILS_H
 

@@ -1,8 +1,7 @@
 #include <iostream>
 #include <fstream>
-#include <Dyrwin/crd/CRDSimulator.h>
+#include <Dyrwin/AbouCRD/CRDSimulator.h>
 #include <Dyrwin/CommandLineParsing.h>
-#include <Dyrwin/crd/Utils.h>
 #include <Dyrwin/OutputHandlers.hpp>
 
 int main(int argc, char *argv[]) {
@@ -45,7 +44,7 @@ int main(int argc, char *argv[]) {
 
     clock_t tStart = clock();
 
-    CRDSimulator simulator(population_size, group_size, nb_games, game_rounds, beta, risk, mu, sigma, outFile);
+    EGTTools::AbouCRD::CRDSimulator simulator(population_size, group_size, nb_games, game_rounds, beta, risk, mu, sigma, outFile);
 
     std::cout << "Starting evolution" << std::endl;
 

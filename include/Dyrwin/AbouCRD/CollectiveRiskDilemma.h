@@ -2,27 +2,16 @@
 // Created by Elias Fernandez on 14/03/2018.
 //
 
-#ifndef DYRWIN_COLLECTIVERISKDILEMMA_H
-#define DYRWIN_COLLECTIVERISKDILEMMA_H
+#ifndef DYRWIN_ABOUCRD_COLLECTIVERISKDILEMMA_H
+#define DYRWIN_ABOUCRD_COLLECTIVERISKDILEMMA_H
 
 #include <vector>
 #include <random>
-#include <Dyrwin/crd/Utils.h>
+#include <iostream>
+#include <Dyrwin/AbouCRD/Utils.h>
+#include <Dyrwin/AbouCRD/DataStruct.hpp>
 #include <Dyrwin/SeedGenerator.h>
 
-
-struct GameData {
-    bool met_threshold;
-    double public_account;
-    double avg_donations;
-
-    GameData() : met_threshold(false), public_account(0), avg_donations(0) {};
-    GameData(bool met_threshold, double public_account) : met_threshold(met_threshold), public_account(public_account),
-                                                          avg_donations(0) {};
-    GameData(bool met_threshold, double public_account, double avg_donations) : met_threshold(met_threshold),
-                                                                                public_account(public_account),
-                                                                                avg_donations(avg_donations) {};
-};
 
 class CollectiveRiskDilemma {
     /**
@@ -88,4 +77,4 @@ private:
 };
 
 
-#endif //DYRWIN_COLLECTIVERISKDILEMMA_H
+#endif //DYRWIN_ABOUCRD_COLLECTIVERISKDILEMMA_H

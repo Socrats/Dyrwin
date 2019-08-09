@@ -2,8 +2,7 @@
 // Created by Elias Fernandez on 14/03/2018.
 //
 
-#include <iostream>
-#include <Dyrwin/crd/CollectiveRiskDilemma.h>
+#include <Dyrwin/AbouCRD/CollectiveRiskDilemma.h>
 
 CollectiveRiskDilemma::CollectiveRiskDilemma(unsigned int nb_actions, unsigned int group_size, double target_sum,
                                              double risk, unsigned int game_rounds, double endowment) :

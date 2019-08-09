@@ -2,10 +2,9 @@
 // Created by Elias Fernandez on 15/03/2018.
 //
 
-#include <iostream>
-#include <Dyrwin/crd/CRDSimulator.h>
+#include <Dyrwin/AbouCRD/CRDSimulator.h>
 
-CRDSimulator::CRDSimulator(unsigned int population_size, unsigned int group_size, unsigned int nb_games,
+EGTTools::AbouCRD::CRDSimulator::CRDSimulator(unsigned int population_size, unsigned int group_size, unsigned int nb_games,
                            unsigned int game_rounds,
                            double beta, double risk, double mu, double sigma, std::ofstream &output_file)
         : population_size(population_size), group_size(group_size), nb_games(nb_games), game_rounds(game_rounds),
@@ -54,7 +53,7 @@ CRDSimulator::CRDSimulator(unsigned int population_size, unsigned int group_size
  * Evolves the population through selection and mutation operators.
  * @param generations - numbers of generations through which the population is evolved
  */
-void CRDSimulator::evolve(unsigned int generations) {
+void EGTTools::AbouCRD::CRDSimulator::evolve(unsigned int generations) {
     size_t i, j;
 
     for (j = 0; j < generations; j++) {
@@ -126,7 +125,7 @@ void CRDSimulator::evolve(unsigned int generations) {
  * @param size : size of the subgroup
  * @return std::vector<typename playerType>
  */
-void CRDSimulator::_select_randomly(unsigned int size) {
+void EGTTools::AbouCRD::CRDSimulator::_select_randomly(unsigned int size) {
     // Uniform int distribution
     std::uniform_int_distribution<unsigned long int> dist(0, _population.size() - 1);
     for (unsigned int i = 0; i < size; i++) {
@@ -134,14 +133,14 @@ void CRDSimulator::_select_randomly(unsigned int size) {
     }
 }
 
-void CRDSimulator::_update_fitness_vector() {
+void EGTTools::AbouCRD::CRDSimulator::_update_fitness_vector() {
     for (auto &fitness: _fitnessVector) {
         fitness = exp(this->beta * fitness);
     }
 
 }
 
-void CRDSimulator::_update_population_indexes() {
+void EGTTools::AbouCRD::CRDSimulator::_update_population_indexes() {
     /**
      * Implements Russian Roulette selection strategy
      */
@@ -154,7 +153,7 @@ void CRDSimulator::_update_population_indexes() {
     }
 }
 
-void CRDSimulator::printPopulation() {
+void EGTTools::AbouCRD::CRDSimulator::printPopulation() {
     for (auto const &individual: _population) {
         std::cout << std::endl << "---------------------------" << std::endl;
         for (auto const &strategy: individual.player.strategy.round_strategies) {
@@ -165,49 +164,49 @@ void CRDSimulator::printPopulation() {
     }
 }
 
-void CRDSimulator::printCurrentStrategyFitness() {
+void EGTTools::AbouCRD::CRDSimulator::printCurrentStrategyFitness() {
 
 }
 
-void CRDSimulator::printAvgPopulationFitness(int generation) {
+void EGTTools::AbouCRD::CRDSimulator::printAvgPopulationFitness(int generation) {
     std::cout << "[Gen " << generation << "] Avg. Fitness of the population: " << _calculateAvgPopulationFitness()
               << std::endl;
 }
 
-void CRDSimulator::printAvgContributions(int generation) {
+void EGTTools::AbouCRD::CRDSimulator::printAvgContributions(int generation) {
     std::cout << "[Gen " << generation << "] Avg. Contributions of the population: "
               << _calculateAvgContributions() << std::endl;
 }
 
-void CRDSimulator::printAvgReachedThreshold(int generation) {
+void EGTTools::AbouCRD::CRDSimulator::printAvgReachedThreshold(int generation) {
     std::cout << "[Gen " << generation << "] Avg. Fitness of the population: " << _calculateAvgReachedThreshold()
               << std::endl;
 }
 
-double CRDSimulator::_calculateAvgPopulationFitness() {
+double EGTTools::AbouCRD::CRDSimulator::_calculateAvgPopulationFitness() {
     double average = std::accumulate(_fitnessVector.begin(), _fitnessVector.end(), 0.0) / _fitnessVector.size();
     return average / endowment;
 }
 
-double CRDSimulator::_calculateAvgContributions() {
+double EGTTools::AbouCRD::CRDSimulator::_calculateAvgContributions() {
     double average = std::accumulate(_contributions.begin(), _contributions.end(), 0.0) / _contributions.size();
     return average / (group_size * endowment);
 }
 
-double CRDSimulator::_calculateAvgReachedThreshold() {
+double EGTTools::AbouCRD::CRDSimulator::_calculateAvgReachedThreshold() {
     return std::accumulate(_target_reached.begin(), _target_reached.end(), 0.0) / _target_reached.size();
 }
 
-void CRDSimulator::printGenerationInfo(int generation) {
+void EGTTools::AbouCRD::CRDSimulator::printGenerationInfo(int generation) {
     std::cout << "[Gen " << generation << "] Fitness: " << _genData.avg_fitness << " Contributions: "
               << _genData.avg_contributions << " Threshold: " << _genData.avg_threshold << std::endl;
 }
 
-void CRDSimulator::saveGenerationData() {
+void EGTTools::AbouCRD::CRDSimulator::saveGenerationData() {
     outFile.write( (char *)&_genData, sizeof(CRDSimData));
 }
 
-void CRDSimulator::updateGenerationData(int generation) {
+void EGTTools::AbouCRD::CRDSimulator::updateGenerationData(int generation) {
     _genData.update(generation, _calculateAvgPopulationFitness(), _calculateAvgContributions(),
                    _calculateAvgReachedThreshold());
 }
