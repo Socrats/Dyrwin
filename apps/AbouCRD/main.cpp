@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 
     clock_t tStart = clock();
 
-    CRDSimulator simulator(population_size, group_size, nb_games, game_rounds, beta, risk, mu, sigma, outFile);
+    EGTTools::AbouCRD::CRDSimulator simulator(population_size, group_size, nb_games, game_rounds, beta, risk, mu, sigma, outFile);
 
     std::cout << "Starting evolution" << std::endl;
 

@@ -32,93 +32,98 @@
 #include <Dyrwin/AbouCRD/DataStruct.hpp>
 #include <Dyrwin/SeedGenerator.h>
 
-class CRDSimulator {
-public:
-    /**
-     * Initializes the simulation with population size and a random generator
-     * @param population_size
-     * @param mt
-     */
-    CRDSimulator(unsigned int population_size, unsigned int group_size, unsigned int nb_games, unsigned int game_rounds,
-                 double beta, double risk, double mu, double sigma, std::ofstream& output_file);
 
-    virtual ~CRDSimulator() = default;
+namespace EGTTools::AbouCRD {
 
-    void evolve(unsigned int generations);
+    class CRDSimulator {
+    public:
+        /**
+         * Initializes the simulation with population size and a random generator
+         * @param population_size
+         * @param mt
+         */
+        CRDSimulator(unsigned int population_size, unsigned int group_size, unsigned int nb_games,
+                     unsigned int game_rounds,
+                     double beta, double risk, double mu, double sigma, std::ofstream &output_file);
 
-    void printPopulation();
+        virtual ~CRDSimulator() = default;
 
-    void printCurrentStrategyFitness();
+        void evolve(unsigned int generations);
 
-    void printAvgPopulationFitness(int generation);
+        void printPopulation();
 
-    void printAvgContributions(int generation);
+        void printCurrentStrategyFitness();
 
-    void printAvgReachedThreshold(int generation);
+        void printAvgPopulationFitness(int generation);
 
-    void printGenerationInfo(int generation);
+        void printAvgContributions(int generation);
 
-    void saveGenerationData();
+        void printAvgReachedThreshold(int generation);
 
-    void updateGenerationData(int generation);
+        void printGenerationInfo(int generation);
 
-    unsigned int population_size;
-    unsigned int group_size;
-    unsigned int nb_games;
-    unsigned int game_rounds;
-    double beta; // intensity of selection
-    double risk;
-    double mu;
-    double sigma;
-    double target_sum;
-    double endowment;
-    std::ofstream& outFile; // output stream
+        void saveGenerationData();
 
-private:
-    std::vector<EvoIndividual> _population;  // holds the population at a given generation
-    std::vector<EvoIndividual> _population_tmp; // holds a vector of players
-    std::vector<double> _fitnessVector; // holds the fitness of each player in the population at a given generation
-    std::vector<int> _population_indexes; // holds indexes to the population
-    std::vector<EvoIndividual *> _group; // Vector of pointers to player objects
-    std::vector<unsigned int> _group_indexes; // Holds indexes to the population for selecting a group
-    std::vector<bool> _target_reached; // Holds the vector of target_reached each game during one generation
-    std::vector<double> _contributions; // Holds the contributions at each game during one generation
+        void updateGenerationData(int generation);
 
-    CollectiveRiskDilemma *_game; // Pointer to Game class
+        unsigned int population_size;
+        unsigned int group_size;
+        unsigned int nb_games;
+        unsigned int game_rounds;
+        double beta; // intensity of selection
+        double risk;
+        double mu;
+        double sigma;
+        double target_sum;
+        double endowment;
+        std::ofstream &outFile; // output stream
 
-    // Random generators
-    std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+    private:
+        std::vector<EvoIndividual> _population;  // holds the population at a given generation
+        std::vector<EvoIndividual> _population_tmp; // holds a vector of players
+        std::vector<double> _fitnessVector; // holds the fitness of each player in the population at a given generation
+        std::vector<int> _population_indexes; // holds indexes to the population
+        std::vector<EvoIndividual *> _group; // Vector of pointers to player objects
+        std::vector<unsigned int> _group_indexes; // Holds indexes to the population for selecting a group
+        std::vector<bool> _target_reached; // Holds the vector of target_reached each game during one generation
+        std::vector<double> _contributions; // Holds the contributions at each game during one generation
 
-    // Generation data
-    CRDSimData _genData;
+        CollectiveRiskDilemma *_game; // Pointer to Game class
 
-    /**
-     * @brief Selects size individuals randomly with replacement from the population
-     *
-     * Generates a vector of pointers to random elements of the population.
-     *
-     * @param size Size of the group to be selected randomly
-     * @return vector of pointers to the population with Size size.
-     */
+        // Random generators
+        std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+
+        // Generation data
+        CRDSimData _genData{};
+
+        /**
+         * @brief Selects size individuals randomly with replacement from the population
+         *
+         * Generates a vector of pointers to random elements of the population.
+         *
+         * @param size Size of the group to be selected randomly
+         * @return vector of pointers to the population with Size size.
+         */
 //    std::vector<EvoIndividual *> _select_randomly(unsigned int size);
-    void _select_randomly(unsigned int size);
+        void _select_randomly(unsigned int size);
 
-    /**
-     * @brief updates the fitness vector with the fermi function
-     */
-    void _update_fitness_vector();
+        /**
+         * @brief updates the fitness vector with the fermi function
+         */
+        void _update_fitness_vector();
 
-    /**
-     * @brief updates the indexes to the next population randomly with weights equal to the fitness of each individual.
-     */
-    void _update_population_indexes();
+        /**
+         * @brief updates the indexes to the next population randomly with weights equal to the fitness of each individual.
+         */
+        void _update_population_indexes();
 
-    double _calculateAvgPopulationFitness();
+        double _calculateAvgPopulationFitness();
 
-    double _calculateAvgContributions();
+        double _calculateAvgContributions();
 
-    double _calculateAvgReachedThreshold();
-};
+        double _calculateAvgReachedThreshold();
+    };
+}
 
 
 #endif //DYRWIN_ABOUCRD_CRDSIMULATOR_H
