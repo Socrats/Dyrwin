@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.9)
 
-#add_executable(AbouCRD AbouCRD/main.cpp)
-#target_link_libraries(AbouCRD ${Boost_LIBRARIES} boost_program_options)
-#set_target_properties(AbouCRD PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
-#set_target_properties(AbouCRD PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
-#target_link_libraries(AbouCRD EGTTools)
-
+add_executable(AbouCRD AbouCRD/main.cpp)
+target_link_libraries(AbouCRD ${Boost_LIBRARIES} boost_program_options)
+set_target_properties(AbouCRD PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
+set_target_properties(AbouCRD PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
+target_link_libraries(AbouCRD EGTTools)
 
 add_executable(pmoran SED/pmain.cpp)
 target_link_libraries(pmoran ${Boost_LIBRARIES} boost_program_options)
