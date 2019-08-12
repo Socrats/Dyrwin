@@ -42,6 +42,9 @@ namespace EGTTools::RL::DataTypes {
         EGTTools::RL::PopContainer population;
 
         CRDData(size_t length, EGTTools::RL::PopContainer &conainer);
+        Vector & get_eta() { return eta;}
+        Vector & get_avg_contribution() { return avg_contribution; }
+        EGTTools::RL::PopContainer & get_population() { return population; }
     };
 }
 

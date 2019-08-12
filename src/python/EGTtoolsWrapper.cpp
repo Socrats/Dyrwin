@@ -636,6 +636,12 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("__len__", [](const RL::PopContainer &v) { return v.size(); })
             .def("__repr__", &RL::PopContainer::toString);
 
+    py::class_<EGTTools::RL::DataTypes::CRDData>(mRL, "crdData")
+            .def(py::init<size_t, EGTTools::RL::PopContainer &>())
+            .def_property_readonly("group_achievement", &EGTTools::RL::DataTypes::CRDData::get_eta)
+            .def_property_readonly("avg_contributions", &EGTTools::RL::DataTypes::CRDData::get_avg_contribution)
+            .def_property_readonly("population", &EGTTools::RL::DataTypes::CRDData::get_population);
+
     py::class_<RL::CRDSim>(mRL, "CRDSim")
             .def(py::init<size_t, size_t, size_t, size_t, size_t, double, double,
                          double, const EGTTools::RL::ActionSpace &,
@@ -670,8 +676,9 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("nb_games"), py::arg("nb_groups"), py::arg("group_size"), py::arg("risk"),
                  py::arg("*agent_args"))
             .def("runWellMixed", static_cast<EGTTools::RL::DataTypes::CRDData (RL::CRDSim::*)(size_t, size_t,
-                                                                                size_t, size_t, double, const std::string &,
-                                                                                const std::vector<double> &)>(&RL::CRDSim::runWellMixed),
+                                                                                              size_t, size_t, double,
+                                                                                              const std::string &,
+                                                                                              const std::vector<double> &)>(&RL::CRDSim::runWellMixed),
                  py::call_guard<py::gil_scoped_release>(),
                  "Runs a simulation with a well mixed population and returns the groups success and donations"
                  "during learning, as well as the final population.",
