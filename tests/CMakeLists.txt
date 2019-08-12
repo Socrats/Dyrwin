@@ -24,5 +24,5 @@ add_executable(testSP TestIntSampling.cpp)
 set_target_properties(testSP PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 
 add_executable(testCrdSim TestCrdSimRunWellMixed.cpp)
-set_target_properties(testTU PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
+#set_target_properties(testTU PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(testCrdSim EGTTools)
