@@ -27,6 +27,7 @@
 #include <vector>
 #include <iostream>
 #include <unordered_map>
+#include <cassert>
 #include <Dyrwin/AbouCRD/CollectiveRiskDilemma.h>
 #include <Dyrwin/AbouCRD/Utils.h>
 #include <Dyrwin/AbouCRD/DataStruct.hpp>
