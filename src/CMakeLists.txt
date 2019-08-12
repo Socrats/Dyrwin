@@ -25,7 +25,7 @@ add_library(EGTTools
         AbouCRD/CollectiveRiskDilemma.cpp
         AbouCRD/CRDPlayer.cpp
         AbouCRD/CRDSimulator.cpp
-        AbouCRD/DataStruct.cpp)
+        AbouCRD/DataStruct.cpp RL/Data.cpp)
 set_target_properties(EGTTools PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(EGTTools Eigen3::Eigen)
 if (OPENMP_FOUND)

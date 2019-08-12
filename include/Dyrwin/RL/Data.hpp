@@ -41,10 +41,7 @@ namespace EGTTools::RL::DataTypes {
         Vector avg_contribution;
         EGTTools::RL::PopContainer population;
 
-        CRDData(size_t length, EGTTools::RL::PopContainer &conainer) : population(std::move(conainer)) {
-            eta = Vector::Zero(length);
-            avg_contribution = Vector::Zero(length);
-        }
+        CRDData(size_t length, EGTTools::RL::PopContainer &conainer);
     };
 }
 
