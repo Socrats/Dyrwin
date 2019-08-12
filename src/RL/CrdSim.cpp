@@ -171,6 +171,53 @@ EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_
 
 }
 
+EGTTools::RL::DataTypes::CRDData
+EGTTools::RL::CRDSim::runWellMixed(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                                   double risk, const std::string &agent_type,
+                                   const std::vector<double> &args) {
+    EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_generations);
+    size_t success;
+    double avg_contribution;
+    double avg_rounds;
+    CRDGame<PopContainer> game;
+
+    std::mt19937_64 mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+
+    // Create a population of _group_size * nb_groups
+    PopContainer wmPop(agent_type, pop_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
+    EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
+    PopContainer group;
+    std::vector<size_t> groups(pop_size);
+    std::iota(groups.begin(), groups.end(), 0);
+    for (size_t i = 0; i < group_size; ++i)
+        group.push_back(data.population(i));
+
+    for (size_t generation = 0; generation < nb_generations; ++generation) {
+        // First we select random groups and let them play nb_games
+        success = 0;
+        avg_contribution = 0.;
+        avg_rounds = 0.;
+        for (size_t i = 0; i < nb_games; ++i) {
+            std::shuffle(groups.begin(), groups.end(), mt);
+            for (size_t j = 0; i < group_size; ++i)
+                group(j) = data.population(groups[j]);
+            // First we play the game
+            auto[pool, final_round] = game.playGame(group, _available_actions, _nb_rounds);
+            avg_contribution += (game.playersContribution(group) / double(group_size));
+            (this->*_reinforce)(pool, success, risk, group, game);
+            avg_rounds += final_round;
+        }
+        data.eta(generation) += static_cast<double>(success) / static_cast<double>(nb_games);
+        data.avg_contribution(1, generation) += avg_contribution / static_cast<double>(nb_games);
+
+        game.calcProbabilities(data.population);
+        game.resetEpisode(data.population);
+    }
+
+    return data;
+
+}
+
 EGTTools::Matrix2D
 EGTTools::RL::CRDSim::runWellMixed(size_t nb_runs, size_t nb_generations, size_t nb_games, size_t nb_groups,
                                    size_t group_size,

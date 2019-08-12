@@ -14,7 +14,6 @@ namespace EGTTools::SED {
 
     /**
      * @brief This class defines the interface of a game to be used in an evolutionary process.
-     * @tparam G : type of random generator.
      */
     class AbstractGame {
     public:

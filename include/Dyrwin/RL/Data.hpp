@@ -8,39 +8,43 @@
 
 #include <string>
 #include <sstream>
-#include <vector>
+#include <Dyrwin/Types.h>
 #include <Dyrwin/RL/PopContainer.hpp>
 
-namespace EGTTools::RL {
-    struct CRDSimData {
-        int generation;
-        double avg_fitness;
-        double avg_contributions;
-        double eta;
-
-        void update(int gen, double fitness, double contributions, double group_achievement) {
-            this->generation = gen;
-            this->avg_fitness = fitness;
-            this->avg_contributions = contributions;
-            this->eta = group_achievement;
-        }
-
-        std::string getCSVHeader() {
-            return "generation,avg_fitness,avg_contributions,eta\n";
-        }
-
-        std::string getCSVData() {
-            std::stringstream data;
-            data << generation << "," << avg_fitness << "," << avg_contributions << "," << eta << "\n";
-            return data.str();
-        }
-    };
+namespace EGTTools::RL::DataTypes {
+//    struct CRDSimData {
+//        int generation;
+//        double avg_fitness;
+//        double avg_contributions;
+//        double eta;
+//
+//        void update(int gen, double fitness, double contributions, double group_achievement) {
+//            this->generation = gen;
+//            this->avg_fitness = fitness;
+//            this->avg_contributions = contributions;
+//            this->eta = group_achievement;
+//        }
+//
+//        std::string getCSVHeader() {
+//            return "generation,avg_fitness,avg_contributions,eta\n";
+//        }
+//
+//        std::string getCSVData() {
+//            std::stringstream data;
+//            data << generation << "," << avg_fitness << "," << avg_contributions << "," << eta << "\n";
+//            return data.str();
+//        }
+//    };
 
     struct CRDData {
-        std::vector<double> eta;
-        std::vector<double> avg_contribution;
-        std::vector<double> avg_payoff;
+        Vector eta;
+        Vector avg_contribution;
         EGTTools::RL::PopContainer population;
+
+        CRDData(size_t length, EGTTools::RL::PopContainer &conainer) : population(std::move(conainer)) {
+            eta = Vector::Zero(length);
+            avg_contribution = Vector::Zero(length);
+        }
     };
 }
 

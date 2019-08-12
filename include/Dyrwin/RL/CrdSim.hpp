@@ -16,6 +16,7 @@
 #include <Dyrwin/RL/CRDConditional.h>
 #include <Dyrwin/RL/PopContainer.hpp>
 #include <Dyrwin/RL/Utils.h>
+#include <Dyrwin/RL/Data.hpp>
 #include <Dyrwin/OpenMPUtils.hpp>
 
 namespace EGTTools::RL {
@@ -99,6 +100,11 @@ namespace EGTTools::RL {
          */
         Matrix2D runWellMixed(size_t nb_generations, size_t nb_games, size_t nb_groups, size_t group_size, double risk,
                               const std::vector<double> &args = {});
+
+        DataTypes::CRDData
+        runWellMixed(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                     double risk, const std::string &agent_type,
+                     const std::vector<double> &args = {});
 
         /**
          * @brief Runs several simulations with a well mixed population.
@@ -251,7 +257,7 @@ namespace EGTTools::RL {
          * @param pop : population container
          * @param game : game object
          */
-        template<class G = CRDGame <PopContainer>>
+        template<class G = CRDGame<PopContainer>>
         void reinforceOnlyPositive(double &pool, size_t &success, double &risk, PopContainer &pop,
                                    G &game);
 
@@ -265,7 +271,7 @@ namespace EGTTools::RL {
          * @param final_round : number of rounds of the last played game.
          * @param game : game object
          */
-        template<class G = CRDGame <PopContainer>>
+        template<class G = CRDGame<PopContainer>>
         void reinforceOnlyPositive(double &pool, size_t &success, double &risk, PopContainer &pop, size_t &final_round,
                                    G &game);
 
@@ -278,7 +284,7 @@ namespace EGTTools::RL {
          * @param pop : population container
          * @param game : game object
          */
-        template<class G = CRDGame <PopContainer>>
+        template<class G = CRDGame<PopContainer>>
         void reinforceAll(double &pool, size_t &success, double &risk, PopContainer &pop,
                           G &game);
 
@@ -292,7 +298,7 @@ namespace EGTTools::RL {
          * @param final_round : number of rounds of the last played game.
          * @param game : game object
          */
-        template<class G = CRDGame <PopContainer>>
+        template<class G = CRDGame<PopContainer>>
         void reinforceAll(double &pool, size_t &success, double &risk, PopContainer &pop, size_t &final_round,
                           G &game);
 
@@ -305,7 +311,7 @@ namespace EGTTools::RL {
          * @param pop : population container
          * @param game : game object
          */
-        template<class G = CRDGame <PopContainer>>
+        template<class G = CRDGame<PopContainer>>
         void reinforceXico(double &pool, size_t &success, double &risk, PopContainer &pop,
                            G &game);
 
@@ -319,7 +325,7 @@ namespace EGTTools::RL {
          * @param final_round : number of rounds of the last played game.
          * @param game : game object
          */
-        template<class G = CRDGame <PopContainer>>
+        template<class G = CRDGame<PopContainer>>
         void reinforceXico(double &pool, size_t &success, double &risk, PopContainer &pop, size_t &final_round,
                            G &game);
 
@@ -373,7 +379,7 @@ namespace EGTTools::RL {
 
         void set_agent_type(const std::string &agent_type);
 
-        CRDGame <PopContainer> Game;
+        CRDGame<PopContainer> Game;
         PopContainer population;
 
     private:
@@ -385,7 +391,7 @@ namespace EGTTools::RL {
         std::uniform_real_distribution<double> _real_rand;
 
         void (EGTTools::RL::CRDSim::* _reinforce)(double &, size_t &, double &, PopContainer &,
-                                                  CRDGame <PopContainer> &) = nullptr;
+                                                  CRDGame<PopContainer> &) = nullptr;
 
         // Random generators
         std::mt19937_64 _generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
