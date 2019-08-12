@@ -679,7 +679,7 @@ PYBIND11_MODULE(EGTtools, m) {
                                                                                               size_t, size_t, double,
                                                                                               const std::string &,
                                                                                               const std::vector<double> &)>(&RL::CRDSim::runWellMixed),
-                 py::call_guard<py::gil_scoped_release>(), py::return_value_policy::take_ownership,
+                 py::call_guard<py::gil_scoped_release>(), py::return_value_policy::move,
                  "Runs a simulation with a well mixed population and returns the groups success and donations"
                  "during learning, as well as the final population.",
                  py::arg("pop_size"), py::arg("group_size"),
