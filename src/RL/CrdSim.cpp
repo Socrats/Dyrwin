@@ -175,7 +175,6 @@ EGTTools::RL::DataTypes::CRDData
 EGTTools::RL::CRDSim::runWellMixed(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
                                    double risk, const std::string &agent_type,
                                    const std::vector<double> &args) {
-    EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_generations);
     size_t success;
     double avg_contribution;
     double avg_rounds;
@@ -208,7 +207,7 @@ EGTTools::RL::CRDSim::runWellMixed(size_t pop_size, size_t group_size, size_t nb
             avg_rounds += final_round;
         }
         data.eta(generation) += static_cast<double>(success) / static_cast<double>(nb_games);
-        data.avg_contribution(1, generation) += avg_contribution / static_cast<double>(nb_games);
+        data.avg_contribution(generation) += avg_contribution / static_cast<double>(nb_games);
 
         game.calcProbabilities(data.population);
         game.resetEpisode(data.population);
