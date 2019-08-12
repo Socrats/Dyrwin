@@ -5,7 +5,7 @@
 #include <Dyrwin/RL/Data.hpp>
 
 EGTTools::RL::DataTypes::CRDData::CRDData(size_t length, EGTTools::RL::PopContainer &container) : population(
-        container) {
+        std::move(container)) {
     eta = Vector::Zero(length);
     avg_contribution = Vector::Zero(length);
 }
