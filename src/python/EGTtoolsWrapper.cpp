@@ -28,13 +28,15 @@
 #include <Dyrwin/RL/CRDDemocracy.h>
 #include <Dyrwin/RL/CRDConditional.h>
 #include <Dyrwin/RL/CrdSim.hpp>
+#include <Dyrwin/RL/Data.hpp>
 
 //PYBIND11_MAKE_OPAQUE(EGTTools::RL::PopContainer);
-PYBIND11_MAKE_OPAQUE(EGTTools::RL::DataTypes::CRDData);
+//PYBIND11_MAKE_OPAQUE(EGTTools::RL::DataTypes::CRDData)
 
 namespace py = pybind11;
 using namespace EGTTools;
 using PairwiseComparison = EGTTools::SED::PairwiseMoran<EGTTools::Utils::LRUCache<std::string, double>>;
+using crdData = EGTTools::RL::DataTypes::CRDData;
 
 PYBIND11_MODULE(EGTtools, m) {
     m.doc() = R"pbdoc(
@@ -60,7 +62,7 @@ PYBIND11_MODULE(EGTtools, m) {
                  "Set main seed");
 
     py::class_<PDImitation>(m, "PDImitation")
-            .def(py::init<unsigned int, unsigned int, float, float, float, Eigen::Ref<const MatrixXd>>())
+            .def(py::init<unsigned int, unsigned int, float, float, float, const Eigen::Ref<const Matrix2D> &>())
             .def_property("generations", &PDImitation::generations, &PDImitation::set_generations)
             .def_property("pop_size", &PDImitation::pop_size, &PDImitation::set_pop_size)
             .def_property_readonly("nb_coop", &PDImitation::nb_coop)
@@ -637,11 +639,11 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("__len__", [](const RL::PopContainer &v) { return v.size(); })
             .def("__repr__", &RL::PopContainer::toString);
 
-    py::class_<EGTTools::RL::DataTypes::CRDData>(mRL, "crdData")
+    py::class_<crdData>(mRL, "crdData")
             .def(py::init<size_t, EGTTools::RL::PopContainer &>(), py::keep_alive<1, 1>(), "CRD Data Container")
-            .def_property_readonly("group_achievement", &EGTTools::RL::DataTypes::CRDData::get_eta)
-            .def_property_readonly("avg_contributions", &EGTTools::RL::DataTypes::CRDData::get_avg_contribution)
-            .def_property_readonly("population", &EGTTools::RL::DataTypes::CRDData::get_population);
+            .def_readwrite("group_achievement", &crdData::eta)
+            .def_readwrite("avg_contributions", &crdData::avg_contribution)
+            .def_readwrite("population", &crdData::population);
 
     py::class_<RL::CRDSim>(mRL, "CRDSim")
             .def(py::init<size_t, size_t, size_t, size_t, size_t, double, double,
@@ -676,10 +678,10 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("nb_runs"), py::arg("nb_generations"),
                  py::arg("nb_games"), py::arg("nb_groups"), py::arg("group_size"), py::arg("risk"),
                  py::arg("*agent_args"))
-            .def("runWellMixed", static_cast<EGTTools::RL::DataTypes::CRDData (RL::CRDSim::*)(size_t, size_t,
-                                                                                              size_t, size_t, double,
-                                                                                              const std::string &,
-                                                                                              const std::vector<double> &)>(&RL::CRDSim::runWellMixed),
+            .def("runWellMixed", static_cast<crdData (RL::CRDSim::*)(size_t, size_t,
+                                                                     size_t, size_t, double,
+                                                                     const std::string &,
+                                                                     const std::vector<double> &)>(&RL::CRDSim::runWellMixed),
                  py::call_guard<py::gil_scoped_release>(), py::return_value_policy::reference_internal,
                  "Runs a simulation with a well mixed population and returns the groups success and donations"
                  "during learning, as well as the final population.",

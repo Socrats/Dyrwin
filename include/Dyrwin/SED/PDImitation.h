@@ -23,7 +23,7 @@ namespace EGTTools {
     class PDImitation {
     public:
         PDImitation(unsigned int generations, unsigned int pop_size, float beta, float mu,
-                    float coop_freq, Eigen::Ref<const MatrixXd> payoff_matrix);
+                    float coop_freq, const Eigen::Ref<const MatrixXd>& payoff_matrix);
 
         ~PDImitation() = default;
 

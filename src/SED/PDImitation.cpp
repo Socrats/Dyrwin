@@ -6,7 +6,7 @@
 
 EGTTools::PDImitation::PDImitation(unsigned int generations, unsigned int pop_size, float beta,
                                     float mu, float coop_freq,
-                                    Eigen::Ref<const MatrixXd> payoff_matrix) : _generations(generations),
+                                    const Eigen::Ref<const MatrixXd>& payoff_matrix) : _generations(generations),
                                                                                 _pop_size(pop_size), _beta(beta),
                                                                                 _mu(mu),
                                                                                 _coop_freq(coop_freq),
