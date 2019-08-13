@@ -131,7 +131,7 @@ if (MAKE_PYTHON)
             )
     add_subdirectory(pybind11)
     pybind11_add_module(EGTtools SHARED ${PYTHON_FILES})
-    target_link_libraries(EGTtools INTERFACE EGTTools)
+    target_link_libraries(EGTtools PRIVATE EGTTools)
 endif ()
 
 

@@ -640,10 +640,10 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("__repr__", &RL::PopContainer::toString);
 
     py::class_<crdData>(mRL, "crdData")
-            .def(py::init<size_t, EGTTools::RL::PopContainer &>(), py::keep_alive<1, 1>(), "CRD Data Container")
-            .def_readwrite("group_achievement", &crdData::eta)
-            .def_readwrite("avg_contributions", &crdData::avg_contribution)
-            .def_readwrite("population", &crdData::population);
+            .def(py::init<size_t, EGTTools::RL::PopContainer &>(), py::keep_alive<1, 3>(), "CRD Data Container")
+            .def_readwrite("group_achievement", &crdData::eta, py::return_value_policy::reference_internal)
+            .def_readwrite("avg_contributions", &crdData::avg_contribution, py::return_value_policy::reference_internal)
+            .def_readwrite("population", &crdData::population, py::return_value_policy::reference_internal);
 
     py::class_<RL::CRDSim>(mRL, "CRDSim")
             .def(py::init<size_t, size_t, size_t, size_t, size_t, double, double,
@@ -682,7 +682,6 @@ PYBIND11_MODULE(EGTtools, m) {
                                                                      size_t, size_t, double,
                                                                      const std::string &,
                                                                      const std::vector<double> &)>(&RL::CRDSim::runWellMixed),
-                 py::call_guard<py::gil_scoped_release>(), py::return_value_policy::reference_internal,
                  "Runs a simulation with a well mixed population and returns the groups success and donations"
                  "during learning, as well as the final population.",
                  py::arg("pop_size"), py::arg("group_size"),
