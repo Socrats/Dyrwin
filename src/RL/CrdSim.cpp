@@ -461,6 +461,52 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
 }
 
 
+EGTTools::RL::DataTypes::CRDData
+EGTTools::RL::CRDSim::runConditional(size_t group_size, size_t nb_episodes, size_t nb_games, double risk,
+                                     const std::string &agent_type, const std::vector<double> &args) {
+    size_t success;
+    double avg_contribution;
+    double avg_rounds;
+    ActionSpace available_actions(_nb_actions);
+    std::iota(available_actions.begin(), available_actions.end(), 0);
+    FlattenState flatten(Factors{_nb_rounds, (_group_size * _nb_actions) + 1});
+    CRDConditional<PopContainer> game(flatten);
+
+    // Create a population of _group_size * nb_groups
+    PopContainer popConditional(agent_type, group_size, game.flatten().factor_space, _nb_actions, _nb_rounds,
+                                _endowment, args);
+
+    // Move population to data container
+    EGTTools::RL::DataTypes::CRDData data(nb_episodes, popConditional);
+
+    void
+    (EGTTools::RL::CRDSim::* reinforce)(double &, size_t &, double &, PopContainer &, CRDConditional<PopContainer> &);
+
+    if (_agent_type == "rothErev")
+        reinforce = &EGTTools::RL::CRDSim::reinforceOnlyPositive<CRDConditional<PopContainer>>;
+    else reinforce = &EGTTools::RL::CRDSim::reinforceAll<CRDConditional<PopContainer>>;
+
+    for (size_t step = 0; step < nb_episodes; ++step) {
+        success = 0;
+        avg_contribution = 0.;
+        avg_rounds = 0.;
+        for (size_t i = 0; i < nb_games; ++i) {
+            // First we play the game
+            auto[pool, final_round] = game.playGame(data.population, available_actions, _nb_rounds);
+            avg_contribution += (game.playersContribution(data.population) / double(_group_size));
+            (this->*reinforce)(pool, success, risk, data.population, game);
+            avg_rounds += final_round;
+        }
+        data.eta(step) = static_cast<double>(success) / static_cast<double>(nb_games);
+        data.avg_contribution(step) = static_cast<double>(avg_contribution) / static_cast<double>(nb_games);
+
+        game.calcProbabilities(data.population);
+        game.resetEpisode(data.population);
+    }
+
+    return data;
+}
+
 EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size_t nb_games, size_t nb_groups,
                                                         double risk, const std::vector<double> &args,
                                                         const std::string &crd_type) {

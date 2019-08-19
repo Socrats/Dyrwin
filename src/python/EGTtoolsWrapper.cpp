@@ -676,7 +676,8 @@ PYBIND11_MODULE(EGTtools, m) {
                                                                    const std::vector<double> &)>(&RL::CRDSim::run),
                  py::call_guard<py::gil_scoped_release>(),
                  "Runs a CRD simulation for nb_groups and returns the population in a data container",
-                 py::arg("nb_groups"), py::arg("group_size"), py::arg("nb_episodes"), py::arg("nb_games"), py::arg("risk"),
+                 py::arg("nb_groups"), py::arg("group_size"), py::arg("nb_episodes"), py::arg("nb_games"),
+                 py::arg("risk"),
                  py::arg("transient"), py::arg("agent_type"), py::arg("*agent_args"))
             .def("runWellMixed", static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t,
                                                                                 size_t, size_t, double,
@@ -718,6 +719,13 @@ PYBIND11_MODULE(EGTtools, m) {
                  "Runs a CRD simulation for a single group with conditional agents", py::arg("nb_episodes"),
                  py::arg("nb_games"),
                  py::arg("*agent_args"), py::arg("crd_type"))
+            .def("runConditional",
+                 static_cast<crdData (RL::CRDSim::*)(size_t, size_t, size_t, double, const std::string &,
+                                                     const std::vector<double> &)>(&RL::CRDSim::runConditional),
+                 "Runs a CRD simulation for a single group with conditional agents that returns a population",
+                 py::arg("group_size"),
+                 py::arg("nb_episodes"), py::arg("nb_games"), py::arg("risk"), py::arg("agent_type"),
+                 py::arg("*agent_args"))
             .def("runConditional",
                  static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, size_t, double,
                                                                 const std::vector<double> &,

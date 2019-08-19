@@ -223,6 +223,10 @@ namespace EGTTools::RL {
         Matrix2D runConditional(size_t nb_episodes, size_t nb_games, const std::vector<double> &args = {},
                                 const std::string &crd_type = "milinski");
 
+        DataTypes::CRDData
+        runConditional(size_t group_size, size_t nb_episodes, size_t nb_games, double risk,
+                       const std::string &agent_type, const std::vector<double> &args = {});
+
         /**
          * @brief Runs a simulation with timing uncertainty with conditional agents.
          *
