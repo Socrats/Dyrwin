@@ -29,6 +29,7 @@
 #include <Dyrwin/RL/CRDConditional.h>
 #include <Dyrwin/RL/CrdSim.hpp>
 #include <Dyrwin/RL/Data.hpp>
+#include <Dyrwin/RL/Utils.h>
 
 //PYBIND11_MAKE_OPAQUE(EGTTools::RL::PopContainer);
 //PYBIND11_MAKE_OPAQUE(EGTTools::RL::DataTypes::CRDData)
@@ -652,6 +653,13 @@ PYBIND11_MODULE(EGTtools, m) {
             .def_readwrite("avg_contributions", &crdDataIslands::avg_contribution,
                            py::return_value_policy::reference_internal)
             .def_readwrite("groups", &crdDataIslands::groups, py::return_value_policy::reference_internal);
+
+    py::class_<EGTTools::RL::FlattenState>(mRL, "FlattenState")
+            .def(py::init<const EGTTools::RL::Factors &>(), py::keep_alive<1, 2>(),
+                 "Converts back and forth multi-dimensional states to flattened states")
+            .def("to_factors",
+                 static_cast<EGTTools::RL::Factors (RL::FlattenState::*)(size_t)>( &RL::FlattenState::toFactors))
+            .def("to_index", &RL::FlattenState::toIndex);
 
     py::class_<RL::CRDSim>(mRL, "CRDSim")
             .def(py::init<size_t, size_t, size_t, size_t, size_t, double, double,
