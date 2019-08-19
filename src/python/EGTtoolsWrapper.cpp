@@ -658,8 +658,10 @@ PYBIND11_MODULE(EGTtools, m) {
             .def(py::init<const EGTTools::RL::Factors &>(), py::keep_alive<1, 2>(),
                  "Converts back and forth multi-dimensional states to flattened states")
             .def("to_factors",
-                 static_cast<EGTTools::RL::Factors (RL::FlattenState::*)(size_t)>( &RL::FlattenState::toFactors))
-            .def("to_index", &RL::FlattenState::toIndex);
+                 static_cast<EGTTools::RL::Factors (RL::FlattenState::*)(size_t)>( &RL::FlattenState::toFactors),
+                 "converts an state index into a tuple (vector)", py::arg("index"))
+            .def("to_index", &RL::FlattenState::toIndex,
+                 "converts a vector (tuple) multi-dimensional state into a scalar index.", py::arg("state"));
 
     py::class_<RL::CRDSim>(mRL, "CRDSim")
             .def(py::init<size_t, size_t, size_t, size_t, size_t, double, double,
