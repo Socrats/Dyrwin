@@ -124,6 +124,68 @@ EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups,
 
 }
 
+EGTTools::RL::DataTypes::CRDDataIslands
+EGTTools::RL::CRDSim::run(size_t nb_groups, size_t group_size, size_t nb_episodes, size_t nb_games, double risk,
+                          size_t transient, const std::string &agent_type, const std::vector<double> &args) {
+
+    // First we initialise the variables that will hold the data
+    EGTTools::Vector group_achievement = Vector::Zero(nb_groups);
+    EGTTools::Vector avg_donations = Vector::Zero(nb_groups);
+
+    // Create a vector of groups
+    std::vector<PopContainer> groups;
+    // Initialise al the independent groups
+    for (size_t i = 0; i < nb_groups; ++i) {
+        try {
+            groups.emplace_back(agent_type, group_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
+        } catch (std::invalid_argument &e) {
+            throw e;
+        }
+    }
+
+#pragma omp parallel for shared(transient, groups) reduction(+:group_achievement, avg_donations)
+    for (size_t group = 0; group < nb_groups; ++group) {
+        size_t success;
+        double avg_contribution;
+        double avg_rounds;
+        CRDGame<PopContainer> game;
+
+        for (size_t step = 0; step < nb_episodes; ++step) {
+            // Initialise data variables every episode
+            success = 0;
+            avg_contribution = 0.;
+            avg_rounds = 0.;
+            // For every episode each group plays @param nb_games
+            for (unsigned int i = 0; i < nb_games; ++i) {
+                // First we play the game
+                auto[pool, final_round] = game.playGame(groups[group], _available_actions, _nb_rounds);
+                avg_contribution += (game.playersContribution(groups[group]) / double(_group_size));
+                (this->*_reinforce)(pool, success, risk, groups[group], game);
+                avg_rounds += final_round;
+            }
+            // The results are only averaged after a transient period
+            if (step >= transient) {
+                group_achievement(group) += static_cast<double>(success) / static_cast<double>(nb_games);
+                avg_donations(group) += avg_contribution / static_cast<double>(nb_games);
+            }
+
+            game.calcProbabilities(groups[group]);
+            game.resetEpisode(groups[group]);
+        }
+    }
+
+    // Calculate average values
+    group_achievement /= static_cast<double>(nb_episodes - transient);
+    avg_donations /= static_cast<double>(nb_episodes - transient);
+
+    // Finally we move all results to the data container and return it
+    // Data container
+    EGTTools::RL::DataTypes::CRDDataIslands data(group_achievement, avg_donations, groups);
+
+    return data;
+
+}
+
 EGTTools::Matrix2D
 EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_t nb_groups, size_t group_size,
                                    double risk,

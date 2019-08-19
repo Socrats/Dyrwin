@@ -82,6 +82,33 @@ namespace EGTTools::RL {
         run(size_t nb_episodes, size_t nb_games, size_t nb_groups, double risk, const std::vector<double> &args = {});
 
         /**
+         * @brief runs the Collective risk dilemma with independent groups of agents.
+         *
+         * Trains a population of size @param nb_groups * @param group_size of RL agents of
+         * type @param agent_type. The agents are subdivided into @param nb_groups groups
+         * and during training time they only interact with members of their group.
+         *
+         * Each agent's strategy is only updated after each episode.
+         *
+         * Each group is independently run in parallel. Once the simulation finishes, the
+         * learning data is transfered to a CRDData container. The population of agents
+         * is also inserted in the container. Finally this method returns the data container.
+         *
+         * @param nb_groups : number of independent groups
+         * @param group_size : size of the group
+         * @param nb_episodes : number of episodes
+         * @param nb_games : number of games per episode
+         * @param risk : probability that agents lose their endowment if the target isn't met
+         * @param transient : transient time to be discarded on the computation of the average success
+         * @param agent_type : learning algorithm used by the agent
+         * @param args : vector of arguments for the creation of the agent
+         * @return a data container with the results of the simulation
+         */
+        DataTypes::CRDDataIslands
+        run(size_t nb_groups, size_t group_size, size_t nb_episodes, size_t nb_games, double risk,
+            size_t transient, const std::string &agent_type, const std::vector<double> &args = {});
+
+        /**
          * @brief Runs simulation with a well mixed population.
          *
          * In the simulations performed here, agents of a population of size Z = _group_size * nb_groups

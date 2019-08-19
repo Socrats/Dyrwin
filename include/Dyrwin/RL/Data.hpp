@@ -7,6 +7,7 @@
 
 
 #include <string>
+#include <vector>
 #include <sstream>
 #include <Dyrwin/Types.h>
 #include <Dyrwin/RL/PopContainer.hpp>
@@ -37,11 +38,25 @@ namespace EGTTools::RL::DataTypes {
 //    };
 
     struct CRDData {
-        Vector eta;
+        Vector eta; // group achievement
         Vector avg_contribution;
         EGTTools::RL::PopContainer population;
 
         CRDData(size_t length, EGTTools::RL::PopContainer &container);
+    };
+
+    struct CRDDataIslands {
+        Vector eta;
+        Vector avg_contribution;
+        std::vector<EGTTools::RL::PopContainer> groups;
+
+        CRDDataIslands() = default;
+
+        CRDDataIslands(Vector &group_achievement, Vector &avg_donations,
+                       std::vector<EGTTools::RL::PopContainer> &container) : eta(std::move(group_achievement)),
+                                                                             avg_contribution(
+                                                                                     std::move(avg_donations)),
+                                                                             groups(std::move(container)) {};
     };
 }
 

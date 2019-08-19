@@ -37,6 +37,7 @@ namespace py = pybind11;
 using namespace EGTTools;
 using PairwiseComparison = EGTTools::SED::PairwiseMoran<EGTTools::Utils::LRUCache<std::string, double>>;
 using crdData = EGTTools::RL::DataTypes::CRDData;
+using crdDataIslands = EGTTools::RL::DataTypes::CRDDataIslands;
 
 PYBIND11_MODULE(EGTtools, m) {
     m.doc() = R"pbdoc(
@@ -645,6 +646,13 @@ PYBIND11_MODULE(EGTtools, m) {
             .def_readwrite("avg_contributions", &crdData::avg_contribution, py::return_value_policy::reference_internal)
             .def_readwrite("population", &crdData::population, py::return_value_policy::reference_internal);
 
+    py::class_<crdDataIslands>(mRL, "crdDataIslands")
+            .def(py::init<Vector &, Vector &, std::vector<EGTTools::RL::PopContainer> &>(), "CRD Data Container")
+            .def_readwrite("group_achievement", &crdDataIslands::eta, py::return_value_policy::reference_internal)
+            .def_readwrite("avg_contributions", &crdDataIslands::avg_contribution,
+                           py::return_value_policy::reference_internal)
+            .def_readwrite("groups", &crdDataIslands::groups, py::return_value_policy::reference_internal);
+
     py::class_<RL::CRDSim>(mRL, "CRDSim")
             .def(py::init<size_t, size_t, size_t, size_t, size_t, double, double,
                          double, const EGTTools::RL::ActionSpace &,
@@ -663,6 +671,13 @@ PYBIND11_MODULE(EGTtools, m) {
                  "Runs a CRD simulation for nb_groups",
                  py::arg("nb_episodes"), py::arg("nb_games"), py::arg("nb_groups"), py::arg("risk"),
                  py::arg("*agent_args"))
+            .def("run", static_cast<crdDataIslands (RL::CRDSim::*)(size_t, size_t, size_t, size_t, double,
+                                                                   size_t, const std::string &agent_type,
+                                                                   const std::vector<double> &)>(&RL::CRDSim::run),
+                 py::call_guard<py::gil_scoped_release>(),
+                 "Runs a CRD simulation for nb_groups and returns the population in a data container",
+                 py::arg("nb_groups"), py::arg("group_size"), py::arg("nb_episodes"), py::arg("nb_games"), py::arg("risk"),
+                 py::arg("transient"), py::arg("agent_type"), py::arg("*agent_args"))
             .def("runWellMixed", static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t,
                                                                                 size_t, size_t, double,
                                                                                 const std::vector<double> &)>(&RL::CRDSim::runWellMixed),
