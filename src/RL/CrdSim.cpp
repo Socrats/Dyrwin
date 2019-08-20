@@ -214,7 +214,7 @@ EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_
         avg_rounds = 0.;
         for (size_t i = 0; i < nb_games; ++i) {
             std::shuffle(groups.begin(), groups.end(), mt);
-            for (size_t j = 0; i < group_size; ++i)
+            for (size_t j = 0; j < group_size; ++j)
                 group(j) = wmPop(groups[j]);
             // First we play the game
             auto[pool, final_round] = game.playGame(group, _available_actions, _nb_rounds);
@@ -242,7 +242,7 @@ EGTTools::RL::CRDSim::runWellMixed(size_t pop_size, size_t group_size, size_t nb
     double avg_rounds;
     CRDGame<PopContainer> game;
 
-    std::mt19937_64 mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+    std::mt19937_64 mt(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
     // Create a population of _group_size * nb_groups
     PopContainer wmPop(agent_type, pop_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
@@ -260,7 +260,7 @@ EGTTools::RL::CRDSim::runWellMixed(size_t pop_size, size_t group_size, size_t nb
         avg_rounds = 0.;
         for (size_t i = 0; i < nb_games; ++i) {
             std::shuffle(groups.begin(), groups.end(), mt);
-            for (size_t j = 0; i < group_size; ++i)
+            for (size_t j = 0; j < group_size; ++j)
                 group(j) = data.population(groups[j]);
             // First we play the game
             auto[pool, final_round] = game.playGame(group, _available_actions, _nb_rounds);
@@ -602,7 +602,7 @@ template<class G>
 void EGTTools::RL::CRDSim::reinforceAll(double &pool, size_t &success, double &risk, PopContainer &pop,
                                         G &game) {
 
-    if (pool >= _threshold) success++;
+    if (pool >= _threshold) ++success;
     else if (_real_rand(_generator) < risk) game.setPayoffs(pop, 0);
 
     game.reinforcePath(pop);

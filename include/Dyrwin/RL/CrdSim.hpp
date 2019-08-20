@@ -157,6 +157,33 @@ namespace EGTTools::RL {
                               size_t group_size, double risk,
                               const std::vector<double> &args = {});
 
+        /**
+         * @brief Runs a single simulation with a well mixed population and synchronous updates
+         *
+         * In the simulations performed here, agents of a population of size @param pop_size
+         * are selected randomly from the population to form a group of size _group_size and play a game.
+         * Each player plays at least 1 game, and it will update its strategy based on this information.
+         * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
+         *
+         * The @param args is a vector that should contain the arguments specific of the agent type of
+         * the population.
+         *
+         * The simulation is repeated for @param nb_runs with independent populations.
+         *
+         * @param pop_size
+         * @param group_size
+         * @param nb_generations
+         * @param nb_games
+         * @param risk
+         * @param agent_type
+         * @param args
+         * @return
+         */
+        DataTypes::CRDData
+        runWellMixedSync(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                     double risk, const std::string &agent_type,
+                     const std::vector<double> &args = {});
+
 
         /**
          * @brief Runs a simulation with timing uncertainty
