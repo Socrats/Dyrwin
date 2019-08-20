@@ -158,34 +158,6 @@ namespace EGTTools::RL {
                               const std::vector<double> &args = {});
 
         /**
-         * @brief Runs a single simulation with a well mixed population and synchronous updates
-         *
-         * In the simulations performed here, agents of a population of size @param pop_size
-         * are selected randomly from the population to form a group of size _group_size and play a game.
-         * Each player plays at least 1 game, and it will update its strategy based on this information.
-         * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
-         *
-         * The @param args is a vector that should contain the arguments specific of the agent type of
-         * the population.
-         *
-         * The simulation is repeated for @param nb_runs with independent populations.
-         *
-         * @param pop_size
-         * @param group_size
-         * @param nb_generations
-         * @param nb_games
-         * @param risk
-         * @param agent_type
-         * @param args
-         * @return
-         */
-        DataTypes::CRDData
-        runWellMixedSync(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
-                     double risk, const std::string &agent_type,
-                     const std::vector<double> &args = {});
-
-
-        /**
          * @brief Runs a simulation with timing uncertainty
          *
          * This simulations run the Collective Risk Game with timing uncertainty specified in [Domingos et al. 2019].
@@ -212,6 +184,34 @@ namespace EGTTools::RL {
                              size_t max_rounds, double p,
                              double risk,
                              const std::vector<double> &args = {}, const std::string &crd_type = "milinski");
+
+        /**
+         * @brief trains a well-mixed population in the CRD with Timing uncertainty
+         *
+         * In the simulations performed here, agents of a population of size Z = @param pop_size
+         * are selected randomly from the population to form a group of size @param group_size and play a game.
+         * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
+         *
+         * The @param args is a vector that should contain the arguments specific of the @param agent_type of
+         * the population.
+         *
+         * The results are transfered to a data container and returned.
+         *
+         * @param pop_size : size of the population
+         * @param group_size : group size
+         * @param nb_generations : total number of generations
+         * @param nb_games : number of games per generation
+         * @param risk : risk of losing the remaining endowment if the target isn't reached
+         * @param agent_type : algorithm type of the agent
+         * @param args : arguments for the agent
+         * @return a data container
+         */
+        DataTypes::CRDData
+        runWellMixedTU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                       double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
+                       const std::string &agent_type,
+                       const std::vector<double> &args = {});
+
 
         /**
          * @brief Runs a simulation with threshold uncertainty

@@ -718,6 +718,13 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("nb_episodes"), py::arg("nb_games"),
                  py::arg("min_rounds"), py::arg("mean_rounds"), py::arg("max_rounds"),
                  py::arg("p"), py::arg("risk"), py::arg("*agent_args"), py::arg("crd_type"))
+            .def("runWellMixedTU", &RL::CRDSim::runWellMixedTU,
+                 "Runs CRD simulations with unconditional agents and timing uncertainty in a well-mixed population.",
+                 py::arg("pop_size"), py::arg("group_size"),
+                 py::arg("nb_generations"), py::arg("nb_games"), py::arg("risk"),
+                 py::arg("min_rounds"), py::arg("mean_rounds"),
+                 py::arg("max_rounds"), py::arg("p"),
+                 py::arg("agent_type"), py::arg("*agent_args"))
             .def("runConditionalTimingUncertainty", &RL::CRDSim::runConditionalTimingUncertainty,
                  "Runs CRD simulations with conditional agents and timing uncertainty.",
                  py::arg("nb_episodes"), py::arg("nb_games"),

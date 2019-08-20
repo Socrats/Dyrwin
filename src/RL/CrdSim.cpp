@@ -355,6 +355,69 @@ EGTTools::RL::CRDSim::runTimingUncertainty(size_t nb_episodes, size_t nb_games, 
     return results;
 }
 
+EGTTools::RL::DataTypes::CRDData
+EGTTools::RL::CRDSim::runWellMixedTU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                                     double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
+                                     const std::string &agent_type, const std::vector<double> &args) {
+
+    // Choose reinforcement method
+    void
+    (EGTTools::RL::CRDSim::* reinforce)(double &, size_t &, double &, PopContainer &, size_t &,
+                                        CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> &);
+
+    if (_agent_type == "rothErev")
+        reinforce = &EGTTools::RL::CRDSim::reinforceOnlyPositive<CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>>>;
+    else
+        reinforce = &EGTTools::RL::CRDSim::reinforceAll<CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>>>;
+
+
+    // Then, we instantiate the CRD game with uncertainty
+    if (mean_rounds > 0) {
+        p = 1.0 / ((static_cast<double>(mean_rounds) - static_cast<double>(min_rounds)) + 1);
+    }
+    EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
+    CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game;
+    std::mt19937_64 mt(EGTTools::Random::SeedGenerator::getInstance().getSeed());
+
+    // Create a population of _group_size * nb_groups
+    PopContainer wmPop(agent_type, pop_size, max_rounds, _nb_actions, max_rounds, _endowment, args);
+    EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
+    PopContainer group;
+    std::vector<size_t> groups(pop_size);
+    std::iota(groups.begin(), groups.end(), 0);
+    for (size_t i = 0; i < group_size; ++i)
+        group.push_back(data.population(i));
+
+    // Variables used during learning
+    size_t success;
+    double avg_contribution;
+    double avg_rounds;
+
+    for (size_t generation = 0; generation < nb_generations; ++generation) {
+        success = 0;
+        avg_contribution = 0.;
+        avg_rounds = 0.;
+        for (size_t i = 0; i < nb_games; ++i) {
+            std::shuffle(groups.begin(), groups.end(), mt);
+            for (size_t j = 0; j < group_size; ++j)
+                group(j) = data.population(groups[j]);
+            // First we play the game
+            auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu);
+            avg_contribution += (game.playersContribution(group) / double(group_size));
+            (this->*reinforce)(pool, success, risk, group, final_round, game);
+            avg_rounds += final_round;
+        }
+        data.eta(generation) += static_cast<double>(success) / static_cast<double>(nb_games);
+        data.avg_contribution(generation) += avg_contribution / static_cast<double>(nb_games);
+
+        game.calcProbabilities(data.population);
+        game.resetEpisode(data.population);
+    }
+
+    return data;
+}
+
+
 EGTTools::Matrix2D
 EGTTools::RL::CRDSim::runConditionalTimingUncertainty(size_t nb_episodes, size_t nb_games, size_t min_rounds,
                                                       size_t mean_rounds,
