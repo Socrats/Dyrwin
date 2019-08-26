@@ -697,12 +697,12 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("risk"),
                  py::arg("*agent_args"))
             .def("runWellMixed", static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t,
-                                                                                size_t, size_t, size_t, double,
+                                                                                size_t, size_t, size_t, double, const std::string &,
                                                                                 const std::vector<double> &)>(&RL::CRDSim::runWellMixed),
                  py::call_guard<py::gil_scoped_release>(),
                  "Runs a simulation with a well mixed population",
-                 py::arg("nb_runs"), py::arg("nb_generations"),
-                 py::arg("nb_games"), py::arg("nb_groups"), py::arg("group_size"), py::arg("risk"),
+                 py::arg("nb_runs"), py::arg("pop_size"), py::arg("group_size"), py::arg("nb_generations"),
+                 py::arg("nb_games"), py::arg("risk"), py::arg("agent_type"),
                  py::arg("*agent_args"))
             .def("runWellMixed", static_cast<crdData (RL::CRDSim::*)(size_t, size_t,
                                                                      size_t, size_t, double,

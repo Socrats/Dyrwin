@@ -128,7 +128,7 @@ void Agent::reinforceTrajectory(size_t episode_length) {
  * @return selected action
  */
 size_t Agent::selectAction(size_t round) {
-    assert(round >= 0 && round < _episode_length);
+    assert(round < _episode_length);
     _trajectory_states(round) = round;
     _trajectory_actions(round) = EGTTools::choice(_nb_actions, _policy.row(round), _real_rand, _mt);
     return _trajectory_actions(round);
@@ -140,7 +140,7 @@ size_t Agent::selectAction(size_t round) {
  * @return selected action
  */
 size_t Agent::selectAction(size_t round, size_t state) {
-    assert(round >= 0 && round < _episode_length);
+    assert(round < _episode_length);
     _trajectory_states(round) = state;
     _trajectory_actions(round) = EGTTools::choice(_nb_actions, _policy.row(state), _real_rand, _mt);
     return _trajectory_actions(round);
