@@ -233,6 +233,12 @@ namespace EGTTools::RL {
                        const std::string &agent_type,
                        const std::vector<double> &args = {});
 
+        Matrix2D
+        runWellMixedTU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                       double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
+                       const std::string &agent_type,
+                       const std::vector<double> &args = {});
+
         /**
              * @brief Runs a simulation with threshold uncertainty
              *

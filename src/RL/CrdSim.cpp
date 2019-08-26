@@ -418,6 +418,30 @@ EGTTools::RL::CRDSim::runWellMixedTU(size_t pop_size, size_t group_size, size_t 
 }
 
 EGTTools::Matrix2D
+EGTTools::RL::CRDSim::runWellMixedTU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
+                                     size_t nb_games,
+                                     double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
+                                     const std::string &agent_type, const std::vector<double> &args) {
+    EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_runs);
+    size_t transient = nb_generations > 100 ? nb_generations - 100 : 0;
+
+#pragma omp parallel for shared(transient, results)
+    for (size_t run = 0; run < nb_runs; ++run) {
+        EGTTools::RL::DataTypes::CRDData tmp = runWellMixedTU(pop_size, group_size, nb_generations, nb_games, risk,
+                                                              min_rounds, mean_rounds, max_rounds, p, agent_type, args);
+        if (transient > 0) {
+            results(0, run) = tmp.eta.tail<100>().mean();
+            results(1, run) = tmp.avg_contribution.tail<100>().mean();
+        } else {
+            results(0, run) = tmp.eta.mean();
+            results(1, run) = tmp.avg_contribution.mean();
+        }
+    }
+
+    return results;
+}
+
+EGTTools::Matrix2D
 EGTTools::RL::CRDSim::runConditionalTimingUncertainty(size_t nb_episodes, size_t nb_games, size_t min_rounds,
                                                       size_t mean_rounds,
                                                       size_t max_rounds, double p,
