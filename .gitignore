@@ -162,5 +162,8 @@ cmake-build-debug/
 cmake-build-release/
 /.idea/
 
+# Visual studio stuff
+.vscode
+
 # Temp files
 .DS_Store
