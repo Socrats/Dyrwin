@@ -666,18 +666,18 @@ EGTTools::RL::CRDSim::runConditionalWellMixedTU(size_t pop_size, size_t group_si
     }
     // Calculate threshold (dependent on group size)
     EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
-    FlattenState flatten(Factors{_nb_rounds, (_group_size * _nb_actions) + 1});
+    FlattenState flatten(Factors{max_rounds, (group_size * _nb_actions) + 1});
     CRDConditional<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game(flatten);
 
     std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
     // Create a population of pop_size
-    PopContainer wmPop(agent_type, pop_size, game.flatten().factor_space, _nb_actions, _nb_rounds,
+    PopContainer wmPop(agent_type, pop_size, game.flatten().factor_space, _nb_actions, max_rounds,
                        _endowment, args);
     EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
     PopContainer group;
-    std::vector<size_t> groups(pop_size);
-    std::iota(groups.begin(), groups.end(), 0);
+    std::vector<size_t> pop_index(pop_size);
+    std::iota(pop_index.begin(), pop_index.end(), 0);
     for (size_t i = 0; i < group_size; ++i)
         group.push_back(data.population(i));
 
@@ -686,7 +686,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixedTU(size_t pop_size, size_t group_si
     double avg_contribution;
     double avg_rounds;
     // Calculate threshold (dependent on group size)
-    double threshold = group_size * _nb_rounds * _available_actions[1];
+    double threshold = group_size * mean_rounds * _available_actions[1];
 
     for (size_t generation = 0; generation < nb_generations; ++generation) {
         // First we select random groups and let them play nb_games
@@ -694,9 +694,9 @@ EGTTools::RL::CRDSim::runConditionalWellMixedTU(size_t pop_size, size_t group_si
         avg_contribution = 0.;
         avg_rounds = 0.;
         for (size_t i = 0; i < nb_games; ++i) {
-            std::shuffle(groups.begin(), groups.end(), generator);
+            std::shuffle(pop_index.begin(), pop_index.end(), generator);
             for (size_t j = 0; j < group_size; ++j)
-                group(j) = data.population(groups[j]);
+                group(j) = data.population(pop_index[j]);
             // First we play the game
             auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu);
             avg_contribution += (game.playersContribution(group) / double(group_size));
