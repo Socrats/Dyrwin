@@ -346,6 +346,9 @@ namespace EGTTools::RL {
              * @param nb_generations : total number of generations
              * @param nb_games : number of games per generation
              * @param risk : risk of losing the remaining endowment if the target isn't reached
+             * @param min_rounds : minimum number of rounds
+             * @param mean_rounds : mean number of rounds, used for computing the random distribution
+             * @param max_rounds : maximum number of rounds
              * @param agent_type : algorithm type of the agent
              * @param args : arguments for the agent
              * @return a data container
@@ -356,10 +359,37 @@ namespace EGTTools::RL {
                                   const std::string &agent_type,
                                   const std::vector<double> &args = {});
 
+        /**
+             * @brief trains a well-mixed population in the CRD with Timing uncertainty for multiple independent runs.
+             *
+             * In the simulations performed here, agents of a population of size Z = @param pop_size
+             * are selected randomly from the population to form a group of size @param group_size and play a game.
+             * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
+             *
+             * The @param args is a vector that should contain the arguments specific of the @param agent_type of
+             * the population.
+             *
+             * The results are transfered to a data container and returned.
+             *
+             * @param nb_runs : number of independent runs
+             * @param pop_size : size of the population
+             * @param group_size : group size
+             * @param nb_generations : total number of generations
+             * @param nb_games : number of games per generation
+             * @param risk : risk of losing the remaining endowment if the target isn't reached
+             * @param transient : number of generations to take into account for computing the average
+             * @param min_rounds : minimum number of rounds
+             * @param mean_rounds : mean number of rounds, used for computing the random distribution
+             * @param max_rounds : maximum number of rounds
+             * @param agent_type : algorithm type of the agent
+             * @param args : arguments for the agent
+             * @return the average group achievement and donation for each independent run
+             */
         Matrix2D
         runConditionalWellMixedTU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
                                   size_t nb_games,
-                                  double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
+                                  double risk, size_t transient,
+                                  size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
                                   const std::string &agent_type,
                                   const std::vector<double> &args = {});
 
