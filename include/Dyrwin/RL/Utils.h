@@ -18,6 +18,7 @@
 namespace EGTTools::RL {
     using Factors = std::vector<size_t>;
     using ActionSpace = std::vector<double>;
+    using ActionSpaceU = std::vector<size_t>;
     using Individual = std::shared_ptr<EGTTools::RL::Agent>;
     using Population = std::vector<Individual>;
     using RothErevPopulation = std::vector<EGTTools::RL::Agent>;

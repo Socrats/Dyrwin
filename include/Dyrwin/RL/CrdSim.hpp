@@ -34,8 +34,10 @@ namespace EGTTools::RL {
          * @param nb_rounds number of rounds per game
          * @param nb_actions number of actions that each player can take
          * @param group_size size of a group
-         * @param agent_type algorithm that the agent uses to learn
          * @param risk probability of cataclysm
+         * @param threshold : target of the game
+         * @param available_actions : vector of available actions/donations per round
+         * @param agent_type algorithm that the agent uses to learn
          * @param args extra arguments for the particular agent_type
          */
         CRDSim(size_t nb_episodes, size_t nb_games,
@@ -170,12 +172,13 @@ namespace EGTTools::RL {
              * @param nb_generations : number of generations per simulation
              * @param nb_games : number of games per generation
              * @param risk : probability of loosing all endowment if the target isn't reached
+             * @param transient : number of generations to take into account for calculating the average
              * @param agent_type : string indicating whcoh agent implementation to use
              * @param args : vector of arguments to instantiate the agent_type of the population
              * @return Eigen 2D matrix with the average group achievement and avg. donations across independent runs.
              */
         Matrix2D runWellMixed(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
-                              size_t nb_games, double risk, const std::string &agent_type,
+                              size_t nb_games, double risk, size_t transient, const std::string &agent_type,
                               const std::vector<double> &args = {});
 
         /**
@@ -235,7 +238,7 @@ namespace EGTTools::RL {
 
         Matrix2D
         runWellMixedTU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
-                       double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
+                       double risk, size_t transient, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
                        const std::string &agent_type,
                        const std::vector<double> &args = {});
 
@@ -327,6 +330,40 @@ namespace EGTTools::RL {
                        const std::vector<double> &args = {}, const std::string &crd_type = "milinski");
 
         /**
+             * @brief trains a well-mixed population in the CRD with Timing uncertainty
+             *
+             * In the simulations performed here, agents of a population of size Z = @param pop_size
+             * are selected randomly from the population to form a group of size @param group_size and play a game.
+             * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
+             *
+             * The @param args is a vector that should contain the arguments specific of the @param agent_type of
+             * the population.
+             *
+             * The results are transfered to a data container and returned.
+             *
+             * @param pop_size : size of the population
+             * @param group_size : group size
+             * @param nb_generations : total number of generations
+             * @param nb_games : number of games per generation
+             * @param risk : risk of losing the remaining endowment if the target isn't reached
+             * @param agent_type : algorithm type of the agent
+             * @param args : arguments for the agent
+             * @return a data container
+             */
+        DataTypes::CRDData
+        runConditionalWellMixedTU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                                  double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
+                                  const std::string &agent_type,
+                                  const std::vector<double> &args = {});
+
+        Matrix2D
+        runConditionalWellMixedTU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
+                                  size_t nb_games,
+                                  double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
+                                  const std::string &agent_type,
+                                  const std::vector<double> &args = {});
+
+        /**
              * @brief resets the population stored in the class.
              */
         void resetPopulation();
@@ -381,9 +418,30 @@ namespace EGTTools::RL {
              * @param final_round : number of rounds of the last played game.
              * @param game : game object
              */
-        template<class G = CRDGame<PopContainer>>
+        template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>>>
         void reinforceAll(double &pool, size_t &success, double &risk, PopContainer &pop, size_t &final_round,
                           G &game);
+
+        template<class G = CRDGame<PopContainer>>
+        void reinforceAll(double &pool, size_t &success, double &threshold, double &risk, PopContainer &pop,
+                          G &game, std::mt19937_64 &generator);
+
+        /**
+         * @brief This method reinforces agents proportionally to the obtained payoff for Timing uncertainty games.
+         * @tparam G
+         * @param pool
+         * @param success
+         * @param threshold
+         * @param risk
+         * @param pop
+         * @param final_round
+         * @param game
+         * @param generator
+         */
+        template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>>>
+        void reinforceAll(double &pool, size_t &success, double &threshold, double &risk, PopContainer &pop,
+                          size_t &final_round,
+                          G &game, std::mt19937_64 &generator);
 
         /**
              * @brief This method reinforces following Xico's version of the CRD payoffs
@@ -408,7 +466,7 @@ namespace EGTTools::RL {
              * @param final_round : number of rounds of the last played game.
              * @param game : game object
              */
-        template<class G = CRDGame<PopContainer>>
+        template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>>>
         void reinforceXico(double &pool, size_t &success, double &risk, PopContainer &pop, size_t &final_round,
                            G &game);
 
@@ -478,12 +536,6 @@ namespace EGTTools::RL {
 
         // Random generators
         std::mt19937_64 _generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
-
-        template<class G>
-        void
-        reinforceAll(size_t &pool, size_t &success, size_t &threshold, double &risk, PopContainer &pop,
-                     size_t &final_round,
-                     G &game, std::mt19937_64 &generator);
     };
 
 } // namespace EGTTools::RL
