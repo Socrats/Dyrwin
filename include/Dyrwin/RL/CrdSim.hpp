@@ -540,6 +540,8 @@ namespace EGTTools::RL {
 
         void set_nb_rounds(size_t nb_rounds);
 
+        void set_endowment(double endowment);
+
         void set_nb_actions(size_t nb_actions);
 
         void set_risk(double risk);

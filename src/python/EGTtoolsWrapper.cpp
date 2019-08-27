@@ -31,8 +31,6 @@
 #include <Dyrwin/RL/Data.hpp>
 #include <Dyrwin/RL/Utils.h>
 
-//PYBIND11_MAKE_OPAQUE(EGTTools::RL::PopContainer);
-//PYBIND11_MAKE_OPAQUE(EGTTools::RL::DataTypes::CRDData)
 
 namespace py = pybind11;
 using namespace EGTTools;
@@ -800,6 +798,7 @@ PYBIND11_MODULE(EGTtools, m) {
             .def_property("nb_rounds", &RL::CRDSim::nb_rounds, &RL::CRDSim::set_nb_rounds)
             .def_property("nb_actions", &RL::CRDSim::nb_actions, &RL::CRDSim::set_nb_actions)
             .def_property("risk", &RL::CRDSim::risk, &RL::CRDSim::set_risk)
+            .def_property("endowment", &RL::CRDSim::endowment, &RL::CRDSim::set_endowment)
             .def_property("threshold", &RL::CRDSim::threshold, &RL::CRDSim::set_threshold)
             .def_property("available_actions", &RL::CRDSim::available_actions, &RL::CRDSim::set_available_actions,
                           py::return_value_policy::reference_internal)

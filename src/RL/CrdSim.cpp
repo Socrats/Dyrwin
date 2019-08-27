@@ -879,6 +879,10 @@ void EGTTools::RL::CRDSim::set_nb_rounds(size_t nb_rounds) {
     }
 }
 
+void EGTTools::RL::CRDSim::set_endowment(double endowment) {
+    _endowment = endowment;
+}
+
 void EGTTools::RL::CRDSim::set_nb_actions(size_t nb_actions) { _nb_actions = nb_actions; }
 
 void EGTTools::RL::CRDSim::set_risk(double risk) { _risk = risk; }
