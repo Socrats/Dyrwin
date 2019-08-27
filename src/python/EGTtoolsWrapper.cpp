@@ -802,6 +802,5 @@ PYBIND11_MODULE(EGTtools, m) {
             .def_property("threshold", &RL::CRDSim::threshold, &RL::CRDSim::set_threshold)
             .def_property("available_actions", &RL::CRDSim::available_actions, &RL::CRDSim::set_available_actions,
                           py::return_value_policy::reference_internal)
-            .def_property("agent_type", &RL::CRDSim::agent_type, &RL::CRDSim::set_agent_type)
-            .def_property_readonly("endowment", &RL::CRDSim::endowment);
+            .def_property("agent_type", &RL::CRDSim::agent_type, &RL::CRDSim::set_agent_type);
 }
