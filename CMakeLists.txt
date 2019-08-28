@@ -68,15 +68,15 @@ if (MAKE_ALL)
     set(MAKE_PYTHON 1)
 endif ()
 
-#message("")
-#message("Build type:  ${CMAKE_BUILD_TYPE}")
+message("")
+message("Build type:  ${CMAKE_BUILD_TYPE}")
 #message("Logging is  ${LOGGING_STATUS}")
-#foreach(v MAKE_DYRWIN;MAKE_PMORAN;MAKE_CRD;MAKE_CRD_UNCERTAINTY;MAKE_CRD_POP;MAKE_APPS;MAKE_PYTHON)
+#foreach(v MAKE_ALL;MAKE_PYTHON;MAKE_APPS;MAKE_TESTS)
 #    if (${${v}})
 #        message("${MAP_${v}}")
 #    endif()
 #endforeach(v)
-#message("")
+message("")
 
 ##############################
 ##       Dependencies       ##
