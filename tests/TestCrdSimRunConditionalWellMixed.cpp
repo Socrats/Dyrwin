@@ -39,7 +39,8 @@ int main() {
                                  cataclysm, endowment, threshold,
                                  available_actions, agent_type,
                                  args);
-        EGTTools::RL::DataTypes::CRDData results = sim.runConditionalWellMixedTU(100, group_size, 1000, 200, cataclysm,
+        EGTTools::RL::DataTypes::CRDData results = sim.runConditionalWellMixedTU(100, group_size, 1000, 200, threshold,
+                                                                                 cataclysm,
                                                                                  min_rounds, mean_rounds, max_rounds, p,
                                                                                  agent_type, args);
         std::cout << "success: " << results.eta << std::endl;

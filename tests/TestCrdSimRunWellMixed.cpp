@@ -34,9 +34,10 @@ int main() {
     try {
         EGTTools::RL::CRDSim sim(attempts, games, rounds, actions, group_size,
                                  cataclysm, endowment, threshold,
-                                 available_actions, agent_type, 
+                                 available_actions, agent_type,
                                  args);
-        EGTTools::RL::DataTypes::CRDData results = sim.runWellMixed(100, group_size, 1000, 200, cataclysm, agent_type, args);
+        EGTTools::RL::DataTypes::CRDData results = sim.runWellMixed(100, group_size, 1000, 200, threshold, cataclysm,
+                                                                    agent_type, args);
         std::cout << "success: " << results.eta << std::endl;
         std::cout << "avg_contrib: " << results.avg_contribution << std::endl;
         sim.Game.printGroup(results.population);

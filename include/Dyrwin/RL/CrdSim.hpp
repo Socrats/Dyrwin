@@ -359,6 +359,7 @@ namespace EGTTools::RL {
              * @param group_size : group size
              * @param nb_generations : total number of generations
              * @param nb_games : number of games per generation
+             * @param threshold : collective target
              * @param risk : risk of losing the remaining endowment if the target isn't reached
              * @param min_rounds : minimum number of rounds
              * @param mean_rounds : mean number of rounds, used for computing the random distribution
@@ -391,6 +392,7 @@ namespace EGTTools::RL {
              * @param group_size : group size
              * @param nb_generations : total number of generations
              * @param nb_games : number of games per generation
+             * @param threshold : collective target
              * @param risk : risk of losing the remaining endowment if the target isn't reached
              * @param transient : number of generations to take into account for computing the average
              * @param min_rounds : minimum number of rounds
@@ -402,7 +404,7 @@ namespace EGTTools::RL {
              */
         Matrix2D
         runConditionalWellMixedTU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
-                                  size_t nb_games,
+                                  size_t nb_games, double threshold,
                                   double risk, size_t transient,
                                   size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
                                   const std::string &agent_type,

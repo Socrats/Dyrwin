@@ -720,7 +720,7 @@ PYBIND11_MODULE(EGTtools, m) {
                  "Runs CRD simulations with unconditional agents and timing uncertainty.",
                  py::arg("nb_episodes"), py::arg("nb_games"),
                  py::arg("min_rounds"), py::arg("mean_rounds"), py::arg("max_rounds"),
-                 py::arg("p"), py::arg("risk"), py::arg("threshold"), py::arg("*agent_args"), py::arg("crd_type"))
+                 py::arg("p"), py::arg("risk"), py::arg("*agent_args"), py::arg("crd_type"))
             .def("runWellMixedTU",
                  static_cast<crdData (RL::CRDSim::*)(size_t, size_t, size_t, size_t, double, double, size_t,
                                                      size_t, size_t, double, const std::string &,
@@ -781,13 +781,14 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("max_rounds"), py::arg("p"),
                  py::arg("agent_type"), py::arg("*agent_args"))
             .def("runConditionalWellMixedTU",
-                 static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, size_t, size_t, size_t, double, size_t,
+                 static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, size_t, size_t, size_t, double, double,
+                                                                size_t,
                                                                 size_t,
                                                                 size_t, size_t, double, const std::string &,
                                                                 const std::vector<double> &)>(&RL::CRDSim::runConditionalWellMixedTU),
                  "Runs CRD simulations with unconditional agents and timing uncertainty in a well-mixed population.",
                  py::arg("nb_runs"), py::arg("pop_size"), py::arg("group_size"),
-                 py::arg("nb_generations"), py::arg("nb_games"), py::arg("risk"),
+                 py::arg("nb_generations"), py::arg("nb_games"), py::arg("threshold"), py::arg("risk"),
                  py::arg("transient"),
                  py::arg("min_rounds"), py::arg("mean_rounds"),
                  py::arg("max_rounds"), py::arg("p"),
