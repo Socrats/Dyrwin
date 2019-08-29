@@ -123,12 +123,15 @@ namespace EGTTools::RL {
              * @param nb_generations : number of generations per simulation
              * @param nb_games : number of games per generation
              * @param nb_groups : will define the population size (Z = nb_groups * _group_size)
+             * @param threshold : collective target
              * @param risk : probability of loosing all endowment if the target isn't reached
              * @param args : vector of arguments to instantiate the agent_type of the population
              * @return an Eigen 2D matrix with the average group achievement and average donations at each generation.
              */
-        Matrix2D runWellMixed(size_t nb_generations, size_t nb_games, size_t nb_groups, size_t group_size, double risk,
-                              const std::vector<double> &args = {});
+        Matrix2D
+        runWellMixed(size_t nb_generations, size_t nb_games, size_t nb_groups, size_t group_size, double threshold,
+                     double risk,
+                     const std::vector<double> &args = {});
 
         /**
              * @brief Runs simulation with a well mixed population and returns a data container with the population.
@@ -144,13 +147,14 @@ namespace EGTTools::RL {
              * @param group_size : group size
              * @param nb_generations : number of generations per simulation
              * @param nb_games : number of games per generation
+             * @param threshold : collective target
              * @param risk : probability of loosing all endowment if the target isn't reached
              * @param agent_type : string indicating which agent implementation to use
              * @param args : vector of arguments to instantiate the agent_type of the population
              * @return a data container that includes the group achievement, the average donations and the population
              */
         DataTypes::CRDData
-        runWellMixed(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+        runWellMixed(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games, double threshold,
                      double risk, const std::string &agent_type,
                      const std::vector<double> &args = {});
 
@@ -171,6 +175,7 @@ namespace EGTTools::RL {
              * @param group_size : size of the group
              * @param nb_generations : number of generations per simulation
              * @param nb_games : number of games per generation
+             * @param threshold : collective target
              * @param risk : probability of loosing all endowment if the target isn't reached
              * @param transient : number of generations to take into account for calculating the average
              * @param agent_type : string indicating whcoh agent implementation to use
@@ -178,7 +183,8 @@ namespace EGTTools::RL {
              * @return Eigen 2D matrix with the average group achievement and avg. donations across independent runs.
              */
         Matrix2D runWellMixed(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
-                              size_t nb_games, double risk, size_t transient, const std::string &agent_type,
+                              size_t nb_games, double threshold, double risk, size_t transient,
+                              const std::string &agent_type,
                               const std::vector<double> &args = {});
 
         /**
@@ -231,14 +237,22 @@ namespace EGTTools::RL {
              * @return a data container
              */
         DataTypes::CRDData
-        runWellMixedTU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+        runWellMixedTU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games, double threshold,
                        double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
                        const std::string &agent_type,
                        const std::vector<double> &args = {});
 
+//        DataTypes::CRDData
+//        runWellMixedSyncTU(size_t pop_size, size_t group_size, size_t nb_generations,
+//                           double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
+//                           const std::string &agent_type,
+//                           const std::vector<double> &args = {});
+
         Matrix2D
         runWellMixedTU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
-                       double risk, size_t transient, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
+                       double threshold,
+                       double risk, size_t transient, size_t min_rounds, size_t mean_rounds, size_t max_rounds,
+                       double p,
                        const std::string &agent_type,
                        const std::vector<double> &args = {});
 
@@ -355,6 +369,7 @@ namespace EGTTools::RL {
              */
         DataTypes::CRDData
         runConditionalWellMixedTU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                                  double threshold,
                                   double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
                                   const std::string &agent_type,
                                   const std::vector<double> &args = {});

@@ -197,13 +197,12 @@ EGTTools::RL::CRDSim::run(size_t nb_groups, size_t group_size, size_t nb_episode
 
 EGTTools::Matrix2D
 EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_t nb_groups, size_t group_size,
+                                   double threshold,
                                    double risk,
                                    const std::vector<double> &args) {
     EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_generations);
     size_t pop_size = group_size * nb_groups;
     size_t success;
-    // Calculate threshold (dependent on group size)
-    double threshold = group_size * _nb_rounds * _available_actions[1];
     double avg_contribution;
     double avg_rounds;
     CRDGame<PopContainer> game;
@@ -245,14 +244,13 @@ EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_
 
 EGTTools::RL::DataTypes::CRDData
 EGTTools::RL::CRDSim::runWellMixed(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                                   double threshold,
                                    double risk, const std::string &agent_type,
                                    const std::vector<double> &args) {
     size_t success;
     double avg_contribution;
     double avg_rounds;
     CRDGame<PopContainer> game;
-    // Calculate threshold (dependent on group size)
-    double threshold = group_size * _nb_rounds * _available_actions[1];
 
     std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
@@ -292,7 +290,7 @@ EGTTools::RL::CRDSim::runWellMixed(size_t pop_size, size_t group_size, size_t nb
 
 EGTTools::Matrix2D
 EGTTools::RL::CRDSim::runWellMixed(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
-                                   size_t nb_games,
+                                   size_t nb_games, double threshold,
                                    double risk, size_t transient,
                                    const std::string &agent_type, const std::vector<double> &args) {
     EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_runs);
@@ -300,7 +298,8 @@ EGTTools::RL::CRDSim::runWellMixed(size_t nb_runs, size_t pop_size, size_t group
 
 #pragma omp parallel for shared(transient, results)
     for (size_t run = 0; run < nb_runs; ++run) {
-        EGTTools::RL::DataTypes::CRDData tmp = runWellMixed(pop_size, group_size, nb_generations, nb_games, risk,
+        EGTTools::RL::DataTypes::CRDData tmp = runWellMixed(pop_size, group_size, nb_generations, nb_games, threshold,
+                                                            risk,
                                                             agent_type, args);
         results(0, run) = tmp.eta.tail(transient).mean();
         results(1, run) = tmp.avg_contribution.tail(transient).mean();
@@ -360,8 +359,64 @@ EGTTools::RL::CRDSim::runTimingUncertainty(size_t nb_episodes, size_t nb_games, 
     return results;
 }
 
+//EGTTools::RL::DataTypes::CRDData
+//EGTTools::RL::CRDSim::runWellMixedSyncTU(size_t pop_size, size_t group_size, size_t nb_generations,
+//                                         double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds,
+//                                         double p,
+//                                         const std::string &agent_type, const std::vector<double> &args) {
+//
+//    // Then, we instantiate the CRD game with uncertainty
+//    if (mean_rounds > 0) {
+//        p = 1.0 / ((static_cast<double>(mean_rounds) - static_cast<double>(min_rounds)) + 1);
+//    }
+//    EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
+//    CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game;
+//    std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
+//
+//    // Create a population of _group_size * nb_groups
+//    PopContainer wmPop(agent_type, pop_size, max_rounds, _nb_actions, max_rounds, _endowment, args);
+//    EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
+//    PopContainer group;
+//    std::vector<size_t> groups(pop_size);
+//    std::iota(groups.begin(), groups.end(), 0);
+//    for (size_t i = 0; i < group_size; ++i)
+//        group.push_back(data.population(i));
+//
+//    // Variables used during learning
+//    size_t success;
+//    double avg_contribution;
+//    double avg_rounds;
+//    // Calculate threshold (dependent on group size)
+//    double threshold = group_size * _nb_rounds * _available_actions[1];
+//
+//    for (size_t generation = 0; generation < nb_generations; ++generation) {
+//        success = 0;
+//        avg_contribution = 0.;
+//        avg_rounds = 0.;
+//        for (size_t i = 0; i < pop_size; ++i) {
+//            std::shuffle(groups.begin(), groups.end(), generator);
+//            group(0) = data.population(groups[i]);
+//            for (size_t j = 0; j < group_size; ++j)
+//                group(j) = data.population(groups[j]);
+//            // First we play the game
+//            auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu);
+//            avg_contribution += (game.playersContribution(group) / double(group_size));
+//            reinforceAll(pool, success, threshold, risk, group, final_round, game, generator);
+//            avg_rounds += final_round;
+//        }
+//        data.eta(generation) += static_cast<double>(success) / static_cast<double>(nb_games);
+//        data.avg_contribution(generation) += avg_contribution / static_cast<double>(nb_games);
+//
+//        game.calcProbabilities(data.population);
+//        game.resetEpisode(data.population);
+//    }
+//
+//    return data;
+//}
+
 EGTTools::RL::DataTypes::CRDData
 EGTTools::RL::CRDSim::runWellMixedTU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                                     double threshold,
                                      double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
                                      const std::string &agent_type, const std::vector<double> &args) {
 
@@ -386,8 +441,6 @@ EGTTools::RL::CRDSim::runWellMixedTU(size_t pop_size, size_t group_size, size_t 
     size_t success;
     double avg_contribution;
     double avg_rounds;
-    // Calculate threshold (dependent on group size)
-    double threshold = group_size * _nb_rounds * _available_actions[1];
 
     for (size_t generation = 0; generation < nb_generations; ++generation) {
         success = 0;
@@ -415,7 +468,7 @@ EGTTools::RL::CRDSim::runWellMixedTU(size_t pop_size, size_t group_size, size_t 
 
 EGTTools::Matrix2D
 EGTTools::RL::CRDSim::runWellMixedTU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
-                                     size_t nb_games,
+                                     size_t nb_games, double threshold,
                                      double risk, size_t transient, size_t min_rounds, size_t mean_rounds,
                                      size_t max_rounds, double p,
                                      const std::string &agent_type, const std::vector<double> &args) {
@@ -425,6 +478,7 @@ EGTTools::RL::CRDSim::runWellMixedTU(size_t nb_runs, size_t pop_size, size_t gro
 #pragma omp parallel for shared(transient, results)
     for (size_t run = 0; run < nb_runs; ++run) {
         EGTTools::RL::DataTypes::CRDData tmp = runWellMixedTU(pop_size, group_size, nb_generations, nb_games, risk,
+                                                              threshold,
                                                               min_rounds, mean_rounds, max_rounds, p, agent_type, args);
         results(0, run) = tmp.eta.tail(transient).mean();
         results(1, run) = tmp.avg_contribution.tail(transient).mean();
@@ -655,7 +709,7 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
 
 EGTTools::RL::DataTypes::CRDData
 EGTTools::RL::CRDSim::runConditionalWellMixedTU(size_t pop_size, size_t group_size, size_t nb_generations,
-                                                size_t nb_games,
+                                                size_t nb_games, double threshold,
                                                 double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds,
                                                 double p,
                                                 const std::string &agent_type,
@@ -685,8 +739,6 @@ EGTTools::RL::CRDSim::runConditionalWellMixedTU(size_t pop_size, size_t group_si
     size_t success;
     double avg_contribution;
     double avg_rounds;
-    // Calculate threshold (dependent on group size)
-    double threshold = group_size * mean_rounds * _available_actions[1];
 
     for (size_t generation = 0; generation < nb_generations; ++generation) {
         // First we select random groups and let them play nb_games
