@@ -16,7 +16,7 @@ EGTTools::RL::PopContainer::PopContainer(const std::string &agent_type, size_t n
         for (unsigned i = 0; i < nb_agents; i++) {
             _agents.push_back(
                     std::make_shared<RothErevAgent>(nb_states, nb_actions, episode_length, endowment, args[0],
-                                                    args[1]));
+                                                    args[1], args[2]));
         }
     } else if (agent_type == "QLearning") {
         if (args.size() < 3)

@@ -15,7 +15,7 @@ namespace EGTTools::RL {
  */
     public:
         RothErevAgent(size_t nb_states, size_t nb_actions, size_t episode_length, double endowment, double lambda,
-                      double temperature);
+                      double epsilon, double temperature);
 
         /**
          * @brief Reinforces a given strategy accoring to the accumulated payoffs.
@@ -30,7 +30,7 @@ namespace EGTTools::RL {
         void reinforceTrajectory() override;
 
         /**
-         * @brief Reinforces a given strategy accoring to the accumulated payoffs.
+         * @brief Reinforces a given strategy according to the accumulated payoffs.
          *
          * Reinforces the propensity matrix given a trajectory (a set of actions taken in
          * a window of states) and the accumulated payoff over that window.
@@ -64,15 +64,21 @@ namespace EGTTools::RL {
         // Getters
         double lambda() const;
 
+        double epsilon() const;
+
         double temperature() const;
 
         // Setters
         void setLambda(double lambda);
 
+        void setEpsilon(double epsilon);
+
         void setTemperature(double temperature);
 
     private:
         double _lambda; // Forgetting rate
+        double _epsilon; // Local experimentation parameter
+        double _epsilon_others; // Experimentation for non-taken actions
         double _temperature; // Temperature of the boltzman distribution
     };
 }

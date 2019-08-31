@@ -5,59 +5,41 @@
 #include <Dyrwin/RL/RothErevAgent.h>
 
 EGTTools::RL::RothErevAgent::RothErevAgent(size_t nb_states, size_t nb_actions, size_t episode_length, double endowment,
-                                           double lambda,
+                                           double lambda, double epsilon,
                                            double temperature) : Agent(nb_states, nb_actions, episode_length,
-                                                                       endowment), _lambda(lambda),
-                                                                 _temperature(temperature) {}
+                                                                       endowment), _lambda(1 - lambda),
+                                                                 _temperature(temperature) {
+    _epsilon_others = epsilon / (_nb_actions - 1);
+    _epsilon = 1 - epsilon;
+}
 
-/**
- * @brief Reinforces a given strategy accoring to the accumulated payoffs.
- *
- * Reinforces the propensity matrix given a trajectory (a set of actions taken in
- * a window of states) and the accumulated payoff over that window.
- *
- * This function updates the propensity in a batch.
- *
- * lambda is the forgetting rate
- */
 void EGTTools::RL::RothErevAgent::reinforceTrajectory() {
     _q_values.array() *= _lambda;
     for (size_t i = 0; i < _episode_length; ++i) {
-        _q_values(_trajectory_states(i), _trajectory_actions(i)) += _payoff;
+        _q_values(_trajectory_states(i), _trajectory_actions(i)) += _payoff * _epsilon;
+        for (size_t j = 0; j < _nb_actions; ++j) {
+            if (j == _trajectory_actions(i)) continue;
+            _q_values(_trajectory_states(i), j) += _payoff * _epsilon_others;
+        }
         _trajectory_states(i) = 0;
         _trajectory_actions(i) = 0;
     }
 }
 
-/**
- * @brief Reinforces a given strategy accoring to the accumulated payoffs.
- *
- * Reinforces the propensity matrix given a trajectory (a set of actions taken in
- * a window of states) and the accumulated payoff over that window.
- *
- * This function updates the propensity in a batch.
- *
- * lambda is the forgetting rate
- *
- * @param episode_length : length of the episode to reinforce
- */
+
 void EGTTools::RL::RothErevAgent::reinforceTrajectory(size_t episode_length) {
     _q_values.array() *= _lambda;
     for (size_t i = 0; i < episode_length; ++i) {
-        _q_values(_trajectory_states(i), _trajectory_actions(i)) += _payoff;
+        _q_values(_trajectory_states(i), _trajectory_actions(i)) += _payoff * _epsilon;
+        for (size_t j = 0; j < _nb_actions; ++j) {
+            if (j == _trajectory_actions(i)) continue;
+            _q_values(_trajectory_states(i), j) += _payoff * _epsilon_others;
+        }
         _trajectory_states(i) = 0;
         _trajectory_actions(i) = 0;
     }
 }
 
-/**
- * @brief Infers the policy from the propensity matrix
- *
- * Uses a softmax (boltzman distribution) with a temperature parameter
- * to infer the policy.
- *
- * @return
- */
 bool EGTTools::RL::RothErevAgent::inferPolicy() {
     unsigned int j;
 
@@ -93,7 +75,9 @@ void EGTTools::RL::RothErevAgent::resetQValues() {
 std::string EGTTools::RL::RothErevAgent::type() const { return "EGTTools::RL::RothErevAgent"; }
 
 // Getters
-double EGTTools::RL::RothErevAgent::lambda() const { return _lambda; }
+double EGTTools::RL::RothErevAgent::lambda() const { return 1 - _lambda; }
+
+double EGTTools::RL::RothErevAgent::epsilon() const { return 1 - _epsilon; }
 
 double EGTTools::RL::RothErevAgent::temperature() const { return _temperature; }
 
@@ -102,6 +86,13 @@ void EGTTools::RL::RothErevAgent::setLambda(double lambda) {
     if (lambda <= 0.0 || lambda > 1.0)
         throw std::invalid_argument("Forgetting rate parameter must be in (0,1]");
     _lambda = lambda;
+}
+
+void EGTTools::RL::RothErevAgent::setEpsilon(double epsilon) {
+    if (epsilon <= 0.0 || epsilon > 1.0)
+        throw std::invalid_argument("Local experimentation parameter must be in (0,1]");
+    _epsilon_others = epsilon / (_nb_actions - 1);
+    _epsilon = 1 - epsilon;
 }
 
 void EGTTools::RL::RothErevAgent::setTemperature(double temperature) {

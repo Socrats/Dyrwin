@@ -544,12 +544,13 @@ PYBIND11_MODULE(EGTtools, m) {
             .def("reset_q_values", &RL::HistericQLearningAgent::resetQValues);
 
     py::class_<RL::RothErevAgent, RL::Agent>(mRL, "RothErevAgent")
-            .def(py::init<size_t, size_t, size_t, double, double, double>(),
+            .def(py::init<size_t, size_t, size_t, double, double, double, double>(),
                  "Implementation of the Histeric Q-Learning algorithm.",
                  py::arg("nb_states"), py::arg("nb_actions"),
                  py::arg("episode_length"), py::arg("endowment"),
-                 py::arg("lambda"), py::arg("temperature"))
+                 py::arg("lambda"), py::arg("epsilon"), py::arg("temperature"))
             .def_property("lambda", &RL::RothErevAgent::lambda, &RL::RothErevAgent::setLambda)
+            .def_property("epsilon", &RL::RothErevAgent::epsilon, &RL::RothErevAgent::setEpsilon)
             .def_property("temperature", &RL::RothErevAgent::temperature,
                           &RL::RothErevAgent::setTemperature)
             .def("update_policy", &RL::RothErevAgent::inferPolicy)

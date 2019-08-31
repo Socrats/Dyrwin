@@ -30,6 +30,7 @@ int main(int argc, char *argv[]) {
     double alpha, beta;
     double temperature;
     double lambda;
+    double epsilon;
     double threshold;
     double endowment;
     std::string filename;
@@ -51,7 +52,8 @@ int main(int argc, char *argv[]) {
     options.push_back(
             makeDefaultedOption<double>("temperature,T", &temperature, "temperature of the boltzman distribution",
                                         10.));
-    options.push_back(makeDefaultedOption<double>("lambda,l", &lambda, "discount factor", .99));
+    options.push_back(makeDefaultedOption<double>("lambda,l", &lambda, "discount factor", .01));
+    options.push_back(makeDefaultedOption<double>("epsilon,e", &epsilon, "discount factor", .01));
 
     if (!parseCommandLine(argc, argv, options))
         return 1;
@@ -63,6 +65,7 @@ int main(int argc, char *argv[]) {
     std::vector<double> args;
     if (agent_type == "rothErevLambda") {
         args.push_back(lambda);
+        args.push_back(epsilon);
         args.push_back(temperature);
     } else if (agent_type == "QLearning") {
         args.push_back(alpha);
