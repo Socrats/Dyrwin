@@ -158,6 +158,11 @@ namespace EGTTools::RL {
                      double risk, const std::string &agent_type,
                      const std::vector<double> &args = {});
 
+        DataTypes::CRDData
+        runWellMixedSync(size_t pop_size, size_t group_size, size_t nb_generations, double threshold,
+                         double risk, const std::string &agent_type,
+                         const std::vector<double> &args = {});
+
         /**
              * @brief Runs several simulations with a well mixed population.
              *
@@ -242,11 +247,11 @@ namespace EGTTools::RL {
                        const std::string &agent_type,
                        const std::vector<double> &args = {});
 
-//        DataTypes::CRDData
-//        runWellMixedSyncTU(size_t pop_size, size_t group_size, size_t nb_generations,
-//                           double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
-//                           const std::string &agent_type,
-//                           const std::vector<double> &args = {});
+        DataTypes::CRDData
+        runWellMixedSyncTU(size_t pop_size, size_t group_size, size_t nb_generations,
+                           double threshold, double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
+                           const std::string &agent_type,
+                           const std::vector<double> &args = {});
 
         Matrix2D
         runWellMixedTU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
@@ -489,6 +494,26 @@ namespace EGTTools::RL {
         void reinforceAll(double &pool, size_t &success, double &threshold, double &risk, PopContainer &pop,
                           size_t &final_round,
                           G &game, std::mt19937_64 &generator);
+
+        template<class G = CRDGame<PopContainer>>
+        void reinforceOnePlayer(double &pool, size_t &success, double &threshold, double &risk,
+                                EGTTools::RL::Individual &player, std::mt19937_64 &generator);
+
+        /**
+         * @brief This method reinforces agents proportionally to the obtained payoff for Timing uncertainty games.
+         * @tparam G
+         * @param pool
+         * @param success
+         * @param threshold
+         * @param risk
+         * @param pop
+         * @param final_round
+         * @param game
+         * @param generator
+         */
+        template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>>>
+        void reinforceOnePlayer(double &pool, size_t &success, double &threshold, double &risk,
+                                size_t &final_round, EGTTools::RL::Individual &player, std::mt19937_64 &generator);
 
         /**
              * @brief This method reinforces following Xico's version of the CRD payoffs
