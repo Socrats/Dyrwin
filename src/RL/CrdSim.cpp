@@ -294,7 +294,7 @@ EGTTools::RL::CRDSim::runWellMixedSync(size_t pop_size, size_t group_size, size_
                                        double risk, const std::string &agent_type,
                                        const std::vector<double> &args) {
     // Population must always be bigger than group size in this case!
-    double success;
+    size_t success;
     double avg_contribution;
     double avg_rounds;
     CRDGame<PopContainer> game;
@@ -313,7 +313,6 @@ EGTTools::RL::CRDSim::runWellMixedSync(size_t pop_size, size_t group_size, size_
     for (size_t generation = 0; generation < nb_generations; ++generation) {
         // First we select random groups and let them play nb_games
         success = 0;
-        size_t player_success = 0;
         avg_contribution = 0.;
         avg_rounds = 0.;
         for (size_t i = 0; i < pop_size; ++i) {
@@ -333,12 +332,11 @@ EGTTools::RL::CRDSim::runWellMixedSync(size_t pop_size, size_t group_size, size_
                 avg_contribution += (game.playersContribution(group) / double(group_size));
                 avg_rounds += final_round;
                 // Reinforce only the current player
-                reinforceOnePlayer(pool, player_success, threshold, risk, data.population(i), generator);
+                reinforceOnePlayer(pool, success, threshold, risk, data.population(i), generator);
             }
-            success += player_success / static_cast<double>(nb_games);
         }
-        data.eta(generation) += success / static_cast<double>(pop_size);
-        data.avg_contribution(generation) += avg_contribution / static_cast<double>(pop_size);
+        data.eta(generation) += static_cast<double>(success) / static_cast<double>(pop_size * nb_games);
+        data.avg_contribution(generation) += avg_contribution / static_cast<double>(pop_size * nb_games);
         // Update the population strategies synchronously
         game.calcProbabilities(data.population);
         game.resetEpisode(data.population);
