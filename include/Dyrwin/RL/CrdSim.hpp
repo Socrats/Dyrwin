@@ -159,7 +159,7 @@ namespace EGTTools::RL {
                      const std::vector<double> &args = {});
 
         DataTypes::CRDData
-        runWellMixedSync(size_t pop_size, size_t group_size, size_t nb_generations, double threshold,
+        runWellMixedSync(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games, double threshold,
                          double risk, const std::string &agent_type,
                          const std::vector<double> &args = {});
 
@@ -192,10 +192,11 @@ namespace EGTTools::RL {
                               const std::string &agent_type,
                               const std::vector<double> &args = {});
 
-        Matrix2D runWellMixedSync(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
-                                  double threshold, double risk, size_t transient,
-                                  const std::string &agent_type,
-                                  const std::vector<double> &args = {});
+        Matrix2D
+        runWellMixedSync(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                         double threshold, double risk, size_t transient,
+                         const std::string &agent_type,
+                         const std::vector<double> &args = {});
 
         /**
              * @brief Runs a simulation with timing uncertainty

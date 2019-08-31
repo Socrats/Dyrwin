@@ -718,24 +718,26 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("agent_type"),
                  py::arg("*agent_args"))
             .def("runWellMixedSync", static_cast<crdData (RL::CRDSim::*)(size_t, size_t,
-                                                                         size_t, double, double,
+                                                                         size_t, size_t, double, double,
                                                                          const std::string &,
                                                                          const std::vector<double> &)>(&RL::CRDSim::runWellMixedSync),
                  "Runs a simulation with a well mixed population where the updated are synchronous"
                  "and all players play the game once and returns the groups success and donations"
                  "during learning, as well as the final population.",
                  py::arg("pop_size"), py::arg("group_size"),
-                 py::arg("nb_generations"), py::arg("threshold"), py::arg("risk"),
+                 py::arg("nb_generations"), py::arg("nb_games"), py::arg("threshold"), py::arg("risk"),
                  py::arg("agent_type"),
                  py::arg("*agent_args"))
             .def("runWellMixedSync", static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t,
-                                                                                size_t, size_t, double, double, size_t,
-                                                                                const std::string &,
-                                                                                const std::vector<double> &)>(&RL::CRDSim::runWellMixedSync),
+                                                                                    size_t, size_t, size_t, double,
+                                                                                    double, size_t,
+                                                                                    const std::string &,
+                                                                                    const std::vector<double> &)>(&RL::CRDSim::runWellMixedSync),
                  py::call_guard<py::gil_scoped_release>(),
                  "Runs a simulation with a well mixed population with synchronous updates and each agent plays only"
                  "once per generation.",
                  py::arg("nb_runs"), py::arg("pop_size"), py::arg("group_size"), py::arg("nb_generations"),
+                 py::arg("nb_games"),
                  py::arg("threshold"), py::arg("risk"), py::arg("transient"),
                  py::arg("agent_type"),
                  py::arg("*agent_args"))
