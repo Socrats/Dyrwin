@@ -192,6 +192,11 @@ namespace EGTTools::RL {
                               const std::string &agent_type,
                               const std::vector<double> &args = {});
 
+        Matrix2D runWellMixedSync(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
+                                  double threshold, double risk, size_t transient,
+                                  const std::string &agent_type,
+                                  const std::vector<double> &args = {});
+
         /**
              * @brief Runs a simulation with timing uncertainty
              *
@@ -249,7 +254,8 @@ namespace EGTTools::RL {
 
         DataTypes::CRDData
         runWellMixedSyncTU(size_t pop_size, size_t group_size, size_t nb_generations,
-                           double threshold, double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
+                           double threshold, double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds,
+                           double p,
                            const std::string &agent_type,
                            const std::vector<double> &args = {});
 
@@ -260,6 +266,14 @@ namespace EGTTools::RL {
                        double p,
                        const std::string &agent_type,
                        const std::vector<double> &args = {});
+
+        Matrix2D
+        runWellMixedSyncTU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
+                           double threshold,
+                           double risk, size_t transient, size_t min_rounds, size_t mean_rounds, size_t max_rounds,
+                           double p,
+                           const std::string &agent_type,
+                           const std::vector<double> &args = {});
 
         /**
              * @brief Runs a simulation with threshold uncertainty

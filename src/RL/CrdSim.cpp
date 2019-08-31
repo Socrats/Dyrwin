@@ -289,18 +289,17 @@ EGTTools::RL::CRDSim::runWellMixed(size_t pop_size, size_t group_size, size_t nb
 }
 
 EGTTools::Matrix2D
-EGTTools::RL::CRDSim::runWellMixed(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
-                                   size_t nb_games, double threshold,
-                                   double risk, size_t transient,
-                                   const std::string &agent_type, const std::vector<double> &args) {
+EGTTools::RL::CRDSim::runWellMixedSync(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
+                                       double threshold,
+                                       double risk, size_t transient,
+                                       const std::string &agent_type, const std::vector<double> &args) {
     EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_runs);
     assert((transient > 0) && (transient <= nb_generations));
 
 #pragma omp parallel for shared(transient, results)
     for (size_t run = 0; run < nb_runs; ++run) {
-        EGTTools::RL::DataTypes::CRDData tmp = runWellMixed(pop_size, group_size, nb_generations, nb_games, threshold,
-                                                            risk,
-                                                            agent_type, args);
+        EGTTools::RL::DataTypes::CRDData tmp = runWellMixedSync(pop_size, group_size, nb_generations, threshold, risk,
+                                                                agent_type, args);
         results(0, run) = tmp.eta.tail(transient).mean();
         results(1, run) = tmp.avg_contribution.tail(transient).mean();
     }
@@ -361,6 +360,26 @@ EGTTools::RL::CRDSim::runWellMixedSync(size_t pop_size, size_t group_size, size_
     }
 
     return data;
+}
+
+EGTTools::Matrix2D
+EGTTools::RL::CRDSim::runWellMixed(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
+                                   size_t nb_games, double threshold,
+                                   double risk, size_t transient,
+                                   const std::string &agent_type, const std::vector<double> &args) {
+    EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_runs);
+    assert((transient > 0) && (transient <= nb_generations));
+
+#pragma omp parallel for shared(transient, results)
+    for (size_t run = 0; run < nb_runs; ++run) {
+        EGTTools::RL::DataTypes::CRDData tmp = runWellMixed(pop_size, group_size, nb_generations, nb_games, threshold,
+                                                            risk,
+                                                            agent_type, args);
+        results(0, run) = tmp.eta.tail(transient).mean();
+        results(1, run) = tmp.avg_contribution.tail(transient).mean();
+    }
+
+    return results;
 }
 
 EGTTools::Matrix2D
@@ -538,9 +557,30 @@ EGTTools::RL::CRDSim::runWellMixedTU(size_t nb_runs, size_t pop_size, size_t gro
 
 #pragma omp parallel for shared(transient, results)
     for (size_t run = 0; run < nb_runs; ++run) {
-        EGTTools::RL::DataTypes::CRDData tmp = runWellMixedTU(pop_size, group_size, nb_generations, nb_games, risk,
-                                                              threshold,
-                                                              min_rounds, mean_rounds, max_rounds, p, agent_type, args);
+        EGTTools::RL::DataTypes::CRDData tmp = runWellMixedTU(pop_size, group_size, nb_generations, nb_games, threshold,
+                                                              risk, min_rounds, mean_rounds, max_rounds, p, agent_type,
+                                                              args);
+        results(0, run) = tmp.eta.tail(transient).mean();
+        results(1, run) = tmp.avg_contribution.tail(transient).mean();
+    }
+
+    return results;
+}
+
+EGTTools::Matrix2D
+EGTTools::RL::CRDSim::runWellMixedSyncTU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
+                                         double threshold,
+                                         double risk, size_t transient, size_t min_rounds, size_t mean_rounds,
+                                         size_t max_rounds, double p,
+                                         const std::string &agent_type, const std::vector<double> &args) {
+    EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_runs);
+    assert((transient > 0) && (transient <= nb_generations));
+
+#pragma omp parallel for shared(transient, results)
+    for (size_t run = 0; run < nb_runs; ++run) {
+        EGTTools::RL::DataTypes::CRDData tmp = runWellMixedSyncTU(pop_size, group_size, nb_generations,
+                                                                  threshold, risk, min_rounds, mean_rounds, max_rounds,
+                                                                  p, agent_type, args);
         results(0, run) = tmp.eta.tail(transient).mean();
         results(1, run) = tmp.avg_contribution.tail(transient).mean();
     }
