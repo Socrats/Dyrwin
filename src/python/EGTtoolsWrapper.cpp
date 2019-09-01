@@ -793,6 +793,30 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("min_rounds"), py::arg("mean_rounds"),
                  py::arg("max_rounds"), py::arg("p"),
                  py::arg("agent_type"), py::arg("*agent_args"))
+            .def("runWellMixedTUnThU",
+                 static_cast<crdData (RL::CRDSim::*)(size_t, size_t, size_t, size_t, size_t, size_t, double, size_t,
+                                                     size_t, size_t, double, const std::string &,
+                                                     const std::vector<double> &)>(&RL::CRDSim::runWellMixedTUnThU),
+                 "Runs CRD simulations with unconditional agents and timing uncertainty and threshold uncertainty"
+                 " in a well-mixed population.",
+                 py::arg("pop_size"), py::arg("group_size"),
+                 py::arg("nb_generations"), py::arg("nb_games"), py::arg("threshold"), py::arg("delta"),
+                 py::arg("risk"),
+                 py::arg("min_rounds"), py::arg("mean_rounds"),
+                 py::arg("max_rounds"), py::arg("p"),
+                 py::arg("agent_type"), py::arg("*agent_args"))
+            .def("runWellMixedTUnThU",
+                 static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, size_t, size_t, size_t, size_t,
+                                                                size_t, double, size_t, size_t,
+                                                                size_t, size_t, double, const std::string &,
+                                                                const std::vector<double> &)>(&RL::CRDSim::runWellMixedTUnThU),
+                 "Runs CRD simulations with unconditional agents and timing uncertainty and threshold uncertainty"
+                 " in a well-mixed population.",
+                 py::arg("nb_runs"), py::arg("pop_size"), py::arg("group_size"),
+                 py::arg("nb_generations"), py::arg("nb_games"), py::arg("threshold"), py::arg("delta"),
+                 py::arg("risk"), py::arg("transient"), py::arg("min_rounds"), py::arg("mean_rounds"),
+                 py::arg("max_rounds"), py::arg("p"),
+                 py::arg("agent_type"), py::arg("*agent_args"))
             .def("runWellMixedThresholdUncertainty", static_cast<crdData (RL::CRDSim::*)(size_t, size_t,
                                                                                          size_t, size_t, size_t, size_t,
                                                                                          double, const std::string &,

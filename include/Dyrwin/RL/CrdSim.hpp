@@ -307,6 +307,36 @@ namespace EGTTools::RL {
                                         const std::vector<double> &args = {});
 
         /**
+         * @brief Runs simulations with both Timing uncertainty and Threshold uncertainty
+         * @param pop_size
+         * @param group_size
+         * @param nb_generations
+         * @param threshold
+         * @param delta
+         * @param risk
+         * @param min_rounds
+         * @param mean_rounds
+         * @param max_rounds
+         * @param p
+         * @param agent_type
+         * @param args
+         * @return
+         */
+        DataTypes::CRDData
+        runWellMixedTUnThU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                           size_t threshold, size_t delta, double risk, size_t min_rounds, size_t mean_rounds,
+                           size_t max_rounds, double p,
+                           const std::string &agent_type,
+                           const std::vector<double> &args = {});
+
+        Matrix2D
+        runWellMixedTUnThU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                           size_t threshold, size_t delta, double risk, size_t transient, size_t min_rounds,
+                           size_t mean_rounds, size_t max_rounds, double p,
+                           const std::string &agent_type,
+                           const std::vector<double> &args = {});
+
+        /**
              * @brief Runs a simulation with conditional agents.
              *
              * This method can only be run on actions of the type [0, 1, 2....], i.e., sequential from [0, nb_actions -1].
