@@ -284,19 +284,27 @@ namespace EGTTools::RL {
              * @param min_threshold and a maximum of @param max_threshold. The threshold will take a value
              * from this range with uniform probability.
              *
-             * @param nb_episodes : nb_episodes number of episodes during which the agents will learn
-             * @param nb_games : number of games per episode
-             * @param min_threshold : minimum threshold
-             * @param max_threshold : maximum threshold
+             * @param pop_size : size of the population
+             * @param group_size : group size
+             * @param nb_generations : number of training time-steps
+             * @param nb_games : number of games per time-step / generation
+             * @param threshold : target of the game
              * @param risk : probability of loosing all endowment if the target isn't reached
-             * @param args : vector of arguments to instantiate the agent_type of the population
-             * @param crd_type : type of crd
-             * @return an Eigen 2D matrix with the average group achievement and average donations at each episode.
+             * @param delta : variance / uncertainty of the threshold
+             * @param agent_type : string indicating the learning algorithm that the agents will use
+             * @param args : specific parameters for the learning algorithm
+             * @return a data container with the information of the simulation and a pointer to the population.
              */
-        Matrix2D
-        runThresholdUncertainty(size_t nb_episodes, size_t nb_games, size_t min_threshold, size_t max_threshold,
-                                double risk,
-                                const std::vector<double> &args = {}, const std::string &crd_type = "milinski");
+        DataTypes::CRDData
+        runWellMixedThresholdU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                               size_t threshold, size_t delta, double risk,
+                               const std::string &agent_type,
+                               const std::vector<double> &args = {});
+
+        Matrix2D runWellMixedThresholdU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
+                                        size_t nb_games, size_t threshold, size_t delta, double risk, size_t transient,
+                                        const std::string &agent_type,
+                                        const std::vector<double> &args = {});
 
         /**
              * @brief Runs a simulation with conditional agents.
@@ -490,7 +498,7 @@ namespace EGTTools::RL {
                           G &game);
 
         template<class G = CRDGame<PopContainer>>
-        void reinforceAll(double &pool, size_t &success, double &threshold, double &risk, PopContainer &pop,
+        void reinforceAll(double &pool, size_t &success, double threshold, double &risk, PopContainer &pop,
                           G &game, std::mt19937_64 &generator);
 
         /**
@@ -506,12 +514,12 @@ namespace EGTTools::RL {
          * @param generator
          */
         template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>>>
-        void reinforceAll(double &pool, size_t &success, double &threshold, double &risk, PopContainer &pop,
+        void reinforceAll(double &pool, size_t &success, double threshold, double &risk, PopContainer &pop,
                           size_t &final_round,
                           G &game, std::mt19937_64 &generator);
 
         template<class G = CRDGame<PopContainer>>
-        void reinforceOnePlayer(double &pool, size_t &success, double &threshold, double &risk,
+        void reinforceOnePlayer(double &pool, size_t &success, double threshold, double &risk,
                                 EGTTools::RL::Individual &player, std::mt19937_64 &generator);
 
         /**
@@ -527,7 +535,7 @@ namespace EGTTools::RL {
          * @param generator
          */
         template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>>>
-        void reinforceOnePlayer(double &pool, size_t &success, double &threshold, double &risk,
+        void reinforceOnePlayer(double &pool, size_t &success, double threshold, double &risk,
                                 size_t &final_round, EGTTools::RL::Individual &player, std::mt19937_64 &generator);
 
         /**

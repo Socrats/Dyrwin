@@ -392,7 +392,7 @@ EGTTools::RL::CRDSim::runTimingUncertainty(size_t nb_episodes, size_t nb_games, 
                                            const std::vector<double> &args,
                                            const std::string &crd_type) {
 
-    // First of all we instantiate the CRD game with ucertianty
+    // First of all we instantiate the CRD game with uncertainty
     if (mean_rounds > 0) {
         p = 1.0 / ((static_cast<double>(mean_rounds) - static_cast<double>(min_rounds)) + 1);
     }
@@ -434,67 +434,6 @@ EGTTools::RL::CRDSim::runTimingUncertainty(size_t nb_episodes, size_t nb_games, 
     }
 
     return results;
-}
-
-EGTTools::RL::DataTypes::CRDData
-EGTTools::RL::CRDSim::runWellMixedSyncTU(size_t pop_size, size_t group_size, size_t nb_generations,
-                                         double threshold, double risk, size_t min_rounds, size_t mean_rounds,
-                                         size_t max_rounds,
-                                         double p,
-                                         const std::string &agent_type, const std::vector<double> &args) {
-
-    // Then, we instantiate the CRD game with uncertainty
-    if (mean_rounds > 0) {
-        p = 1.0 / ((static_cast<double>(mean_rounds) - static_cast<double>(min_rounds)) + 1);
-    }
-    EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
-    CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game;
-    std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
-
-    // Create a population of _group_size * nb_groups
-    PopContainer wmPop(agent_type, pop_size, max_rounds, _nb_actions, max_rounds, _endowment, args);
-    EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
-    PopContainer group;
-    std::vector<size_t> groups(pop_size);
-    std::iota(groups.begin(), groups.end(), 0);
-    for (size_t i = 0; i < group_size; ++i)
-        group.push_back(data.population(i));
-
-    // Variables used during learning
-    size_t success;
-    double avg_contribution;
-    double avg_rounds;
-
-    for (size_t generation = 0; generation < nb_generations; ++generation) {
-        success = 0;
-        avg_contribution = 0.;
-        avg_rounds = 0.;
-        for (size_t i = 0; i < pop_size; ++i) {
-            std::shuffle(groups.begin(), groups.end(), generator);
-            // Get player
-            group(0) = data.population(groups[i]);
-            // Get random group
-            for (size_t j = 0; j < group_size - 1; ++j)
-                if (groups[j] == i) {
-                    group(j + 1) = data.population(groups[group_size - 1]);
-                } else {
-                    group(j + 1) = data.population(groups[j]);
-                }
-            // First we play the game
-            auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu);
-            avg_contribution += (game.playersContribution(group) / double(group_size));
-            // Reinforce only the current player
-            reinforceOnePlayer(pool, success, threshold, risk, final_round, data.population(i), generator);
-            avg_rounds += final_round;
-        }
-        data.eta(generation) += static_cast<double>(success) / static_cast<double>(pop_size);
-        data.avg_contribution(generation) += avg_contribution / static_cast<double>(pop_size);
-
-        game.calcProbabilities(data.population);
-        game.resetEpisode(data.population);
-    }
-
-    return data;
 }
 
 EGTTools::RL::DataTypes::CRDData
@@ -568,6 +507,134 @@ EGTTools::RL::CRDSim::runWellMixedTU(size_t nb_runs, size_t pop_size, size_t gro
     }
 
     return results;
+}
+
+EGTTools::RL::DataTypes::CRDData
+EGTTools::RL::CRDSim::runWellMixedThresholdU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                                             size_t threshold, size_t delta, double risk,
+                                             const std::string &agent_type, const std::vector<double> &args) {
+
+    size_t success;
+    double avg_contribution;
+    double avg_rounds;
+    CRDGame<PopContainer> game;
+
+    // Define the distribution for the threshold
+    std::uniform_int_distribution<size_t> t_dist(threshold - delta / 2, threshold + delta / 2);
+    std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
+
+    // Create a population of _group_size * nb_groups
+    PopContainer wmPop(agent_type, pop_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
+    EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
+    PopContainer group;
+    std::vector<size_t> groups(pop_size);
+    std::iota(groups.begin(), groups.end(), 0);
+    for (size_t i = 0; i < group_size; ++i)
+        group.push_back(data.population(i));
+
+    for (size_t generation = 0; generation < nb_generations; ++generation) {
+        // First we select random groups and let them play nb_games
+        success = 0;
+        avg_contribution = 0.;
+        avg_rounds = 0.;
+        for (size_t i = 0; i < nb_games; ++i) {
+            std::shuffle(groups.begin(), groups.end(), generator);
+            for (size_t j = 0; j < group_size; ++j)
+                group(j) = data.population(groups[j]);
+            // First we play the game
+            auto[pool, final_round] = game.playGame(group, _available_actions, _nb_rounds);
+            avg_contribution += (game.playersContribution(group) / double(group_size));
+            reinforceAll(pool, success, static_cast<double>(t_dist(generator)), risk, group, game, generator);
+            avg_rounds += final_round;
+        }
+        data.eta(generation) += static_cast<double>(success) / static_cast<double>(nb_games);
+        data.avg_contribution(generation) += avg_contribution / static_cast<double>(nb_games);
+
+        game.calcProbabilities(data.population);
+        game.resetEpisode(data.population);
+    }
+
+    return data;
+}
+
+EGTTools::Matrix2D
+EGTTools::RL::CRDSim::runWellMixedThresholdU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
+                                             size_t nb_games, size_t threshold, size_t delta,
+                                             double risk, size_t transient,
+                                             const std::string &agent_type, const std::vector<double> &args) {
+    EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_runs);
+    assert((transient > 0) && (transient <= nb_generations));
+
+#pragma omp parallel for shared(transient, results)
+    for (size_t run = 0; run < nb_runs; ++run) {
+        EGTTools::RL::DataTypes::CRDData tmp = runWellMixedThresholdU(pop_size, group_size, nb_generations, nb_games,
+                                                                      threshold, delta, risk, agent_type, args);
+        results(0, run) = tmp.eta.tail(transient).mean();
+        results(1, run) = tmp.avg_contribution.tail(transient).mean();
+    }
+
+    return results;
+}
+
+EGTTools::RL::DataTypes::CRDData
+EGTTools::RL::CRDSim::runWellMixedSyncTU(size_t pop_size, size_t group_size, size_t nb_generations,
+                                         double threshold, double risk, size_t min_rounds, size_t mean_rounds,
+                                         size_t max_rounds,
+                                         double p,
+                                         const std::string &agent_type, const std::vector<double> &args) {
+
+    // Then, we instantiate the CRD game with uncertainty
+    if (mean_rounds > 0) {
+        p = 1.0 / ((static_cast<double>(mean_rounds) - static_cast<double>(min_rounds)) + 1);
+    }
+    EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
+    CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game;
+    std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
+
+    // Create a population of _group_size * nb_groups
+    PopContainer wmPop(agent_type, pop_size, max_rounds, _nb_actions, max_rounds, _endowment, args);
+    EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
+    PopContainer group;
+    std::vector<size_t> groups(pop_size);
+    std::iota(groups.begin(), groups.end(), 0);
+    for (size_t i = 0; i < group_size; ++i)
+        group.push_back(data.population(i));
+
+    // Variables used during learning
+    size_t success;
+    double avg_contribution;
+    double avg_rounds;
+
+    for (size_t generation = 0; generation < nb_generations; ++generation) {
+        success = 0;
+        avg_contribution = 0.;
+        avg_rounds = 0.;
+        for (size_t i = 0; i < pop_size; ++i) {
+            std::shuffle(groups.begin(), groups.end(), generator);
+            // Get player
+            group(0) = data.population(groups[i]);
+            // Get random group
+            for (size_t j = 0; j < group_size - 1; ++j)
+                if (groups[j] == i) {
+                    group(j + 1) = data.population(groups[group_size - 1]);
+                } else {
+                    group(j + 1) = data.population(groups[j]);
+                }
+            // First we play the game
+            auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu);
+            avg_contribution += (game.playersContribution(group) / double(group_size));
+            // Reinforce only the current player
+            reinforceOnePlayer(pool, success, threshold, risk, final_round, data.population(i), generator);
+            avg_rounds += final_round;
+        }
+        data.eta(generation) += static_cast<double>(success) / static_cast<double>(pop_size);
+        data.avg_contribution(generation) += avg_contribution / static_cast<double>(pop_size);
+
+        game.calcProbabilities(data.population);
+        game.resetEpisode(data.population);
+    }
+
+    return data;
 }
 
 EGTTools::Matrix2D
@@ -945,7 +1012,7 @@ void EGTTools::RL::CRDSim::reinforceAll(double &pool, size_t &success, double &r
 
 template<class G>
 void
-EGTTools::RL::CRDSim::reinforceAll(double &pool, size_t &success, double &threshold, double &risk, PopContainer &pop,
+EGTTools::RL::CRDSim::reinforceAll(double &pool, size_t &success, double threshold, double &risk, PopContainer &pop,
                                    G &game, std::mt19937_64 &generator) {
 
     if (pool >= threshold)
@@ -958,7 +1025,7 @@ EGTTools::RL::CRDSim::reinforceAll(double &pool, size_t &success, double &thresh
 
 template<class G>
 void
-EGTTools::RL::CRDSim::reinforceAll(double &pool, size_t &success, double &threshold, double &risk, PopContainer &pop,
+EGTTools::RL::CRDSim::reinforceAll(double &pool, size_t &success, double threshold, double &risk, PopContainer &pop,
                                    size_t &final_round, G &game, std::mt19937_64 &generator) {
 
     if (pool >= threshold)
@@ -971,7 +1038,7 @@ EGTTools::RL::CRDSim::reinforceAll(double &pool, size_t &success, double &thresh
 
 template<class G>
 void
-EGTTools::RL::CRDSim::reinforceOnePlayer(double &pool, size_t &success, double &threshold, double &risk,
+EGTTools::RL::CRDSim::reinforceOnePlayer(double &pool, size_t &success, double threshold, double &risk,
                                          EGTTools::RL::Individual &player, std::mt19937_64 &generator) {
     if (pool >= threshold)
         success++;
@@ -982,7 +1049,7 @@ EGTTools::RL::CRDSim::reinforceOnePlayer(double &pool, size_t &success, double &
 
 template<class G>
 void
-EGTTools::RL::CRDSim::reinforceOnePlayer(double &pool, size_t &success, double &threshold, double &risk,
+EGTTools::RL::CRDSim::reinforceOnePlayer(double &pool, size_t &success, double threshold, double &risk,
                                          size_t &final_round, EGTTools::RL::Individual &player,
                                          std::mt19937_64 &generator) {
     if (pool >= threshold)
