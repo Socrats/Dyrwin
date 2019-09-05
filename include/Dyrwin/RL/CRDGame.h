@@ -388,7 +388,8 @@ namespace EGTTools::RL {
             for (size_t i = 0; i < min_rounds; i++) {
                 for (auto& player : players) {
                     idx = player->selectAction(i);
-                    player->decrease(actions[idx]);
+                    // In case nothing is left of the player's endowment, then donate 0
+                    if (!player->decrease(actions[idx])) idx = 0;
                     total += actions[idx];
                 }
             }
