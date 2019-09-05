@@ -394,14 +394,14 @@ namespace EGTTools::RL {
                         if (idx > 1) {
                             for (size_t n=0; n < idx; ++n) {
                                 if (player->decrease(actions[idx - n - 1])) {
-                                    idx = idx - n;
+                                    idx = idx - n - 1;
                                     break;
                                 }
                             }
                         }
                         player->set_trajectory_round(i, idx);
                     }
-                    player->decrease(actions[idx]);
+//                    player->decrease(actions[idx]);
                     total += actions[idx];
                 }
             }

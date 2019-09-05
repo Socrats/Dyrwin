@@ -395,7 +395,7 @@ namespace EGTTools::RL {
                         if (action > 1) {
                             for (size_t n=0; n < action; ++n) {
                                 if (player->decrease(actions[action - n - 1])) {
-                                    idx = action - n;
+                                    action = action - n - 1;
                                     break;
                                 }
                             }
