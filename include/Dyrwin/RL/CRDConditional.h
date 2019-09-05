@@ -390,10 +390,10 @@ namespace EGTTools::RL {
                 for (auto& player : players) {
                     action = player->selectAction(i, idx);
                     player->decrease(actions[action]);
-                    if (!player->decrease(actions[idx])) {
-                        action = 0;
-                        player->set_trajectory_round(i, 0);
-                    }
+//                    if (!player->decrease(actions[idx])) {
+//                        action = 0;
+//                        player->set_trajectory_round(i, 0);
+//                    }
                     partial += actions[action];
                 }
                 total += partial;

@@ -389,19 +389,19 @@ namespace EGTTools::RL {
                 for (auto& player : players) {
                     idx = player->selectAction(i);
                     // In case nothing is left of the player's endowment, then donate 0
-                    if (!player->decrease(actions[idx])) {
-                        // Select the next best action
-                        if (idx > 1) {
-                            for (size_t n=0; n < idx; ++n) {
-                                if (player->decrease(actions[idx - n - 1])) {
-                                    idx = idx - n;
-                                    break;
-                                }
-                            }
-                        }
-                        player->set_trajectory_round(i, idx);
-                    }
-//                    player->decrease(actions[idx]);
+//                    if (!player->decrease(actions[idx])) {
+//                        // Select the next best action
+//                        if (idx > 1) {
+//                            for (size_t n=0; n < idx; ++n) {
+//                                if (player->decrease(actions[idx - n - 1])) {
+//                                    idx = idx - n;
+//                                    break;
+//                                }
+//                            }
+//                        }
+//                        player->set_trajectory_round(i, idx);
+//                    }
+                    player->decrease(actions[idx]);
                     total += actions[idx];
                 }
             }
