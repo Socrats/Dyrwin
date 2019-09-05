@@ -88,6 +88,8 @@ namespace EGTTools::RL {
 
         void set_q_values(const Eigen::Ref<const Matrix2D> &q_values);
 
+        void set_trajectory_round(size_t round, size_t action);
+
 
     protected:
         virtual std::ostream &display(std::ostream &os) const;

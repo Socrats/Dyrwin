@@ -221,3 +221,7 @@ void Agent::set_q_values(const Eigen::Ref<const Matrix2D> &q_values) {
     _q_values.array() = q_values;
     inferPolicy();
 }
+
+void Agent::set_trajectory_round(size_t round, size_t action) {
+    _trajectory_actions(round) = action;
+}

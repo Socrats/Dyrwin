@@ -385,12 +385,15 @@ namespace EGTTools::RL {
             for (auto &player : players) {
                 player->resetPayoff();
             }
-            for (size_t i = 0; i < min_rounds; i++) {
+            for (size_t i = 0; i < final_round; i++) {
                 for (auto& player : players) {
                     idx = player->selectAction(i);
                     // In case nothing is left of the player's endowment, then donate 0
-//                    if (!player->decrease(actions[idx])) idx = 0;
-                    player->decrease(actions[idx]);
+                    if (!player->decrease(actions[idx])) {
+                        idx = 0;
+                        player->set_trajectory_round(i, 0);
+                    }
+//                    player->decrease(actions[idx]);
                     total += actions[idx];
                 }
             }

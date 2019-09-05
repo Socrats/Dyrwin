@@ -383,13 +383,17 @@ namespace EGTTools::RL {
             for (auto &player : players) {
                 player->resetPayoff();
             }
-            for (size_t i = 0; i < min_rounds; i++) {
+            for (size_t i = 0; i < final_round; i++) {
                 _state[0] = i, _state[1] = static_cast<size_t>(partial);
                 idx = _flatten.toIndex(_state);
                 partial = 0.0;
                 for (auto& player : players) {
                     action = player->selectAction(i, idx);
                     player->decrease(actions[action]);
+                    if (!player->decrease(actions[idx])) {
+                        action = 0;
+                        player->set_trajectory_round(i, 0);
+                    }
                     partial += actions[action];
                 }
                 total += partial;
