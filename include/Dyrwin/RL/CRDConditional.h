@@ -389,11 +389,19 @@ namespace EGTTools::RL {
                 partial = 0.0;
                 for (auto& player : players) {
                     action = player->selectAction(i, idx);
-                    player->decrease(actions[action]);
-//                    if (!player->decrease(actions[idx])) {
-//                        action = 0;
-//                        player->set_trajectory_round(i, 0);
-//                    }
+//                    player->decrease(actions[action]);
+                    if (!player->decrease(actions[action])) {
+                        // Select the next best action
+                        if (action > 1) {
+                            for (size_t n=0; n < action; ++n) {
+                                if (player->decrease(actions[action - n - 1])) {
+                                    idx = action - n;
+                                    break;
+                                }
+                            }
+                        }
+                        player->set_trajectory_round(i, action);
+                    }
                     partial += actions[action];
                 }
                 total += partial;
