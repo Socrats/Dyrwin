@@ -12,7 +12,7 @@ DiscountedQLearning::DiscountedQLearning(size_t nb_states, size_t nb_actions, si
                                          double lambda,
                                          double temperature)
         : Agent(nb_states, nb_actions, episode_length, endowment),
-          _alpha(alpha), _lambda(lambda), _temperature(temperature) {}
+          _alpha(alpha), _lambda(1 - lambda), _temperature(temperature) {}
 
 void DiscountedQLearning::reinforceTrajectory() {
     // First we apply the discount
