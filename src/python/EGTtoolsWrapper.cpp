@@ -30,6 +30,7 @@
 #include <Dyrwin/RL/CrdSim.hpp>
 #include <Dyrwin/RL/Data.hpp>
 #include <Dyrwin/RL/Utils.h>
+#include <Dyrwin/RL/DiscountedQLearning.h>
 
 
 namespace py = pybind11;
@@ -514,6 +515,34 @@ PYBIND11_MODULE(EGTtools, m) {
                                                                    size_t)>(&RL::QLearningAgent::selectAction),
                  "samples an action from the agent's policy", py::arg("round"), py::arg("state"))
             .def("reset_q_values", &RL::QLearningAgent::resetQValues);
+
+    py::class_<RL::DiscountedQLearning, RL::Agent>(mRL, "DiscountedQLearningAgent")
+            .def(py::init<size_t, size_t, size_t, double, double, double, double>(),
+                 "Implementation of the Q-Learning algorithm.",
+                 py::arg("nb_states"), py::arg("nb_actions"),
+                 py::arg("episode_length"), py::arg("endowment"),
+                 py::arg("alpha"), py::arg("lambda"), py::arg("temperature"))
+            .def_property("alpha", &RL::DiscountedQLearning::alpha, &RL::DiscountedQLearning::setAlpha)
+            .def_property("lambda", &RL::DiscountedQLearning::lambda, &RL::DiscountedQLearning::setLambda)
+            .def_property("temperature", &RL::DiscountedQLearning::temperature,
+                          &RL::DiscountedQLearning::setTemperature)
+            .def("update_policy", &RL::DiscountedQLearning::inferPolicy)
+            .def("reset_trajectory", &RL::DiscountedQLearning::resetTrajectory)
+            .def("reinforce",
+                 static_cast<void (RL::DiscountedQLearning::*)()>(&RL::DiscountedQLearning::reinforceTrajectory),
+                 "reinforces the actions from the current trajectory, based on the agent's reward")
+            .def("reinforce",
+                 static_cast<void (RL::DiscountedQLearning::*)(size_t)>(&RL::DiscountedQLearning::reinforceTrajectory),
+                 "reinforces the actions from the current trajectory, based on the agent's reward",
+                 py::arg("episode_length"))
+            .def("act",
+                 static_cast<size_t (RL::DiscountedQLearning::*)(size_t)>(&RL::DiscountedQLearning::selectAction),
+                 "samples an action from the agent's policy", py::arg("round"))
+            .def("act", static_cast<size_t (RL::DiscountedQLearning::*)(size_t,
+                                                                   size_t)>(&RL::DiscountedQLearning::selectAction),
+                 "samples an action from the agent's policy", py::arg("round"), py::arg("state"))
+            .def("reset_q_values", &RL::DiscountedQLearning::resetQValues);
+
 
     py::class_<RL::HistericQLearningAgent, RL::Agent>(mRL, "HistericQLearningAgent")
             .def(py::init<size_t, size_t, size_t, double, double, double, double>(),

@@ -19,6 +19,7 @@ add_library(EGTTools
         RL/QLearningAgent.cpp
         RL/HistericQLearningAgent.cpp
         RL/RothErevAgent.cpp
+        RL/DiscountedQLearning.cpp
         RL/CrdSim.cpp
         RL/Utils.cpp
         RL/PopContainer.cpp
