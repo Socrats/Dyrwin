@@ -497,7 +497,7 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("episode_length"), py::arg("endowment"),
                  py::arg("alpha"), py::arg("lambda"), py::arg("temperature"))
             .def_property("alpha", &RL::QLearningAgent::alpha, &RL::QLearningAgent::setAlpha)
-            .def_property("lambda", &RL::QLearningAgent::lambda, &RL::QLearningAgent::setLambda)
+            .def_property("lda", &RL::QLearningAgent::lambda, &RL::QLearningAgent::setLambda)
             .def_property("temperature", &RL::QLearningAgent::temperature,
                           &RL::QLearningAgent::setTemperature)
             .def("update_policy", &RL::QLearningAgent::inferPolicy)
@@ -524,7 +524,7 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("episode_length"), py::arg("endowment"),
                  py::arg("alpha"), py::arg("lambda"), py::arg("temperature"))
             .def_property("alpha", &RL::DiscountedQLearning::alpha, &RL::DiscountedQLearning::setAlpha)
-            .def_property("lambda", &RL::DiscountedQLearning::lambda, &RL::DiscountedQLearning::setLambda)
+            .def_property("lda", &RL::DiscountedQLearning::lambda, &RL::DiscountedQLearning::setLambda)
             .def_property("temperature", &RL::DiscountedQLearning::temperature,
                           &RL::DiscountedQLearning::setTemperature)
             .def("update_policy", &RL::DiscountedQLearning::inferPolicy)
