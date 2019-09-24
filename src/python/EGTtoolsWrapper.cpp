@@ -445,6 +445,7 @@ PYBIND11_MODULE(EGTtools, m) {
                                    py::return_value_policy::reference_internal)
             .def_property_readonly("q_values", &RL::Agent::qValues, py::return_value_policy::reference_internal)
             .def_property_readonly("policy", &RL::Agent::policy, py::return_value_policy::reference_internal)
+            .def_property_readonly("type", &RL::Agent::type)
             .def("reset", &RL::Agent::reset)
             .def("set_q_values", &RL::Agent::set_q_values)
             .def("set_policy", &RL::Agent::set_policy)
@@ -516,7 +517,7 @@ PYBIND11_MODULE(EGTtools, m) {
                  "samples an action from the agent's policy", py::arg("round"), py::arg("state"))
             .def("reset_q_values", &RL::QLearningAgent::resetQValues);
 
-    py::class_<RL::DiscountedQLearning, RL::Agent>(mRL, "DiscountedQLearningAgent")
+    py::class_<RL::DiscountedQLearning, RL::Agent>(mRL, "DiscountedQLearning")
             .def(py::init<size_t, size_t, size_t, double, double, double, double>(),
                  "Implementation of the Q-Learning algorithm.",
                  py::arg("nb_states"), py::arg("nb_actions"),
