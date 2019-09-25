@@ -540,7 +540,7 @@ PYBIND11_MODULE(EGTtools, m) {
                  static_cast<size_t (RL::DiscountedQLearning::*)(size_t)>(&RL::DiscountedQLearning::selectAction),
                  "samples an action from the agent's policy", py::arg("round"))
             .def("act", static_cast<size_t (RL::DiscountedQLearning::*)(size_t,
-                                                                   size_t)>(&RL::DiscountedQLearning::selectAction),
+                                                                        size_t)>(&RL::DiscountedQLearning::selectAction),
                  "samples an action from the agent's policy", py::arg("round"), py::arg("state"))
             .def("reset_q_values", &RL::DiscountedQLearning::resetQValues);
 
@@ -899,6 +899,23 @@ PYBIND11_MODULE(EGTtools, m) {
                  py::arg("nb_games"),
                  py::arg("nb_groups"), py::arg("risk"),
                  py::arg("*agent_args"), py::arg("crd_type"))
+            .def("runConditionalWellMixed",
+                 static_cast<crdData (RL::CRDSim::*)(size_t, size_t, size_t, size_t, double, double,
+                                                     const std::string &,
+                                                     const std::vector<double> &)>(&RL::CRDSim::runConditionalWellMixed),
+                 "Runs CRD simulations with unconditional agents in a well-mixed population.",
+                 py::arg("pop_size"), py::arg("group_size"),
+                 py::arg("nb_generations"), py::arg("nb_games"), py::arg("threshold"), py::arg("risk"),
+                 py::arg("agent_type"), py::arg("*agent_args"))
+            .def("runConditionalWellMixed",
+                 static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, size_t, size_t, size_t, double, double,
+                                                                size_t, const std::string &,
+                                                                const std::vector<double> &)>(&RL::CRDSim::runConditionalWellMixed),
+                 "Runs CRD simulations with unconditional agents in a well-mixed population.",
+                 py::arg("nb_runs"), py::arg("pop_size"), py::arg("group_size"),
+                 py::arg("nb_generations"), py::arg("nb_games"), py::arg("threshold"), py::arg("risk"),
+                 py::arg("transient"),
+                 py::arg("agent_type"), py::arg("*agent_args"))
             .def("runConditionalWellMixedTU",
                  static_cast<crdData (RL::CRDSim::*)(size_t, size_t, size_t, size_t, double, double, size_t,
                                                      size_t, size_t, double, const std::string &,

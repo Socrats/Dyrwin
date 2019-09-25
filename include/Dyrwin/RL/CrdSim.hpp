@@ -401,6 +401,63 @@ namespace EGTTools::RL {
         runConditional(size_t nb_episodes, size_t nb_games, size_t nb_groups, double risk,
                        const std::vector<double> &args = {}, const std::string &crd_type = "milinski");
 
+
+        /**
+             * @brief Runs simulation with a well mixed population and returns a data container with the population.
+             *
+             * In the simulations performed here, agents of a population of size Z = _group_size * nb_groups
+             * are selected randomly from the population to form a group of size _group_size and play a game.
+             * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
+             *
+             * The @param args is a vector that should contain the arguments specific of the agent type of
+             * the population.
+             *
+             * @param pop_size : size of the population
+             * @param group_size : group size
+             * @param nb_generations : number of generations per simulation
+             * @param nb_games : number of games per generation
+             * @param threshold : collective target
+             * @param risk : probability of loosing all endowment if the target isn't reached
+             * @param agent_type : string indicating which agent implementation to use
+             * @param args : vector of arguments to instantiate the agent_type of the population
+             * @return a data container that includes the group achievement, the average donations and the population
+             */
+        DataTypes::CRDData
+        runConditionalWellMixed(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                                double threshold,
+                                double risk, const std::string &agent_type,
+                                const std::vector<double> &args = {});
+
+        /**
+             * @brief Runs several simulations with a well mixed population.
+             *
+             * In the simulations performed here, agents of a population of size Z = _group_size * nb_groups
+             * are selected randomly from the population to form a group of size _group_size and play a game.
+             * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
+             *
+             * The @param args is a vector that should contain the arguments specific of the agent type of
+             * the population.
+             *
+             * The simulation is repeated for @param nb_runs with independent populations.
+             *
+             * @param nb_runs : number of independent simulations
+             * @param pop_size : size of the population
+             * @param group_size : size of the group
+             * @param nb_generations : number of generations per simulation
+             * @param nb_games : number of games per generation
+             * @param threshold : collective target
+             * @param risk : probability of loosing all endowment if the target isn't reached
+             * @param transient : number of generations to take into account for calculating the average
+             * @param agent_type : string indicating whcoh agent implementation to use
+             * @param args : vector of arguments to instantiate the agent_type of the population
+             * @return Eigen 2D matrix with the average group achievement and avg. donations across independent runs.
+             */
+        Matrix2D runConditionalWellMixed(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
+                                         size_t nb_games, double threshold, double risk, size_t transient,
+                                         const std::string &agent_type,
+                                         const std::vector<double> &args = {});
+
+
         /**
              * @brief trains a well-mixed population in the CRD with Timing uncertainty
              *

@@ -957,6 +957,79 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
 }
 
 EGTTools::RL::DataTypes::CRDData
+EGTTools::RL::CRDSim::runConditionalWellMixed(size_t pop_size, size_t group_size, size_t nb_generations,
+                                              size_t nb_games, double threshold,
+                                              double risk,
+                                              const std::string &agent_type,
+                                              const std::vector<double> &args) {
+    // Instantiate factored state
+    FlattenState flatten(Factors{_nb_rounds, (group_size * _nb_actions) + 1});
+    // Instantiate game
+    CRDConditional<PopContainer> game(flatten);
+
+    std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
+
+    // Create a population of pop_size
+    PopContainer wmPop(agent_type, pop_size, game.flatten().factor_space, _nb_actions, _nb_rounds,
+                       _endowment, args);
+    EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
+    PopContainer group;
+    std::vector<size_t> pop_index(pop_size);
+    std::iota(pop_index.begin(), pop_index.end(), 0);
+    for (size_t i = 0; i < group_size; ++i)
+        group.push_back(data.population(i));
+
+    // Variables used during learning
+    size_t success;
+    double avg_contribution;
+    double avg_rounds;
+
+    for (size_t generation = 0; generation < nb_generations; ++generation) {
+        // First we select random groups and let them play nb_games
+        success = 0;
+        avg_contribution = 0.;
+        avg_rounds = 0.;
+        for (size_t i = 0; i < nb_games; ++i) {
+            std::shuffle(pop_index.begin(), pop_index.end(), generator);
+            for (size_t j = 0; j < group_size; ++j)
+                group(j) = data.population(pop_index[j]);
+            // First we play the game
+            auto[pool, final_round] = game.playGame(group, _available_actions, _nb_rounds);
+            avg_contribution += (game.playersContribution(group) / double(group_size));
+            reinforceAll(pool, success, threshold, risk, group, game, generator);
+            avg_rounds += final_round;
+        }
+        data.eta(generation) += static_cast<double>(success) / static_cast<double>(nb_games);
+        data.avg_contribution(generation) += avg_contribution / static_cast<double>(nb_games);
+
+        game.calcProbabilities(data.population);
+        game.resetEpisode(data.population);
+    }
+
+    return data;
+}
+
+EGTTools::Matrix2D
+EGTTools::RL::CRDSim::runConditionalWellMixed(size_t nb_runs, size_t pop_size, size_t group_size,
+                                              size_t nb_generations,
+                                              size_t nb_games, double threshold,
+                                              double risk, size_t transient,
+                                              const std::string &agent_type, const std::vector<double> &args) {
+    EGTTools::Matrix2D results = Matrix2D::Zero(2, nb_runs);
+    assert((transient > 0) && (transient <= nb_generations));
+
+#pragma omp parallel for shared(transient, results)
+    for (size_t run = 0; run < nb_runs; ++run) {
+        EGTTools::RL::DataTypes::CRDData tmp = runConditionalWellMixed(pop_size, group_size, nb_generations, nb_games,
+                                                                       threshold, risk, agent_type, args);
+        results(0, run) = tmp.eta.tail(transient).mean();
+        results(1, run) = tmp.avg_contribution.tail(transient).mean();
+    }
+
+    return results;
+}
+
+EGTTools::RL::DataTypes::CRDData
 EGTTools::RL::CRDSim::runConditionalWellMixedTU(size_t pop_size, size_t group_size, size_t nb_generations,
                                                 size_t nb_games, double threshold,
                                                 double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds,
