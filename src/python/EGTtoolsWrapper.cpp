@@ -277,6 +277,10 @@ PYBIND11_MODULE(EGTtools, m) {
           static_cast<EGTTools::VectorXui (*)(size_t, const size_t &, const size_t &)>(&EGTTools::SED::sample_simplex),
           "returns a point in the simplex given an index", py::arg("index"), py::arg("pop_size"),
           py::arg("nb_strategies"));
+    m.def("calculate_nb_states",
+          &EGTTools::starsBars,
+          "calculates the number of states (combinations) of the members of a group in a subgroup.",
+          py::arg("group_size"), py::arg("sub_group_size"));
 
     // Now we define a submodule
     auto mCRD = m.def_submodule("CRD");
