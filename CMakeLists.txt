@@ -82,6 +82,10 @@ message("")
 ##       Dependencies       ##
 ##############################
 if (MAKE_ALL OR MAKE_APPS)
+    # Work around for homebrew problem on mac
+    if(${APPLE})
+        set(Boost_NO_BOOST_CMAKE ON)
+    endif()
     set(BOOST_VERSION_REQUIRED 1.62)
 endif ()
 set(EIGEN_VERSION_REQUIRED 3.3)
