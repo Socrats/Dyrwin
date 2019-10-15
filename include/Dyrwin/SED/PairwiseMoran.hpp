@@ -124,15 +124,15 @@ namespace EGTTools::SED {
         Vector stationaryDistribution(size_t nb_runs, size_t nb_generations, size_t transitory, double beta, double mu);
 
         // Getters
-        size_t nb_strategies() const;
+        [[nodiscard]] size_t nb_strategies() const;
 
-        size_t population_size() const;
+        [[nodiscard]] size_t population_size() const;
 
-        size_t cache_size() const;
+        [[nodiscard]] size_t cache_size() const;
 
-        std::string game_type() const;
+        [[nodiscard]] std::string game_type() const;
 
-        const GroupPayoffs &payoffs() const;
+        [[nodiscard]] const GroupPayoffs &payoffs() const;
 
         // Setters
         void set_population_size(size_t pop_size);
@@ -545,7 +545,7 @@ namespace EGTTools::SED {
         long int r2r = 0; // resident to resident count
 
         // This loop can be done in parallel
-#pragma omp parallel for reduction(+:r2m, r2r)
+#pragma omp parallel for reduction(+:r2m, r2r) default(none) shared(r2m, r2r)
         for (size_t i = 0; i < runs; ++i) {
             // Random generators - each thread should have its own generator
             std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
@@ -565,7 +565,7 @@ namespace EGTTools::SED {
             }
         } // end runs loop
         if ((r2m == 0) && (r2r == 0)) return 0.0;
-        else return static_cast<double>(r2m) / (r2m + r2r);
+        else return static_cast<double>(r2m) / static_cast<double>(r2m + r2r);
     }
 
     template<class Cache>
@@ -577,7 +577,7 @@ namespace EGTTools::SED {
         // Distribution number of generations for a mutation to happen
         std::geometric_distribution<size_t> geometric(mu);
 
-#pragma omp parallel for reduction(+:sdist)
+#pragma omp parallel for reduction(+:sdist) default(none) shared(sdist, geometric)
         for (size_t i = 0; i < nb_runs; ++i) {
             // Random generators - each thread should have its own generator
             std::mt19937_64 generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
