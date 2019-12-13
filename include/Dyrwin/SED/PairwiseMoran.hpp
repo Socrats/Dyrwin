@@ -767,6 +767,7 @@ namespace EGTTools::SED {
             // Check if player mutates
             if (_real_rand(generator) < mu) {
                 birth = _strategy_sampler(generator);
+                // Assumes that a mutation is always to a different strategy
                 while (birth == die) birth = _strategy_sampler(generator);
                 strategies(s1) -= 1;
                 strategies(birth) += 1;
@@ -776,12 +777,12 @@ namespace EGTTools::SED {
                     idx_homo = birth;
                 }
             }
-
         } else {
             // Check if player mutates
             if (_real_rand(generator) < mu) {
                 die = s1;
                 birth = _strategy_sampler(generator);
+                // Assumes that a mutation is always to a different strategy
                 while (birth == die) birth = _strategy_sampler(generator);
             } else { // If no mutation, player imitates
 
@@ -789,7 +790,7 @@ namespace EGTTools::SED {
                 auto fitness_p1 = _calculate_fitness(s1, strategies, cache);
                 auto fitness_p2 = _calculate_fitness(s2, strategies, cache);
 
-                // Then we apply the moran process with mutation
+                // Then we check if player imitates
                 if (_real_rand(generator) < EGTTools::SED::fermi(beta, fitness_p1, fitness_p2)) {
                     // player 1 copies player 2
                     die = s1;

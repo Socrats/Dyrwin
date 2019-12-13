@@ -14,6 +14,7 @@ add_library(EGTTools
         SED/games/CrdGame.cpp
         SED/games/CrdGameTU.cpp
         SED/MLS.cpp
+        ED/ReplicatorDynamics.cpp
         RL/Agent.cpp
         RL/BatchQLearningAgent.cpp
         RL/QLearningAgent.cpp
@@ -28,6 +29,7 @@ add_library(EGTTools
         AbouCRD/CRDSimulator.cpp
         AbouCRD/DataStruct.cpp RL/Data.cpp)
 
+# TODO: Separate libraries into EGT & RL
 set_target_properties(EGTTools PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 set_target_properties(EGTTools PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 # Fixing "ld: warning: direct access in function '...' from file '...' to global weak symbol '...' from file '...' means the weak symbol cannot
