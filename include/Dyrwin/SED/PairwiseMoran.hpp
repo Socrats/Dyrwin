@@ -545,7 +545,7 @@ namespace EGTTools::SED {
         long int r2r = 0; // resident to resident count
 
         // This loop can be done in parallel
-#pragma omp parallel for reduction(+:r2m, r2r) default(none) shared(r2m, r2r)
+#pragma omp parallel for reduction(+:r2m, r2r) default(none) shared(resident, invader, runs, nb_generations, beta)
         for (size_t i = 0; i < runs; ++i) {
             // Random generators - each thread should have its own generator
             std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
@@ -577,7 +577,7 @@ namespace EGTTools::SED {
         // Distribution number of generations for a mutation to happen
         std::geometric_distribution<size_t> geometric(mu);
 
-#pragma omp parallel for reduction(+:sdist) default(none) shared(sdist, geometric)
+#pragma omp parallel for reduction(+:sdist) default(none) shared(geometric, nb_runs, nb_generations, transitory, beta, mu)
         for (size_t i = 0; i < nb_runs; ++i) {
             // Random generators - each thread should have its own generator
             std::mt19937_64 generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};

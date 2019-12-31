@@ -4,6 +4,6 @@
 
 #include <Dyrwin/ED/ReplicatorDynamics.hpp>
 
-Vector EGTTools::ED::replicator_equation(EGTTools::Vector state, EGTTools::Matrix2D payoffs) {
-    return state * ((payoffs * states) - (states * payoffs * states));
+EGTTools::Vector EGTTools::ED::replicator_equation(EGTTools::Vector state, EGTTools::Matrix2D payoffs) {
+    return state * ((payoffs * state) - (state * payoffs * state));
 }

@@ -21,7 +21,7 @@ namespace EGTTools::ED {
      *                  columns indicate the opponent).
      * @return : (Eigen::Vector) new_state
      */
-    Vector replicator_equation(Vector state, Matrix2D payoffs);
+    EGTTools::Vector replicator_equation(Vector state, Matrix2D payoffs);
 }
 
 #endif //DYRWIN_ED_REPLICATORDYNAMICS_HPP

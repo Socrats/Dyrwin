@@ -229,7 +229,7 @@ namespace EGTTools::RL {
             for (auto &player : players) {
                 player.resetPayoff();
             }
-            for (unsigned i = 0; i < rounds; ++i) {
+            for (size_t i = 0; i < rounds; ++i) {
                 _state[0] = i, _state[1] = static_cast<size_t>(partial);
                 partial = 0.0;
                 for (auto a : players) {
