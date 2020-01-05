@@ -16,19 +16,20 @@ void QLearningAgent::reinforceTrajectory() {
   _q_values(_trajectory_states(_episode_length - 1), _trajectory_actions(_episode_length - 1)) +=
       _alpha * (_payoff - _q_values(_trajectory_states(_episode_length - 1),
                                     _trajectory_actions(_episode_length - 1)));
-  for (size_t i = _episode_length - 2; i == 0; i--) {
-    _q_values(_trajectory_states(i), _trajectory_actions(i)) += _alpha *
-        (_lambda * _q_values.row(i + 1).maxCoeff() - _q_values(_trajectory_states(i),
-                                                               _trajectory_actions(i)));
+  for (size_t i = _episode_length - 1; i > 0; i--) {
+    _q_values(_trajectory_states(i - 1), _trajectory_actions(i - 1)) += _alpha *
+        (_lambda * _q_values.row(i).maxCoeff() - _q_values(_trajectory_states(i - 1),
+                                                           _trajectory_actions(i - 1)));
   }
 }
 
 void QLearningAgent::reinforceTrajectory(size_t episode_length) {
   _q_values(_trajectory_states(episode_length - 1), _trajectory_actions(episode_length - 1)) +=
       _alpha * _payoff;
-  for (size_t i = _episode_length - 2; i == 0; i--) {
-    _q_values(_trajectory_states(i), _trajectory_actions(i)) += _alpha *
-        (_lambda * _q_values.row(i + 1).maxCoeff());
+  for (size_t i = episode_length - 1; i > 0; i--) {
+    _q_values(_trajectory_states(i - 1), _trajectory_actions(i - 1)) += _alpha *
+        (_lambda * _q_values.row(i).maxCoeff() - _q_values(_trajectory_states(i - 1),
+                                                           _trajectory_actions(i - 1)));
   }
 }
 
