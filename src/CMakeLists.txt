@@ -18,6 +18,7 @@ add_library(EGTTools
         RL/Agent.cpp
         RL/BatchQLearningAgent.cpp
         RL/QLearningAgent.cpp
+        RL/ESARSA.cpp
         RL/HistericQLearningAgent.cpp
         RL/RothErevAgent.cpp
         RL/DiscountedQLearning.cpp

@@ -11,6 +11,8 @@
 #include <Dyrwin/RL/QLearningAgent.h>
 #include <Dyrwin/RL/BatchQLearningAgent.h>
 #include <Dyrwin/RL/HistericQLearningAgent.hpp>
+#include <Dyrwin/RL/DiscountedQLearning.h>
+#include <Dyrwin/RL/ESARSA.h>
 #include <Dyrwin/RL/Utils.h>
 
 namespace EGTTools::RL {

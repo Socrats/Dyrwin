@@ -3,7 +3,6 @@
 //
 
 #include <Dyrwin/RL/PopContainer.hpp>
-#include <Dyrwin/RL/DiscountedQLearning.h>
 
 EGTTools::RL::PopContainer::PopContainer(const std::string &agent_type, size_t nb_agents, size_t nb_states,
                                          size_t nb_actions,
@@ -29,6 +28,15 @@ EGTTools::RL::PopContainer::PopContainer(const std::string &agent_type, size_t n
                                                      args[1],
                                                      args[2]));
         }
+    } else if (agent_type == "ESARSA") {
+      if (args.size() < 3)
+        throw std::invalid_argument("You must specify alpha, lambda and temperature as arguments");
+      for (unsigned i = 0; i < nb_agents; i++) {
+        _agents.push_back(
+            std::make_shared<ESARSA>(nb_states, nb_actions, episode_length, endowment, args[0],
+                                             args[1],
+                                             args[2]));
+      }
     } else if (agent_type == "HistericQLearning") {
         if (args.size() < 3)
             throw std::invalid_argument("You must specify alpha, beta and temperature as arguments");
