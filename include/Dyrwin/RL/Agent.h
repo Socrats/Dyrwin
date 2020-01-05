@@ -28,9 +28,9 @@ namespace EGTTools::RL {
 
         friend std::ostream &operator<<(std::ostream &o, Agent &r) { return r.display(o); }
 
-        std::string toString() const;
+        [[nodiscard]] std::string toString() const;
 
-        virtual std::string type() const { return "EGTTools::RL::Agent"; }
+        [[nodiscard]] virtual std::string type() const { return "EGTTools::RL::Agent"; }
 
         bool decrease(double amount);
 
@@ -53,23 +53,23 @@ namespace EGTTools::RL {
         void add2payoff(double value);
 
         // Getters
-        size_t nb_states() const;
+        [[nodiscard]] size_t nb_states() const;
 
-        size_t nb_actions() const;
+        [[nodiscard]] size_t nb_actions() const;
 
-        size_t episode_length() const;
+        [[nodiscard]] size_t episode_length() const;
 
-        double endowment() const;
+        [[nodiscard]] double endowment() const;
 
-        double payoff() const;
+        [[nodiscard]] double payoff() const;
 
-        const VectorXui &trajectoryStates() const;
+        [[nodiscard]] const VectorXui &trajectoryStates() const;
 
-        const VectorXui &trajectoryActions() const;
+        [[nodiscard]] const VectorXui &trajectoryActions() const;
 
-        const Matrix2D &policy() const;
+        [[nodiscard]] const Matrix2D &policy() const;
 
-        const Matrix2D &qValues() const;
+        [[nodiscard]] const Matrix2D &qValues() const;
 
         // Setters
         void set_nb_states(size_t nb_states);

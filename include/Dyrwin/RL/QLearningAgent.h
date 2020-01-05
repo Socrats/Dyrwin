@@ -28,14 +28,14 @@ namespace EGTTools::RL {
 
         }
 
-        std::string type() const override;
+        [[nodiscard]] std::string type() const override;
 
         // Getters
-        double alpha() const;
+        [[nodiscard]] double alpha() const;
 
-        double lambda() const;
+        [[nodiscard]] double lambda() const;
 
-        double temperature() const;
+        [[nodiscard]] double temperature() const;
 
         // Setters
         void setAlpha(double alpha);

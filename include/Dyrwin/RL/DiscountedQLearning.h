@@ -30,12 +30,12 @@ namespace EGTTools::RL {
          * @brief Returns a string indicating the agent's class name
          * @return Returns a string indicating the agent's class name
          */
-        std::string type() const override;
+        [[nodiscard]] std::string type() const override;
 
         // Getters
-        double alpha() const;
-        double lambda() const;
-        double temperature() const;
+        [[nodiscard]] double alpha() const;
+        [[nodiscard]] double lambda() const;
+        [[nodiscard]] double temperature() const;
 
         // Setters
         void setAlpha(double alpha);
