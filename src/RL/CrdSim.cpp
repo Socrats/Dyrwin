@@ -1055,7 +1055,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixedTU(size_t pop_size, size_t group_si
   }
   // Calculate threshold (dependent on group size)
   EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
-  FlattenState flatten(Factors{max_rounds, (group_size * _nb_actions) + 1});
+  FlattenState flatten(Factors{max_rounds, (group_size * (_nb_actions - 1)) + 1});
   CRDConditional<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game(flatten);
 
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
@@ -1138,7 +1138,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixedThresholdU(size_t pop_size,
   std::uniform_int_distribution<size_t> t_dist(threshold - delta / 2, threshold + delta / 2);
 
   // Define the game with conditional agents
-  FlattenState flatten(Factors{_nb_rounds, (group_size * _nb_actions) + 1});
+  FlattenState flatten(Factors{_nb_rounds, (group_size * (_nb_actions - 1)) + 1});
   CRDConditional<PopContainer> game(flatten);
 
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
@@ -1230,7 +1230,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixedTUnThU(size_t pop_size,
   }
   EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
   // Define the game with conditional agents
-  FlattenState flatten(Factors{max_rounds, (group_size * _nb_actions) + 1});
+  FlattenState flatten(Factors{max_rounds, (group_size * (_nb_actions - 1)) + 1});
   CRDConditional<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game(flatten);
   // Define the distribution for the threshold
   std::uniform_int_distribution<size_t> t_dist(threshold - delta / 2, threshold + delta / 2);
