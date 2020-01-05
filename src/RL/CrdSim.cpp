@@ -973,7 +973,9 @@ EGTTools::RL::CRDSim::runConditionalWellMixed(size_t pop_size, size_t group_size
                                               const std::string &agent_type,
                                               const std::vector<double> &args) {
   // Instantiate factored state
-  FlattenState flatten(Factors{_nb_rounds, (group_size * _nb_actions) + 1});
+  // The first dimension indicate the round of the game,
+  // and the second the donations of the group in the previous round (maximum group_size * (nb_action - 1) + 1)
+  FlattenState flatten(Factors{_nb_rounds, (group_size * (_nb_actions - 1)) + 1});
   // Instantiate game
   CRDConditional<PopContainer> game(flatten);
 

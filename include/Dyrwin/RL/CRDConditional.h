@@ -17,560 +17,558 @@
 #include <Dyrwin/RL/TimingUncertainty.hpp>
 #include <Dyrwin/RL/Utils.h>
 
-
 namespace EGTTools::RL {
-    /**
-     * @brief Implements the Collective-risk dilemma defined in Milinski et. al 2008.
-     *
-     * @tparam A. Container for the agents.
-     */
-    template<typename A = Agent, typename R = void>
-    class CRDConditional {
+/**
+ * @brief Implements the Collective-risk dilemma defined in Milinski et. al 2008.
+ *
+ * @tparam A. Container for the agents.
+ */
+template<typename A = Agent, typename R = void>
+class CRDConditional {
 
-    public:
-        explicit CRDConditional(FlattenState  flatten) : _flatten(std::move(flatten)) {
-            _state = EGTTools::RL::Factors(2);
-        }
+ public:
+  explicit CRDConditional(FlattenState flatten) : _flatten(std::move(flatten)) {
+    _state = EGTTools::RL::Factors(2);
+  }
 
-        /**
-         * @brief Model of the Collective-Risk dillemma game.
-         *
-         * This game constitutes an MDP.
-         *
-         * This function plays the game for a number of rounds
-         *
-         * @param players
-         * @param actions
-         * @param rounds
-         * @return std::pair (donations, rounds)
-         */
-        std::pair<double, unsigned>
-        playGame(std::vector<A> &players, std::vector<size_t> &actions, size_t rounds, R &gen_round) {
+  /**
+   * @brief Model of the Collective-Risk dillemma game.
+   *
+   * This game constitutes an MDP.
+   *
+   * This function plays the game for a number of rounds
+   *
+   * @param players
+   * @param actions
+   * @param rounds
+   * @return std::pair (donations, rounds)
+   */
+  std::pair<double, unsigned>
+  playGame(std::vector<A> &players, std::vector<size_t> &actions, size_t rounds, R &gen_round) {
 
-            auto final_round = gen_round.calculateEnd(rounds, _mt);
+    auto final_round = gen_round.calculateEnd(rounds, _mt);
 
-            double total = 0.0, partial = 0.0;
-            for (auto &player : players) {
-                player.resetPayoff();
-            }
-            for (size_t i = 0; i < final_round; ++i) {
-                _state[0] = i, _state[1] = static_cast<size_t>(partial);
-                partial = 0.0;
+    double total = 0.0, partial = 0.0;
+    for (auto &player : players) {
+      player.resetPayoff();
+    }
+    for (size_t i = 0; i < final_round; ++i) {
+      _state[0] = i, _state[1] = static_cast<size_t>(partial);
+      partial = 0.0;
 //#pragma omp parallel for shared(total)
-                for (size_t j = 0; j < players.size(); ++j) {
-                    unsigned idx = players[j].selectAction(i, _flatten.toIndex(_state));
-                    players[j].decrease(actions[idx]);
-                    partial += actions[idx];
-                }
-                total += partial;
-            }
-            return std::make_pair(total, final_round);
-        }
+      for (size_t j = 0; j < players.size(); ++j) {
+        unsigned idx = players[j].selectAction(i, _flatten.toIndex(_state));
+        players[j].decrease(actions[idx]);
+        partial += actions[idx];
+      }
+      total += partial;
+    }
+    return std::make_pair(total, final_round);
+  }
 
-        std::pair<double, unsigned>
-        playGame(std::vector<A *> &players, std::vector<size_t> &actions, size_t rounds, R &gen_round) {
+  std::pair<double, unsigned>
+  playGame(std::vector<A *> &players, std::vector<size_t> &actions, size_t rounds, R &gen_round) {
 
-            auto final_round = gen_round.calculateEnd(rounds, _mt);
+    auto final_round = gen_round.calculateEnd(rounds, _mt);
 
-            double total = 0.0, partial = 0.0;
-            for (auto &player : players) {
-                player->resetPayoff();
-            }
-            for (size_t i = 0; i < final_round; i++) {
-                _state[0] = i, _state[1] = static_cast<size_t>(partial);
-                partial = 0.0;
+    double total = 0.0, partial = 0.0;
+    for (auto &player : players) {
+      player->resetPayoff();
+    }
+    for (size_t i = 0; i < final_round; i++) {
+      _state[0] = i, _state[1] = static_cast<size_t>(partial);
+      partial = 0.0;
 //#pragma omp parallel for shared(total)
-                for (size_t j = 0; j < players.size(); ++j) {
-                    unsigned idx = players[j]->selectAction(i, _flatten.toIndex(_state));
-                    players[j]->decrease(actions[idx]);
-                    partial += actions[idx];
-                }
-                total += partial;
-            }
-            return std::make_pair(total, final_round);
-        }
+      for (size_t j = 0; j < players.size(); ++j) {
+        unsigned idx = players[j]->selectAction(i, _flatten.toIndex(_state));
+        players[j]->decrease(actions[idx]);
+        partial += actions[idx];
+      }
+      total += partial;
+    }
+    return std::make_pair(total, final_round);
+  }
 
-        bool reinforcePath(std::vector<A> &players) {
+  bool reinforcePath(std::vector<A> &players) {
 //#pragma omp parallel
-            for (size_t j = 0; j < players.size(); ++j) {
-                players[j].reinforceTrajectory();
-            }
-            return true;
-        }
+    for (size_t j = 0; j < players.size(); ++j) {
+      players[j].reinforceTrajectory();
+    }
+    return true;
+  }
 
-        bool reinforcePath(std::vector<A> &players, size_t final_round) {
+  bool reinforcePath(std::vector<A> &players, size_t final_round) {
 //#pragma omp parallel
-            for (size_t j = 0; j < players.size(); ++j) {
-                players[j].reinforceTrajectory(final_round);
-            }
-            return true;
-        }
+    for (size_t j = 0; j < players.size(); ++j) {
+      players[j].reinforceTrajectory(final_round);
+    }
+    return true;
+  }
 
-        bool reinforcePath(std::vector<A *> &players) {
+  bool reinforcePath(std::vector<A *> &players) {
 //#pragma omp parallel
-            for (size_t j = 0; j < players.size(); ++j) {
-                players[j]->reinforceTrajectory();
-            }
-            return true;
-        }
+    for (size_t j = 0; j < players.size(); ++j) {
+      players[j]->reinforceTrajectory();
+    }
+    return true;
+  }
 
-        bool reinforcePath(std::vector<A *> &players, size_t final_round) {
+  bool reinforcePath(std::vector<A *> &players, size_t final_round) {
 //#pragma omp parallel
-            for (size_t j = 0; j < players.size(); ++j) {
-                players[j]->reinforceTrajectory(final_round);
-            }
-            return true;
-        }
+    for (size_t j = 0; j < players.size(); ++j) {
+      players[j]->reinforceTrajectory(final_round);
+    }
+    return true;
+  }
 
-        bool printGroup(std::vector<A> &players) {
-            for (auto &player : players) {
-                std::cout << player << std::endl;
-            }
-            return true;
-        }
+  bool printGroup(std::vector<A> &players) {
+    for (auto &player : players) {
+      std::cout << player << std::endl;
+    }
+    return true;
+  }
 
-        bool printGroup(std::vector<A *> &players) {
-            for (auto &player : players) {
-                std::cout << *player << std::endl;
-            }
-            return true;
-        }
+  bool printGroup(std::vector<A *> &players) {
+    for (auto &player : players) {
+      std::cout << *player << std::endl;
+    }
+    return true;
+  }
 
-        bool calcProbabilities(std::vector<A> &players) {
+  bool calcProbabilities(std::vector<A> &players) {
 //#pragma omp parallel
-            for (size_t j = 0; j < players.size(); ++j) {
-                players[j].inferPolicy();
-            }
-            return true;
-        }
+    for (size_t j = 0; j < players.size(); ++j) {
+      players[j].inferPolicy();
+    }
+    return true;
+  }
 
-        bool calcProbabilities(std::vector<A *> &players) {
+  bool calcProbabilities(std::vector<A *> &players) {
 //#pragma omp parallel
-            for (size_t j = 0; j < players.size(); ++j) {
-                players[j]->inferPolicy();
-            }
-            return true;
-        }
+    for (size_t j = 0; j < players.size(); ++j) {
+      players[j]->inferPolicy();
+    }
+    return true;
+  }
 
-        bool resetEpisode(std::vector<A> &players) {
-            for (auto player : players) {
-                player.resetTrajectory();
-            }
-            return true;
-        }
+  bool resetEpisode(std::vector<A> &players) {
+    for (auto player : players) {
+      player.resetTrajectory();
+    }
+    return true;
+  }
 
-        bool resetEpisode(std::vector<A *> &players) {
-            for (auto player : players) {
-                player->resetTrajectory();
-            }
-            return true;
-        }
+  bool resetEpisode(std::vector<A *> &players) {
+    for (auto player : players) {
+      player->resetTrajectory();
+    }
+    return true;
+  }
 
-        double playersPayoff(std::vector<A> &players) {
-            double total = 0;
-            for (auto &player : players) {
-                total += double(player.payoff());
-            }
-            return total;
-        }
+  double playersPayoff(std::vector<A> &players) {
+    double total = 0;
+    for (auto &player : players) {
+      total += double(player.payoff());
+    }
+    return total;
+  }
 
-        double playersPayoff(std::vector<A *> &players) {
-            double total = 0;
-            for (auto &player : players) {
-                total += player->payoff();
-            }
-            return total;
-        }
+  double playersPayoff(std::vector<A *> &players) {
+    double total = 0;
+    for (auto &player : players) {
+      total += player->payoff();
+    }
+    return total;
+  }
 
-        void setPayoffs(std::vector<A> &players, unsigned int value) {
-            for (auto &player: players) {
-                player.set_payoff(value);
-            }
-        }
+  void setPayoffs(std::vector<A> &players, unsigned int value) {
+    for (auto &player: players) {
+      player.set_payoff(value);
+    }
+  }
 
-        void setPayoffs(std::vector<A *> &players, unsigned int value) {
-            for (auto &player: players) {
-                player->set_payoff(value);
-            }
-        }
+  void setPayoffs(std::vector<A *> &players, unsigned int value) {
+    for (auto &player: players) {
+      player->set_payoff(value);
+    }
+  }
 
-        FlattenState& flatten() { return _flatten; }
+  FlattenState &flatten() { return _flatten; }
 
-    private:
-        FlattenState _flatten;
-        EGTTools::RL::Factors _state;
-        // Random generators
-        std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
-    };
+ private:
+  FlattenState _flatten;
+  EGTTools::RL::Factors _state;
+  // Random generators
+  std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+};
 
-    template<typename A>
-    class CRDConditional<A, void> {
+template<typename A>
+class CRDConditional<A, void> {
 
-    public:
-        explicit CRDConditional(FlattenState  flatten) : _flatten(std::move(flatten)) {
-            _state = EGTTools::RL::Factors(2);
-        }
+ public:
+  explicit CRDConditional(FlattenState flatten) : _flatten(std::move(flatten)) {
+    _state = EGTTools::RL::Factors(2);
+  }
 
-        /**
-         * @brief Model of the Collective-Risk dillemma game.
-         *
-         * This game constitutes an MDP.
-         *
-         * This function plays the game for a number of rounds
-         *
-         * @param players
-         * @param actions
-         * @param rounds
-         * @return std::pair (donations, rounds)
-         */
-        std::pair<double, unsigned>
-        playGame(std::vector<A> &players, std::vector<size_t> &actions, size_t rounds) {
-            double total = 0.0, partial = 0.0;
-            for (auto &player : players) {
-                player.resetPayoff();
-            }
-            for (size_t i = 0; i < rounds; ++i) {
-                _state[0] = i, _state[1] = static_cast<size_t>(partial);
-                partial = 0.0;
-                for (auto a : players) {
-                    unsigned idx = a.selectAction(i, _flatten.toIndex(_state));
-                    a.decrease(actions[idx]);
-                    partial += actions[idx];
-                }
-                total += partial;
-            }
-            return std::make_pair(total, rounds);
-        }
+  /**
+   * @brief Model of the Collective-Risk dillemma game.
+   *
+   * This game constitutes an MDP.
+   *
+   * This function plays the game for a number of rounds
+   *
+   * @param players
+   * @param actions
+   * @param rounds
+   * @return std::pair (donations, rounds)
+   */
+  std::pair<double, unsigned>
+  playGame(std::vector<A> &players, std::vector<size_t> &actions, size_t rounds) {
+    double total = 0.0, partial = 0.0;
+    for (auto &player : players) {
+      player.resetPayoff();
+    }
+    for (size_t i = 0; i < rounds; ++i) {
+      _state[0] = i, _state[1] = static_cast<size_t>(partial);
+      partial = 0.0;
+      for (auto a : players) {
+        unsigned idx = a.selectAction(i, _flatten.toIndex(_state));
+        a.decrease(actions[idx]);
+        partial += actions[idx];
+      }
+      total += partial;
+    }
+    return std::make_pair(total, rounds);
+  }
 
-        std::pair<double, unsigned>
-        playGame(std::vector<A *> &players, std::vector<size_t> &actions, size_t rounds) {
-            double total = 0.0, partial = 0.0;
-            for (auto &player : players) {
-                player->resetPayoff();
-            }
-            for (size_t i = 0; i < rounds; ++i) {
-                _state[0] = i, _state[1] = static_cast<size_t>(partial);
-                partial = 0.0;
-                for (auto &a : players) {
-                    unsigned idx = a->selectAction(i, _flatten.toIndex(_state));
-                    a->decrease(actions[idx]);
-                    partial += actions[idx];
-                }
-                total += partial;
-            }
-            return std::make_pair(total, rounds);
-        }
+  std::pair<double, unsigned>
+  playGame(std::vector<A *> &players, std::vector<size_t> &actions, size_t rounds) {
+    double total = 0.0, partial = 0.0;
+    for (auto &player : players) {
+      player->resetPayoff();
+    }
+    for (size_t i = 0; i < rounds; ++i) {
+      _state[0] = i, _state[1] = static_cast<size_t>(partial);
+      partial = 0.0;
+      for (auto &a : players) {
+        unsigned idx = a->selectAction(i, _flatten.toIndex(_state));
+        a->decrease(actions[idx]);
+        partial += actions[idx];
+      }
+      total += partial;
+    }
+    return std::make_pair(total, rounds);
+  }
 
-        bool reinforcePath(std::vector<A> &players) {
-            for (auto &player : players) {
-                player.reinforceTrajectory();
-            }
-            return true;
-        }
+  bool reinforcePath(std::vector<A> &players) {
+    for (auto &player : players) {
+      player.reinforceTrajectory();
+    }
+    return true;
+  }
 
-        bool reinforcePath(std::vector<A *> &players) {
-            for (auto &player : players) {
-                player->reinforceTrajectory();
-            }
-            return true;
-        }
+  bool reinforcePath(std::vector<A *> &players) {
+    for (auto &player : players) {
+      player->reinforceTrajectory();
+    }
+    return true;
+  }
 
-        bool printGroup(std::vector<A> &players) {
-            for (auto &player : players) {
-                std::cout << player << std::endl;
-            }
-            return true;
-        }
+  bool printGroup(std::vector<A> &players) {
+    for (auto &player : players) {
+      std::cout << player << std::endl;
+    }
+    return true;
+  }
 
-        bool printGroup(std::vector<A *> &players) {
-            for (auto &player : players) {
-                std::cout << *player << std::endl;
-            }
-            return true;
-        }
+  bool printGroup(std::vector<A *> &players) {
+    for (auto &player : players) {
+      std::cout << *player << std::endl;
+    }
+    return true;
+  }
 
-        bool calcProbabilities(std::vector<A> &players) {
-            for (auto &player : players) {
-                player.inferPolicy();
-            }
-            return true;
-        }
+  bool calcProbabilities(std::vector<A> &players) {
+    for (auto &player : players) {
+      player.inferPolicy();
+    }
+    return true;
+  }
 
-        bool calcProbabilities(std::vector<A *> &players) {
-            for (auto &player : players) {
-                player->inferPolicy();
-            }
-            return true;
-        }
+  bool calcProbabilities(std::vector<A *> &players) {
+    for (auto &player : players) {
+      player->inferPolicy();
+    }
+    return true;
+  }
 
-        bool resetEpisode(std::vector<A> &players) {
-            for (auto player : players) {
-                player.resetTrajectory();
-            }
-            return true;
-        }
+  bool resetEpisode(std::vector<A> &players) {
+    for (auto player : players) {
+      player.resetTrajectory();
+    }
+    return true;
+  }
 
-        bool resetEpisode(std::vector<A *> &players) {
-            for (auto player : players) {
-                player->resetTrajectory();
-            }
-            return true;
-        }
+  bool resetEpisode(std::vector<A *> &players) {
+    for (auto player : players) {
+      player->resetTrajectory();
+    }
+    return true;
+  }
 
-        double playersPayoff(std::vector<A> &players) {
-            double total = 0;
-            for (auto &player : players) {
-                total += double(player.payoff());
-            }
-            return total;
-        }
+  double playersPayoff(std::vector<A> &players) {
+    double total = 0;
+    for (auto &player : players) {
+      total += double(player.payoff());
+    }
+    return total;
+  }
 
-        double playersPayoff(std::vector<A *> &players) {
-            double total = 0;
-            for (auto &player : players) {
-                total += player->payoff();
-            }
-            return total;
-        }
+  double playersPayoff(std::vector<A *> &players) {
+    double total = 0;
+    for (auto &player : players) {
+      total += player->payoff();
+    }
+    return total;
+  }
 
-        void setPayoffs(std::vector<A> &players, unsigned int value) {
-            for (auto &player: players) {
-                player.set_payoff(value);
-            }
-        }
+  void setPayoffs(std::vector<A> &players, unsigned int value) {
+    for (auto &player: players) {
+      player.set_payoff(value);
+    }
+  }
 
-        void setPayoffs(std::vector<A *> &players, unsigned int value) {
-            for (auto &player: players) {
-                player->set_payoff(value);
-            }
-        }
+  void setPayoffs(std::vector<A *> &players, unsigned int value) {
+    for (auto &player: players) {
+      player->set_payoff(value);
+    }
+  }
 
-        FlattenState& flatten() { return _flatten; }
+  FlattenState &flatten() { return _flatten; }
 
-    private:
-        FlattenState _flatten;
-        EGTTools::RL::Factors _state;
-        // Random generators
-        std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
-    };
+ private:
+  FlattenState _flatten;
+  EGTTools::RL::Factors _state;
+  // Random generators
+  std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+};
 
-    template<typename R>
-    class CRDConditional<PopContainer, R> {
+template<typename R>
+class CRDConditional<PopContainer, R> {
 
-    public:
-        explicit CRDConditional(FlattenState  flatten) : _flatten(std::move(flatten)) {
-            _state = EGTTools::RL::Factors(2);
-        }
+ public:
+  explicit CRDConditional(FlattenState flatten) : _flatten(std::move(flatten)) {
+    _state = EGTTools::RL::Factors(2);
+  }
 
-        /**
-         * @brief Model of the Collective-Risk dillemma game.
-         *
-         * This game constitutes an MDP.
-         *
-         * This function plays the game for a number of rounds
-         *
-         * @param players
-         * @param actions
-         * @param min_rounds
-         * @return std::tuple (donations, rounds)
-         */
-        std::pair<double, size_t>
-        playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t min_rounds, R &gen_round) {
-            auto final_round = gen_round.calculateEnd(min_rounds, _mt);
+  /**
+   * @brief Model of the Collective-Risk dillemma game.
+   *
+   * This game constitutes an MDP.
+   *
+   * This function plays the game for a number of rounds
+   *
+   * @param players
+   * @param actions
+   * @param min_rounds
+   * @return std::tuple (donations, rounds)
+   */
+  std::pair<double, size_t>
+  playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t min_rounds, R &gen_round) {
+    auto final_round = gen_round.calculateEnd(min_rounds, _mt);
 
-            double total = 0.0, partial = 0.0;
-            size_t action, idx;
-            for (auto &player : players) {
-                player->resetPayoff();
-            }
-            for (size_t i = 0; i < final_round; i++) {
-                _state[0] = i, _state[1] = static_cast<size_t>(partial);
-                idx = _flatten.toIndex(_state);
-                partial = 0.0;
-                for (auto& player : players) {
-                    action = player->selectAction(i, idx);
+    double total = 0.0, partial = 0.0;
+    size_t action, idx;
+    for (auto &player : players) {
+      player->resetPayoff();
+    }
+    for (size_t i = 0; i < final_round; i++) {
+      _state[0] = i, _state[1] = static_cast<size_t>(partial);
+      idx = _flatten.toIndex(_state);
+      partial = 0.0;
+      for (auto &player : players) {
+        action = player->selectAction(i, idx);
 //                    player->decrease(actions[action]);
-                    if (!player->decrease(actions[action])) {
-                        // Select the next best action
-                        if (action > 1) {
-                            for (size_t n=0; n < action; ++n) {
-                                if (player->decrease(actions[action - n - 1])) {
-                                    action = action - n - 1;
-                                    break;
-                                }
-                            }
-                        }
-                        player->set_trajectory_round(i, action);
-                    }
-                    partial += actions[action];
-                }
-                total += partial;
+        if (!player->decrease(actions[action])) {
+          // Select the next best action
+          if (action > 1) {
+            for (size_t n = 0; n < action; ++n) {
+              if (player->decrease(actions[action - n - 1])) {
+                action = action - n - 1;
+                break;
+              }
             }
-            return std::make_pair(total, final_round);
+          }
+          player->set_trajectory_round(i, action);
         }
+        partial += actions[action];
+      }
+      total += partial;
+    }
+    return std::make_pair(total, final_round);
+  }
 
-        bool reinforcePath(PopContainer &players) {
-            for (auto& player : players)
-                player->reinforceTrajectory();
-            return true;
-        }
+  bool reinforcePath(PopContainer &players) {
+    for (auto &player : players)
+      player->reinforceTrajectory();
+    return true;
+  }
 
-        bool reinforcePath(PopContainer &players, size_t final_round) {
-            for (auto& player : players)
-                player->reinforceTrajectory(final_round);
-            return true;
-        }
+  bool reinforcePath(PopContainer &players, size_t final_round) {
+    for (auto &player : players)
+      player->reinforceTrajectory(final_round);
+    return true;
+  }
 
-        bool printGroup(PopContainer &players) {
-            for (auto &player : players) {
-                std::cout << *player << std::endl;
-            }
-            return true;
-        }
+  bool printGroup(PopContainer &players) {
+    for (auto &player : players) {
+      std::cout << *player << std::endl;
+    }
+    return true;
+  }
 
-        bool calcProbabilities(PopContainer &players) {
-            for (auto& player : players)
-                player->inferPolicy();
-            return true;
-        }
+  bool calcProbabilities(PopContainer &players) {
+    for (auto &player : players)
+      player->inferPolicy();
+    return true;
+  }
 
-        bool resetEpisode(PopContainer &players) {
-            for (auto &player : players) {
-                player->resetTrajectory();
-            }
-            return true;
-        }
+  bool resetEpisode(PopContainer &players) {
+    for (auto &player : players) {
+      player->resetTrajectory();
+    }
+    return true;
+  }
 
-        double playersPayoff(PopContainer &players) {
-            double total = 0;
-            for (auto& player : players)
-                total += player->payoff();
+  double playersPayoff(PopContainer &players) {
+    double total = 0;
+    for (auto &player : players)
+      total += player->payoff();
 
-            return total;
-        }
+    return total;
+  }
 
-        void setPayoffs(PopContainer &players, unsigned int value) {
-            for (auto &player: players) {
-                player->set_payoff(value);
-            }
-        }
+  void setPayoffs(PopContainer &players, unsigned int value) {
+    for (auto &player: players) {
+      player->set_payoff(value);
+    }
+  }
 
-        double playersContribution(PopContainer &players) {
-            double total = 0;
-            for (auto& player : players)
-                total += player->endowment() - player->payoff();
+  double playersContribution(PopContainer &players) {
+    double total = 0;
+    for (auto &player : players)
+      total += player->endowment() - player->payoff();
 
-            return total;
-        }
+    return total;
+  }
 
-        FlattenState& flatten() { return _flatten; }
+  FlattenState &flatten() { return _flatten; }
 
-    private:
-        FlattenState _flatten;
-        EGTTools::RL::Factors _state;
-        // Random generators
-        std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
-    };
+ private:
+  FlattenState _flatten;
+  EGTTools::RL::Factors _state;
+  // Random generators
+  std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+};
 
-    template<>
-    class CRDConditional<PopContainer, void> {
+template<>
+class CRDConditional<PopContainer, void> {
 
-    public:
+ public:
 
-        explicit CRDConditional(FlattenState  flatten) : _flatten(std::move(flatten)) {
-            _state = EGTTools::RL::Factors(2);
-        }
+  explicit CRDConditional(FlattenState flatten) : _flatten(std::move(flatten)) {
+    _state = EGTTools::RL::Factors(2);
+  }
 
-        /**
-         * @brief Model of the Collective-Risk dillemma game.
-         *
-         * This game constitutes an MDP.
-         *
-         * This function plays the game for a number of rounds
-         *
-         * @param players
-         * @param actions
-         * @param rounds
-         * @return std::pair (donations, rounds)
-         */
-        std::pair<double, size_t>
-        playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds) {
+  /**
+   * @brief Model of the Collective-Risk dilemma game.
+   *
+   * This game constitutes an MDP.
+   *
+   * This function plays the game for a number of rounds
+   *
+   * @param players
+   * @param actions
+   * @param rounds
+   * @return std::pair (donations, rounds)
+   */
+  std::pair<double, size_t>
+  playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds) {
 
-            double total = 0.0, partial = 0.0;
-            for (auto &player : players) {
-                player->resetPayoff();
-            }
-            for (size_t i = 0; i < rounds; ++i) {
-                _state[0] = i, _state[1] = static_cast<size_t>(partial);
-                partial = 0.0;
-                for (auto &a : players) {
-                    unsigned idx = a->selectAction(i, _flatten.toIndex(_state));
-                    a->decrease(actions[idx]);
-                    partial += actions[idx];
-                }
-                total += partial;
-            }
-            return std::make_pair(total, rounds);
-        }
+    double total = 0.0, partial = 0.0;
+    for (auto &player : players) {
+      player->resetPayoff();
+    }
+    for (size_t i = 0; i < rounds; ++i) {
+      _state[0] = i, _state[1] = static_cast<size_t>(partial);
+      partial = 0.0;
+      for (auto &a : players) {
+        unsigned idx = a->selectAction(i, _flatten.toIndex(_state));
+        a->decrease(actions[idx]);
+        partial += actions[idx];
+      }
+      total += partial;
+    }
+    return std::make_pair(total, rounds);
+  }
 
-        bool reinforcePath(PopContainer &players) {
-            for (auto& player : players)
-                player->reinforceTrajectory();
-            return true;
-        }
+  bool reinforcePath(PopContainer &players) {
+    for (auto &player : players)
+      player->reinforceTrajectory();
+    return true;
+  }
 
-        bool printGroup(PopContainer &players) {
-            for (auto &player : players) {
-                std::cout << *player << std::endl;
-            }
-            return true;
-        }
+  bool printGroup(PopContainer &players) {
+    for (auto &player : players) {
+      std::cout << *player << std::endl;
+    }
+    return true;
+  }
 
-        bool calcProbabilities(PopContainer &players) {
-            for (auto& player : players)
-                player->inferPolicy();
-            return true;
-        }
+  bool calcProbabilities(PopContainer &players) {
+    for (auto &player : players)
+      player->inferPolicy();
+    return true;
+  }
 
-        bool resetEpisode(PopContainer &players) {
-            for (auto &player : players) {
-                player->resetTrajectory();
-            }
-            return true;
-        }
+  bool resetEpisode(PopContainer &players) {
+    for (auto &player : players) {
+      player->resetTrajectory();
+    }
+    return true;
+  }
 
-        double playersPayoff(PopContainer &players) {
-            double total = 0;
-            for (auto& player : players)
-                total += player->payoff();
+  double playersPayoff(PopContainer &players) {
+    double total = 0;
+    for (auto &player : players)
+      total += player->payoff();
 
-            return total;
-        }
+    return total;
+  }
 
-        void setPayoffs(PopContainer &players, unsigned int value) {
-            for (auto &player: players) {
-                player->set_payoff(value);
-            }
-        }
+  void setPayoffs(PopContainer &players, unsigned int value) {
+    for (auto &player: players) {
+      player->set_payoff(value);
+    }
+  }
 
-        double playersContribution(PopContainer &players) {
-            double total = 0;
-            for (auto& player : players)
-                total += player->endowment() - player->payoff();
+  double playersContribution(PopContainer &players) {
+    double total = 0;
+    for (auto &player : players)
+      total += player->endowment() - player->payoff();
 
-            return total;
-        }
+    return total;
+  }
 
-        FlattenState& flatten() { return _flatten; }
+  FlattenState &flatten() { return _flatten; }
 
-    private:
-        FlattenState _flatten;
-        EGTTools::RL::Factors _state;
-        // Random generators
-        std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
-    };
+ private:
+  FlattenState _flatten;
+  EGTTools::RL::Factors _state;
+  // Random generators
+  std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
+};
 
 }
-
 
 #endif //DYRWIN_RL_CRDGAME_H

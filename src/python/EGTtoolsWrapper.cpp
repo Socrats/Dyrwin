@@ -724,7 +724,17 @@ PYBIND11_MODULE(EGTtools, m) {
            static_cast<EGTTools::RL::Factors (RL::FlattenState::*)(size_t)>( &RL::FlattenState::toFactors),
            "converts an state index into a tuple (vector)", py::arg("index"))
       .def("to_index", &RL::FlattenState::toIndex,
-           "converts a vector (tuple) multi-dimensional state into a scalar index.", py::arg("state"));
+           "converts a vector (tuple) multi-dimensional state into a scalar index.", py::arg("state"))
+      .def_readwrite("space", &EGTTools::RL::FlattenState::space,
+                     "List with as many elements as dimensions of "
+                     "the sate-space. Each element indicates the size "
+                     "of the dimension.")
+      .def_readwrite("factored_space_size", &EGTTools::RL::FlattenState::factor_space,
+                     "size of the factored/flattened state-space.")
+      .def("__repr__",
+           [](const EGTTools::RL::FlattenState &a) {
+             return "<EGTtools.RL.FlattenState size '" + std::to_string(a.factor_space) + "'>";
+           });
 
   py::class_<RL::CRDSim>(mRL, "CRDSim")
       .def(py::init<size_t, size_t, size_t, size_t, size_t, double, double,

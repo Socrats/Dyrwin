@@ -981,23 +981,23 @@ class CRDSim {
 
   // Getters
 
-  size_t nb_games() const;
+  [[nodiscard]] size_t nb_games() const;
 
-  size_t nb_episodes() const;
+  [[nodiscard]] size_t nb_episodes() const;
 
-  size_t nb_rounds() const;
+  [[nodiscard]] size_t nb_rounds() const;
 
-  size_t nb_actions() const;
+  [[nodiscard]] size_t nb_actions() const;
 
-  double endowment() const;
+  [[nodiscard]] double endowment() const;
 
-  double risk() const;
+  [[nodiscard]] double risk() const;
 
-  double threshold() const;
+  [[nodiscard]] double threshold() const;
 
-  const ActionSpace &available_actions() const;
+  [[nodiscard]] const ActionSpace &available_actions() const;
 
-  const std::string &agent_type() const;
+  [[nodiscard]] const std::string &agent_type() const;
 
   // Setters
 
