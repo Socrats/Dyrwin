@@ -20,19 +20,19 @@ class AbstractRLAlgorithm {
   virtual void resetTrajectory() = 0;
   virtual bool inferPolicy() = 0;
   virtual size_t selectAction(size_t state) = 0;
-  virtual void decreasePayoff(double value) = 0;
+  virtual bool decreasePayoff(double value) = 0;
   virtual void increasePayoff(double value) = 0;
   virtual void reset() = 0;
 
   // getters
-  virtual std::string toString() const = 0;
-  virtual std::string type() const = 0;
-  virtual size_t nb_states() const = 0;
-  virtual size_t nb_actions() const = 0;
-  virtual double payoff() const = 0;
-  virtual const VectorXui &trajectoryStates() const = 0;
-  virtual const VectorXui &trajectoryActions() const = 0;
-  virtual const Matrix2D &policy() const = 0;
+  [[nodiscard]] virtual std::string toString() const = 0;
+  [[nodiscard]] virtual std::string type() const = 0;
+  [[nodiscard]] virtual size_t nb_states() const = 0;
+  [[nodiscard]] virtual size_t nb_actions() const = 0;
+  [[nodiscard]] virtual double payoff() const = 0;
+  [[nodiscard]] virtual const VectorXui &trajectoryStates() const = 0;
+  [[nodiscard]] virtual const VectorXui &trajectoryActions() const = 0;
+  [[nodiscard]] virtual const Matrix2D &policy() const = 0;
   // setters
   virtual void set_nb_states(size_t nb_states) = 0;
   virtual void set_nb_actions(size_t nb_actions) = 0;

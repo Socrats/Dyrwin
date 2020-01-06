@@ -191,7 +191,12 @@ void Agent::set_nb_states(size_t nb_states) {
             Matrix2D::Constant(nb_states, _nb_actions, 1.0 / static_cast<double>(_nb_actions)));
 }
 
-void Agent::set_nb_actions(size_t nb_actions) { _nb_actions = nb_actions; }
+void Agent::set_nb_actions(size_t nb_actions) {
+  _nb_actions = nb_actions;
+  _q_values.conservativeResizeLike(Matrix2D::Random(_nb_states, _nb_actions));
+  _policy.conservativeResizeLike(
+      Matrix2D::Constant(_nb_states, _nb_actions, 1.0 / static_cast<double>(_nb_actions)));
+}
 
 void Agent::set_episode_length(size_t episode_length) { _episode_length = episode_length; }
 

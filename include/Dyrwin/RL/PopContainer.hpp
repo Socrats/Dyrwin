@@ -16,46 +16,46 @@
 #include <Dyrwin/RL/Utils.h>
 
 namespace EGTTools::RL {
-    class PopContainer {
-    private:
-        RL::Population _agents;
-    public:
-        PopContainer() = default;
+class PopContainer {
+ private:
+  RL::Population _agents;
+ public:
+  PopContainer() = default;
 
-        PopContainer(const std::string &agent_type, size_t nb_agents, size_t nb_states, size_t nb_actions,
-                     size_t episode_length, double endowment, std::vector<double> args = {});
+  PopContainer(const std::string &agent_type, size_t nb_agents, size_t nb_states, size_t nb_actions,
+               size_t episode_length, double endowment, std::vector<double> args = {});
 
-        Agent &operator[](size_t index);
+  Agent &operator[](size_t index);
 
-        const Agent &operator[](size_t index) const;
+  const Agent &operator[](size_t index) const;
 
-        Individual &operator()(size_t index);
+  Individual &operator()(size_t index);
 
-        const Individual &operator()(size_t index) const;
+  const Individual &operator()(size_t index) const;
 
-        typedef RL::Population::iterator iterator;
-        typedef RL::Population::const_iterator const_iterator;
+  typedef RL::Population::iterator iterator;
+  typedef RL::Population::const_iterator const_iterator;
 
-        iterator begin();
+  iterator begin();
 
-        iterator end();
+  iterator end();
 
-        const_iterator begin() const;
+  const_iterator begin() const;
 
-        const_iterator end() const;
+  const_iterator end() const;
 
-        size_t size() const;
+  size_t size() const;
 
-        void clear();
+  void clear();
 
-        void push_back(const RL::Individual& new_individual);
+  void push_back(const RL::Individual &new_individual);
 
-        void reset();
+  void reset();
 
-        std::string toString() const;
+  std::string toString() const;
 
-        friend std::ostream &operator<<(std::ostream &o, PopContainer &r);
-    };
+  friend std::ostream &operator<<(std::ostream &o, PopContainer &r);
+};
 }
 
 #endif //DYRWIN_RL_POPCONTAINER_HPP

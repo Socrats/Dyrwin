@@ -85,10 +85,22 @@ class QLearning : public AbstractRLAlgorithm {
   size_t selectAction(size_t state) override;
 
   /**
+   * @brief Samples an action from the policy for the give \p state.
+   *
+   * This method draws a random action from the action set using the probabilities
+   * defined in the strategy profile (policy) for the given \p state.
+   *
+   * @param state : current state of the environment
+   * @param current_round : current round at the game/episode
+   * @return a size_t indicating the selected action
+   */
+  size_t selectAction(size_t current_round, size_t state);
+
+  /**
    * @brief Decreases the payoff (reward) by \p value.
    * @param value : amount to decrease the payoff
    */
-  void decreasePayoff(double value) override;
+  bool decreasePayoff(double value) override;
 
   /**
    * @brief Increases the payoff (reward) by \p value.
@@ -118,20 +130,25 @@ class QLearning : public AbstractRLAlgorithm {
   [[nodiscard]] std::string type() const override;
   [[nodiscard]] size_t nb_states() const override;
   [[nodiscard]] size_t nb_actions() const override;
+  [[nodiscard]] double endowment() const;
   [[nodiscard]] double payoff() const override;
   [[nodiscard]] double alpha() const;
   [[nodiscard]] double lambda() const;
   [[nodiscard]] double temperature() const;
-  [[nodiscard]] VectorXui &trajectoryStates() const override;
-  [[nodiscard]] VectorXui &trajectoryActions() const override;
-  [[nodiscard]] Matrix2D &policy() const override;
+  [[nodiscard]] const VectorXui &trajectoryStates() const override;
+  [[nodiscard]] const VectorXui &trajectoryActions() const override;
+  [[nodiscard]] const Matrix2D &policy() const override;
+  [[nodiscard]] const Matrix2D &qValues() const;
 
   // Setters
   void set_nb_states(size_t nb_states) override;
   void set_nb_actions(size_t nb_actions) override;
   void set_payoff(double payoff) override;
+  void set_endowment(double endowment);
   void reset_payoff() override;
   void set_policy(const Eigen::Ref<const Matrix2D> &policy) override;
+  void set_q_values(const Eigen::Ref<const Matrix2D> &q_values);
+  void set_trajectory_round(size_t round, size_t action);
   void setAlpha(double alpha);
   void setLambda(double lambda);
   void setTemperature(double temperature);
@@ -151,10 +168,12 @@ class QLearning : public AbstractRLAlgorithm {
   // Q-Learning dependant variables
   double _alpha; // learning rate
   double _lambda; // forgetting factor (or discount rate)
-  double _temperature; // temperature of the boltzman distribution
+  double _temperature; // temperature of the boltzmann distribution
 
   Matrix2D _policy; // matrix where the strategy profile is stored
   Matrix2D _q_values; // matrix where the q-values are stored
+  Matrix2D _batch_updates; // Stores the sum of the temporal difference updates
+                              // during the batch of size K
   Matrix2D _batch_counts; // K(s, a) counts the number of times that
                           // each state-action pair was visited in the current batch
   VectorXui _trajectory_states, _trajectory_actions; // variable used to store trajectories
