@@ -261,7 +261,7 @@ class CRDSim {
                  const std::vector<double> &args = {});
 
   DataTypes::CRDData
-  runWellMixedSyncTU(size_t pop_size, size_t group_size, size_t nb_generations,
+  runWellMixedSyncTU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
                      double threshold, double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds,
                      double p,
                      const std::string &agent_type,
@@ -312,7 +312,7 @@ class CRDSim {
                  const std::vector<double> &args = {});
 
   Matrix2D
-  runWellMixedSyncTU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
+  runWellMixedSyncTU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
                      double threshold,
                      double risk, size_t transient, size_t min_rounds, size_t mean_rounds, size_t max_rounds,
                      double p,
