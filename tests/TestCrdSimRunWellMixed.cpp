@@ -2,12 +2,9 @@
 // Created by Elias Fernandez on 2019-02-10.
 //
 #include <iostream>
-#include <iomanip>
-#include <string>
 #include <map>
 #include <random>
 #include <Dyrwin/RL/CrdSim.hpp>
-
 
 using namespace std;
 using namespace EGTTools;
@@ -20,11 +17,11 @@ int main() {
     size_t attempts = 1;
     size_t games = 1000;
     double cataclysm = 0.9;
-    double alpha = 0.03;
+    double alpha = 0.09;
     double temperature = 5;
     std::string agent_type = "BatchQLearning";
 
-    double endowment = 2 * rounds;
+    auto endowment = static_cast<double>(2 * rounds);
     auto threshold = static_cast<double>(rounds * group_size);
     EGTTools::RL::ActionSpace available_actions = EGTTools::RL::ActionSpace(actions);
     for (size_t i = 0; i < actions; ++i) available_actions[i] = i;
@@ -36,7 +33,7 @@ int main() {
                                  cataclysm, endowment, threshold,
                                  available_actions, agent_type,
                                  args);
-        EGTTools::RL::DataTypes::CRDData results = sim.runWellMixed(100, group_size, 1000, 200, threshold, cataclysm,
+        EGTTools::RL::DataTypes::CRDData results = sim.runWellMixedSync(100, group_size, 100, 10, threshold, cataclysm,
                                                                     agent_type, args);
         std::cout << "success: " << results.eta << std::endl;
         std::cout << "avg_contrib: " << results.avg_contribution << std::endl;

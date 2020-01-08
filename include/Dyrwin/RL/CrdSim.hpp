@@ -17,6 +17,7 @@
 #include <Dyrwin/RL/PopContainer.hpp>
 #include <Dyrwin/RL/Utils.h>
 #include <Dyrwin/RL/Data.hpp>
+#include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/OpenMPUtils.hpp>
 
 namespace EGTTools::RL {
@@ -562,6 +563,74 @@ class CRDSim {
                                    size_t nb_games, double threshold, double risk, size_t transient,
                                    const std::string &agent_type,
                                    const std::vector<double> &args = {});
+
+  /**
+     * @brief Runs simulation with a well mixed population with synchronous updates
+     * and returns a data container with the population.
+     *
+     * In the simulations performed here, agents of a population of size Z = _group_size * nb_groups
+     * are selected randomly from the population to form a group of size _group_size and play a game.
+     * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
+     *
+     * The @param args is a vector that should contain the arguments specific of the agent type of
+     * the population.
+     *
+     * This simulation uses agents whose state consists of a tuple \f$(t, d^{t-1}_{-i})\f$,
+     * where t is the current round of the game, and \f$d^{t-1}_{-i}\f$ is the sum of donations
+     * of the group, without the focal player i, at round t-1. At \f$t=0\f$, \f$d^{t-1}_{-i}\f=0$.
+     * In this fashion, agent are able to explore strategy profiles that are conditional to
+     * the other members of the group.
+     *
+     * @param pop_size : size of the population
+     * @param group_size : group size
+     * @param nb_generations : number of generations per simulation
+     * @param nb_games : number of games per generation
+     * @param threshold : collective target
+     * @param risk : probability of loosing all endowment if the target isn't reached
+     * @param agent_type : string indicating which agent implementation to use
+     * @param args : vector of arguments to instantiate the agent_type of the population
+     * @return a data container that includes the group achievement, the average donations and the population
+     */
+  DataTypes::CRDData
+  runConditionalWellMixedSync(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                              double threshold,
+                              double risk, const std::string &agent_type,
+                              const std::vector<double> &args = {});
+
+  /**
+       * @brief Runs several simulations with a well mixed population and synchronous updates.
+       *
+       * In the simulations performed here, agents of a population of size Z = _group_size * nb_groups
+       * are selected randomly from the population to form a group of size _group_size and play a game.
+       * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
+       *
+       * The @param args is a vector that should contain the arguments specific of the agent type of
+       * the population.
+       *
+       * The simulation is repeated for @param nb_runs with independent populations.
+       *
+       * This simulation uses agents whose state consists of a tuple \f$(t, d^{t-1}_{-i})\f$,
+       * where t is the current round of the game, and \f$d^{t-1}_{-i}\f$ is the sum of donations
+       * of the group, without the focal player i, at round t-1. At \f$t=0\f$, \f$d^{t-1}_{-i}\f=0$.
+       * In this fashion, agent are able to explore strategy profiles that are conditional to
+       * the other members of the group.
+       *
+       * @param nb_runs : number of independent simulations
+       * @param pop_size : size of the population
+       * @param group_size : size of the group
+       * @param nb_generations : number of generations per simulation
+       * @param nb_games : number of games per generation
+       * @param threshold : collective target
+       * @param risk : probability of loosing all endowment if the target isn't reached
+       * @param transient : number of generations to take into account for calculating the average
+       * @param agent_type : string indicating whcoh agent implementation to use
+       * @param args : vector of arguments to instantiate the agent_type of the population
+       * @return Eigen 2D matrix with the average group achievement and avg. donations across independent runs.
+       */
+  Matrix2D runConditionalWellMixedSync(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
+                                       size_t nb_games, double threshold, double risk, size_t transient,
+                                       const std::string &agent_type,
+                                       const std::vector<double> &args = {});
 
   /**
        * @brief trains a well-mixed population in the CRD with Timing uncertainty
