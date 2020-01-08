@@ -713,8 +713,8 @@ EGTTools::RL::CRDSim::runWellMixedSyncTU(size_t pop_size, size_t group_size, siz
         reinforceOnePlayer(pool, success, threshold, risk, final_round, data.population(i), generator);
       }
     }
-    data.eta(generation) += static_cast<double>(success) / static_cast<double>(pop_size);
-    data.avg_contribution(generation) += avg_contribution / static_cast<double>(pop_size);
+    data.eta(generation) += static_cast<double>(success) / static_cast<double>(pop_size * nb_games);
+    data.avg_contribution(generation) += avg_contribution / static_cast<double>(pop_size * nb_games);
 
     game.calcProbabilities(data.population);
     game.resetEpisode(data.population);
