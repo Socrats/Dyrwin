@@ -726,6 +726,100 @@ class CRDSim {
                             const std::vector<double> &args = {});
 
   /**
+     * @brief trains a well-mixed population in the CRD with Timing uncertainty and synchronous updates.
+     *
+     * Here the number of rounds of the game is uncertain. The game will always take at least @param min_rounds
+     * and a maximum of @param max_rounds. After @param min_rounds, the game will end with probability @param p.
+     *
+     * If @param mean_rounds is != 0, @param p will be ignored, instead p = 1 / [(10 - min_rounds) + 1] so that
+     * the average of the geometric distribution that defines the final round is @param avg_rounds.
+     *
+     * In the simulations performed here, agents of a population of size Z = @param pop_size
+     * are selected randomly from the population to form a group of size @param group_size and play a game.
+     * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
+     *
+     * The @param args is a vector that should contain the arguments specific of the @param agent_type of
+     * the population.
+     *
+     * The results are transfered to a data container and returned.
+     *
+     * This simulation uses agents whose state consists of a tuple \f$(t, d^{t-1}_{-i})\f$,
+     * where t is the current round of the game, and \f$d^{t-1}_{-i}\f$ is the sum of donations
+     * of the group, without the focal player i, at round t-1. At \f$t=0\f$, \f$d^{t-1}_{-i}\f=0$.
+     * In this fashion, agent are able to explore strategy profiles that are conditional to
+     * the other members of the group.
+     *
+     * @param pop_size : size of the population
+     * @param group_size : group size
+     * @param nb_generations : total number of generations
+     * @param nb_games : number of games per generation
+     * @param threshold : collective target
+     * @param risk : risk of losing the remaining endowment if the target isn't reached
+     * @param min_rounds : minimum number of rounds
+     * @param mean_rounds : mean number of rounds, used for computing the random distribution
+     * @param max_rounds : maximum number of rounds
+     * @param agent_type : algorithm type of the agent
+     * @param args : arguments for the agent
+     * @return a data container
+     */
+  DataTypes::CRDData
+  runConditionalWellMixedTUSync(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                                double threshold,
+                                double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
+                                const std::string &agent_type,
+                                const std::vector<double> &args = {});
+
+  /**
+       * @brief trains a well-mixed population in the CRD with Timing uncertainty for multiple independent runs and
+       * synchronous updates.
+       *
+       * This simulations run the Collective Risk Game with timing uncertainty specified in [Domingos et al. 2019].
+       * Here the number of rounds of the game is uncertain. The game will always take at least @param min_rounds
+       * and a maximum of @param max_rounds. After @param min_rounds, the game will end with probability @param p.
+       *
+       * If @param mean_rounds is != 0, @param p will be ignored, instead p = 1 / [(10 - min_rounds) + 1] so that
+       * the average of the geometric distribution that defines the final round is @param avg_rounds.
+       *
+       * In the simulations performed here, agents of a population of size Z = @param pop_size
+       * are selected randomly from the population to form a group of size @param group_size and play a game.
+       * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
+       *
+       * This simulation uses agents whose state consists of a tuple \f$(t, d^{t-1}_{-i})\f$,
+       * where t is the current round of the game, and \f$d^{t-1}_{-i}\f$ is the sum of donations
+       * of the group, without the focal player i, at round t-1. At \f$t=0\f$, \f$d^{t-1}_{-i}\f=0$.
+       * In this fashion, agent are able to explore strategy profiles that are conditional to
+       * the other members of the group.
+       *
+       * The @param args is a vector that should contain the arguments specific of the @param agent_type of
+       * the population.
+       *
+       * This method returns a matrix with the average group achievement and contributions over the last
+       * \p transient generations of each independent simulation.
+       *
+       * @param nb_runs : number of independent runs
+       * @param pop_size : size of the population
+       * @param group_size : group size
+       * @param nb_generations : total number of generations
+       * @param nb_games : number of games per generation
+       * @param threshold : collective target
+       * @param risk : risk of losing the remaining endowment if the target isn't reached
+       * @param transient : number of generations to take into account for computing the average
+       * @param min_rounds : minimum number of rounds
+       * @param mean_rounds : mean number of rounds, used for computing the random distribution
+       * @param max_rounds : maximum number of rounds
+       * @param agent_type : algorithm type of the agent
+       * @param args : arguments for the agent
+       * @return the average group achievement and donation for each independent run
+       */
+  Matrix2D
+  runConditionalWellMixedTUSync(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
+                                size_t nb_games, double threshold,
+                                double risk, size_t transient,
+                                size_t min_rounds, size_t mean_rounds, size_t max_rounds, double p,
+                                const std::string &agent_type,
+                                const std::vector<double> &args = {});
+
+  /**
        * @brief Runs a simulation with threshold uncertainty and conditional agents.
        *
        * This simulations run the Collective Risk Game with threshold uncertainty.
@@ -800,6 +894,82 @@ class CRDSim {
                                              size_t transient,
                                              const std::string &agent_type,
                                              const std::vector<double> &args = {});
+
+  /**
+     * @brief Runs a simulation with threshold uncertainty and conditional agents with synchronous updates.
+     *
+     * This simulations run the Collective Risk Game with threshold uncertainty.
+     * Here the threshold is uncertain. The threshold of the game is a stochastic uniform
+     * variable in the range \f$(threshold - delta/2, threshold + delta/2)\f$ .
+     *
+     * This simulation uses agents whose state consists of a tuple \f$(t, d^{t-1}_{-i})\f$,
+     * where t is the current round of the game, and \f$d^{t-1}_{-i}\f$ is the sum of donations
+     * of the group, without the focal player i, at round t-1. At \f$t=0\f$, \f$d^{t-1}_{-i}\f=0$.
+     * In this fashion, agent are able to explore strategy profiles that are conditional to
+     * the other members of the group.
+     *
+     * In the simulations performed here, agents of a population of size Z = @param pop_size
+     * are selected randomly from the population to form a group of size @param group_size and play a game.
+     * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
+     *
+     * @param pop_size : size of the population
+     * @param group_size : group size
+     * @param nb_generations : number of training time-steps
+     * @param nb_games : number of games per time-step / generation
+     * @param threshold : target of the game
+     * @param risk : probability of loosing all endowment if the target isn't reached
+     * @param delta : variance / uncertainty of the threshold
+     * @param agent_type : string indicating the learning algorithm that the agents will use
+     * @param args : specific parameters for the learning algorithm
+     * @return a data container with the information of the simulation and a pointer to the population.
+     */
+  DataTypes::CRDData
+  runConditionalWellMixedThresholdUSync(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                                        size_t threshold, size_t delta, double risk,
+                                        const std::string &agent_type,
+                                        const std::vector<double> &args = {});
+
+  /**
+       * @brief Runs multiple simulations with threshold uncertainty and conditional agents with synchronous updates.
+       *
+       * This simulations run the Collective Risk Game with threshold uncertainty.
+       * Here the threshold is uncertain. The threshold of the game is a stochastic uniform
+       * variable in the range \f$(threshold - delta/2, threshold + delta/2)\f$ .
+       *
+       * This simulation uses agents whose state consists of a tuple \f$(t, d^{t-1}_{-i})\f$,
+       * where t is the current round of the game, and \f$d^{t-1}_{-i}\f$ is the sum of donations
+       * of the group, without the focal player i, at round t-1. At \f$t=0\f$, \f$d^{t-1}_{-i}\f=0$.
+       * In this fashion, agent are able to explore strategy profiles that are conditional to
+       * the other members of the group.
+       *
+       * In the simulations performed here, agents of a population of size Z = @param pop_size
+       * are selected randomly from the population to form a group of size @param group_size and play a game.
+       * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
+       *
+       * @param nb_runs : number of independent simulations
+       * @param pop_size : size of the population
+       * @param group_size : group size
+       * @param nb_generations : number of training time-steps
+       * @param nb_games : number of games per time-step / generation
+       * @param threshold : target of the game
+       * @param risk : probability of loosing all endowment if the target isn't reached
+       * @param delta : variance / uncertainty of the threshold
+       * @param agent_type : string indicating the learning algorithm that the agents will use
+       * @param args : specific parameters for the learning algorithm
+       * @return : a matrix indicating the averaged group achievement and agent contributions
+       *           over the last \p transient generations of each simulation
+       */
+  Matrix2D runConditionalWellMixedThresholdUSync(size_t nb_runs,
+                                                 size_t pop_size,
+                                                 size_t group_size,
+                                                 size_t nb_generations,
+                                                 size_t nb_games,
+                                                 size_t threshold,
+                                                 size_t delta,
+                                                 double risk,
+                                                 size_t transient,
+                                                 const std::string &agent_type,
+                                                 const std::vector<double> &args = {});
 
   /**
    * @brief Runs several independent simulations with both Timing uncertainty and Threshold uncertainty

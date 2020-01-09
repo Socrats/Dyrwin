@@ -865,7 +865,7 @@ PYBIND11_MODULE(EGTtools, m) {
            "Runs CRD simulations with unconditional agents and timing uncertainty in a well-mixed population with"
            "synchronous updates and each agent plays only once per generation.",
            py::arg("nb_runs"), py::arg("pop_size"), py::arg("group_size"),
-           py::arg("nb_generations"), py::arg("nb_games"),py::arg("threshold"),
+           py::arg("nb_generations"), py::arg("nb_games"), py::arg("threshold"),
            py::arg("risk"),
            py::arg("transient"),
            py::arg("min_rounds"), py::arg("mean_rounds"),
@@ -1004,6 +1004,29 @@ PYBIND11_MODULE(EGTtools, m) {
            py::arg("min_rounds"), py::arg("mean_rounds"),
            py::arg("max_rounds"), py::arg("p"),
            py::arg("agent_type"), py::arg("*agent_args"))
+      .def("runConditionalWellMixedTUSync",
+           static_cast<crdData (RL::CRDSim::*)(size_t, size_t, size_t, size_t, double, double, size_t,
+                                               size_t, size_t, double, const std::string &,
+                                               const std::vector<double> &)>(&RL::CRDSim::runConditionalWellMixedTUSync),
+           "Runs CRD simulations with unconditional agents and timing uncertainty in a well-mixed population.",
+           py::arg("pop_size"), py::arg("group_size"),
+           py::arg("nb_generations"), py::arg("nb_games"), py::arg("threshold"), py::arg("risk"),
+           py::arg("min_rounds"), py::arg("mean_rounds"),
+           py::arg("max_rounds"), py::arg("p"),
+           py::arg("agent_type"), py::arg("*agent_args"))
+      .def("runConditionalWellMixedTUSync",
+           static_cast<EGTTools::Matrix2D (RL::CRDSim::*)(size_t, size_t, size_t, size_t, size_t, double, double,
+                                                          size_t,
+                                                          size_t,
+                                                          size_t, size_t, double, const std::string &,
+                                                          const std::vector<double> &)>(&RL::CRDSim::runConditionalWellMixedTUSync),
+           "Runs CRD simulations with unconditional agents and timing uncertainty in a well-mixed population.",
+           py::arg("nb_runs"), py::arg("pop_size"), py::arg("group_size"),
+           py::arg("nb_generations"), py::arg("nb_games"), py::arg("threshold"), py::arg("risk"),
+           py::arg("transient"),
+           py::arg("min_rounds"), py::arg("mean_rounds"),
+           py::arg("max_rounds"), py::arg("p"),
+           py::arg("agent_type"), py::arg("*agent_args"))
       .def("runConditionalWellMixedThU", static_cast<crdData (RL::CRDSim::*)(size_t, size_t,
                                                                              size_t, size_t, size_t, size_t,
                                                                              double, const std::string &,
@@ -1022,6 +1045,32 @@ PYBIND11_MODULE(EGTtools, m) {
                                                                               double, size_t,
                                                                               const std::string &,
                                                                               const std::vector<double> &)>(&RL::CRDSim::runConditionalWellMixedThresholdU),
+           "Runs a simulation with a well mixed population with threshold uncertainty"
+           " returns the groups success and donations"
+           "during learning, as well as the final population.",
+           py::arg("nb_runs"), py::arg("pop_size"), py::arg("group_size"),
+           py::arg("nb_generations"), py::arg("nb_games"), py::arg("threshold"), py::arg("delta"),
+           py::arg("risk"), py::arg("transient"),
+           py::arg("agent_type"),
+           py::arg("*agent_args"))
+      .def("runConditionalWellMixedThUSync", static_cast<crdData (RL::CRDSim::*)(size_t, size_t,
+                                                                                 size_t, size_t, size_t, size_t,
+                                                                                 double, const std::string &,
+                                                                                 const std::vector<double> &)>(&RL::CRDSim::runConditionalWellMixedThresholdUSync),
+           "Runs a simulation with a well mixed population with threshold uncertainty"
+           " returns the groups success and donations"
+           "during learning, as well as the final population.",
+           py::arg("pop_size"), py::arg("group_size"),
+           py::arg("nb_generations"), py::arg("nb_games"), py::arg("threshold"), py::arg("delta"),
+           py::arg("risk"),
+           py::arg("agent_type"),
+           py::arg("*agent_args"))
+      .def("runConditionalWellMixedThUSync", static_cast<Matrix2D (RL::CRDSim::*)(size_t, size_t, size_t,
+                                                                                  size_t, size_t, size_t,
+                                                                                  size_t,
+                                                                                  double, size_t,
+                                                                                  const std::string &,
+                                                                                  const std::vector<double> &)>(&RL::CRDSim::runConditionalWellMixedThresholdUSync),
            "Runs a simulation with a well mixed population with threshold uncertainty"
            " returns the groups success and donations"
            "during learning, as well as the final population.",

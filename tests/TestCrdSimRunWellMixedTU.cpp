@@ -43,7 +43,7 @@ int main() {
                              cataclysm, endowment, threshold,
                              available_actions, agent_type,
                              args);
-    EGTTools::RL::DataTypes::CRDData results = sim.runWellMixedSyncTU(100, group_size, 1000, 10, threshold, cataclysm,
+    EGTTools::RL::DataTypes::CRDData results = sim.runWellMixedSyncTU(100, group_size, 10000, 10, threshold, cataclysm,
                                                                       min_rounds, mean_rounds, max_rounds, p,
                                                                       agent_type, args);
     std::cout << "success: " << results.eta << std::endl;
