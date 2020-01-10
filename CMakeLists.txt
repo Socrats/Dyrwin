@@ -83,9 +83,9 @@ message("")
 ##############################
 if (MAKE_ALL OR MAKE_APPS)
     # Work around for homebrew problem on mac
-    if(${APPLE})
+    if (${APPLE})
         set(Boost_NO_BOOST_CMAKE ON)
-    endif()
+    endif ()
     set(BOOST_VERSION_REQUIRED 1.62)
 endif ()
 set(EIGEN_VERSION_REQUIRED 3.3)
@@ -104,7 +104,12 @@ if (MAKE_ALL OR MAKE_APPS)
 endif ()
 
 find_package(Eigen3 ${EIGEN_VERSION_REQUIRED} REQUIRED)
-include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+if (EIGEN3_FOUND)
+    include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+    message(STATUS "Eigen found")
+else ()
+    message(FATAL_ERROR "Please point the environment variable EIGEN3_INCLUDE_DIR to the include directory of your Eigen3 installation.")
+endif ()
 
 include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
 
@@ -125,7 +130,7 @@ endif ()
 
 if (MAKE_TESTS)
     add_subdirectory(${PROJECT_SOURCE_DIR}/tests)
-endif()
+endif ()
 
 # Python bindings
 if (MAKE_PYTHON)

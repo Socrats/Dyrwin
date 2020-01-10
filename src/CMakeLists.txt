@@ -37,7 +37,9 @@ set_target_properties(EGTTools PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 # Fixing "ld: warning: direct access in function '...' from file '...' to global weak symbol '...' from file '...' means the weak symbol cannot
 # be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings."
 set_target_properties(EGTTools PROPERTIES C_VISIBILITY_PRESET hidden CXX_VISIBILITY_PRESET hidden)
-target_link_libraries(EGTTools Eigen3::Eigen)
+# The new Eigen version does not required to be declared in target_link_libraries
+# previously target_link_libraries(EGTTools Eigen3::Eigen)
+target_link_libraries(EGTTools)
 if (OPENMP_FOUND)
     target_link_libraries(EGTTools OpenMP::OpenMP_CXX)
 endif ()
