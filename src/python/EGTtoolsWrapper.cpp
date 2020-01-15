@@ -40,7 +40,7 @@ using crdDataIslands = EGTTools::RL::DataTypes::CRDDataIslands;
 
 PYBIND11_MODULE(EGTtools, m) {
   m.doc() = R"pbdoc(
-        EGTtools: Efficient Evolutionary Game theory methods in c++ with python bindings.
+        EGTtools: Efficient methods for modeling and studying Social Dynamics and Game Theory.
         -----------------------
         .. currentmodule:: EGTtools
         .. autosummary::
@@ -56,7 +56,9 @@ PYBIND11_MODULE(EGTtools, m) {
       })
       .def("getSeed",
            &Random::SeedGenerator::getMainSeed, "seed",
-           "Returns current seed"
+           R"pbdoc(
+            Returns current seed
+           )pbdoc"
       )
       .def("seed", &Random::SeedGenerator::getMainSeed,
            "Set main seed");
@@ -1117,4 +1119,11 @@ PYBIND11_MODULE(EGTtools, m) {
       .def_property("available_actions", &RL::CRDSim::available_actions, &RL::CRDSim::set_available_actions,
                     py::return_value_policy::reference_internal)
       .def_property("agent_type", &RL::CRDSim::agent_type, &RL::CRDSim::set_agent_type);
+
+#ifdef VERSION_INFO
+  m.attr("__version__") = VERSION_INFO;
+#else
+  m.attr("__version__") = "dev0.10.0";
+#endif
+
 }
