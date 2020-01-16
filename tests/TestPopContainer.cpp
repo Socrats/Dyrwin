@@ -40,6 +40,7 @@ int main() {
   std::iota(pop_index.begin(), pop_index.end(), 0);
   for (size_t i = 0; i < group_size; ++i) {
     group.push_back(population(i));
+    assert(group(i)->payoff() == i);
     cout << group(i)->payoff() << endl;
   }
 
@@ -50,8 +51,11 @@ int main() {
   std::shuffle(pop_index.begin(), pop_index.end(), generator);
   for (size_t i = 0; i < group_size; ++i) {
     group(i) = population(pop_index[i]);
+    assert(group(i)->payoff() == pop_index[i]);
     cout << group(i)->payoff() << endl;
   }
+
+  cout << "\033[1;32m[SUCCESS] All tests pass\033[0m" << endl;
 
   return 0;
 }
