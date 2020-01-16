@@ -40,11 +40,11 @@ class PopContainer {
 
   iterator end();
 
-  const_iterator begin() const;
+  [[nodiscard]] const_iterator begin() const;
 
-  const_iterator end() const;
+  [[nodiscard]] const_iterator end() const;
 
-  size_t size() const;
+  [[nodiscard]] size_t size() const;
 
   void clear();
 
@@ -52,7 +52,7 @@ class PopContainer {
 
   void reset();
 
-  std::string toString() const;
+  [[nodiscard]] std::string toString() const;
 
   friend std::ostream &operator<<(std::ostream &o, PopContainer &r);
 };
