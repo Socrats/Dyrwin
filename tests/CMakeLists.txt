@@ -5,6 +5,9 @@ add_executable(testTU TestTimingUncertainty.cpp)
 set_target_properties(testTU PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(testTU EGTTools)
 
+add_executable(testThU TestThresholdUncertainty.cpp)
+set_target_properties(testThU PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
+
 add_executable(testCrdGame TestCrdGame.cpp)
 set_target_properties(testCrdGame PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(testCrdGame EGTTools)
@@ -22,6 +25,10 @@ target_link_libraries(testPM EGTTools)
 
 add_executable(testSP TestIntSampling.cpp)
 set_target_properties(testSP PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
+
+add_executable(testPopContainer TestPopContainer.cpp)
+set_target_properties(testPopContainer PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
+target_link_libraries(testPopContainer EGTTools)
 
 add_executable(testCrdSim TestCrdSimRunWellMixed.cpp)
 set_target_properties(testCrdSim PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
