@@ -13,26 +13,30 @@ ESARSA::ESARSA(size_t nb_states, size_t nb_actions, size_t episode_length, doubl
                                                                   _temperature(temperature) {}
 
 void ESARSA::reinforceTrajectory() {
-  _q_values(_trajectory_states(_episode_length - 1), _trajectory_actions(_episode_length - 1)) +=
-      _alpha * (_payoff - _q_values(_trajectory_states(_episode_length - 1),
-                                    _trajectory_actions(_episode_length - 1)));
-  for (size_t i = _episode_length - 1; i > 0; i--) {
-    double expected_value = (_policy.row(i).transpose() * _q_values.row(i))(0);
-    _q_values(_trajectory_states(i - 1), _trajectory_actions(i - 1)) += _alpha *
+  int last = static_cast<int>(_episode_length - 1);
+
+  _q_values(_trajectory_states(last), _trajectory_actions(last)) +=
+      _alpha * (_payoff - _q_values(_trajectory_states(last),
+                                    _trajectory_actions(last)));
+  for (size_t i = last - 1; i >= 0; i--) {
+    double expected_value = (_policy.row(i + 1).transpose() * _q_values.row(i + 1))(0);
+    _q_values(_trajectory_states(i), _trajectory_actions(i)) += _alpha *
         (_lambda * expected_value -
-            _q_values(_trajectory_states(i - 1), _trajectory_actions(i - 1)));
+            _q_values(_trajectory_states(i), _trajectory_actions(i)));
   }
 }
 
 void ESARSA::reinforceTrajectory(size_t episode_length) {
-  _q_values(_trajectory_states(episode_length - 1), _trajectory_actions(episode_length - 1)) +=
-      _alpha * (_payoff - _q_values(_trajectory_states(episode_length - 1),
-                                    _trajectory_actions(episode_length - 1)));
-  for (size_t i = episode_length - 1; i > 0; i--) {
-    double expected_value = (_policy.row(i).transpose() * _q_values.row(i))(0);
-    _q_values(_trajectory_states(i - 1), _trajectory_actions(i - 1)) += _alpha *
+  int last = static_cast<int>(episode_length - 1);
+
+  _q_values(_trajectory_states(last), _trajectory_actions(last)) +=
+      _alpha * (_payoff - _q_values(_trajectory_states(last),
+                                    _trajectory_actions(last)));
+  for (size_t i = last - 1; i >= 0; i--) {
+    double expected_value = (_policy.row(i + 1).transpose() * _q_values.row(i + 1))(0);
+    _q_values(_trajectory_states(i), _trajectory_actions(i)) += _alpha *
         (_lambda * expected_value -
-            _q_values(_trajectory_states(i - 1), _trajectory_actions(i - 1)));
+            _q_values(_trajectory_states(i), _trajectory_actions(i)));
   }
 }
 
