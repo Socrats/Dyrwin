@@ -1063,7 +1063,8 @@ PYBIND11_MODULE(EGTtools, m) {
            " returns the groups success and donations"
            "during learning, as well as the final population.",
            py::arg("pop_size"), py::arg("group_size"),
-           py::arg("nb_generations"), py::arg("nb_games"), py::arg("threshold"), py::arg("delta"),
+           py::arg("nb_generations"), py::arg("nb_games"), py::arg("threshold"),
+           py::arg("delta"),
            py::arg("risk"),
            py::arg("agent_type"),
            py::arg("*agent_args"))
@@ -1077,7 +1078,8 @@ PYBIND11_MODULE(EGTtools, m) {
            " returns the groups success and donations"
            "during learning, as well as the final population.",
            py::arg("nb_runs"), py::arg("pop_size"), py::arg("group_size"),
-           py::arg("nb_generations"), py::arg("nb_games"), py::arg("threshold"), py::arg("delta"),
+           py::arg("nb_generations"), py::arg("nb_games"), py::arg("threshold"),
+           py::arg("delta"),
            py::arg("risk"), py::arg("transient"),
            py::arg("agent_type"),
            py::arg("*agent_args"))

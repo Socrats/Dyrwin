@@ -13,25 +13,27 @@ QLearningAgent::QLearningAgent(size_t nb_states, size_t nb_actions, size_t episo
                                                                                   _temperature(temperature) {}
 
 void QLearningAgent::reinforceTrajectory() {
-  _q_values(_trajectory_states(_episode_length - 1),
-            _trajectory_actions(_episode_length - 1)) +=
-      _alpha * (_payoff - _q_values(_trajectory_states(_episode_length - 1),
-                                    _trajectory_actions(_episode_length - 1)));
-  for (size_t i = _episode_length - 1; i > 0; i--) {
+  auto last = _episode_length - 1;
+  _q_values(_trajectory_states(last),
+            _trajectory_actions(last)) +=
+      _alpha * (_payoff - _q_values(_trajectory_states(last),
+                                    _trajectory_actions(last)));
+  for (size_t i = last; i >= 0; i--) {
     _q_values(_trajectory_states(i - 1),
               _trajectory_actions(i - 1)) += _alpha *
-        (_lambda * _q_values.row(_trajectory_states(i)).maxCoeff() - _q_values(_trajectory_states(i - 1),
-                                                                               _trajectory_actions(i - 1)));
+        (_payoff + _lambda * _q_values.row(_trajectory_states(i)).maxCoeff() - _q_values(_trajectory_states(i - 1),
+                                                                                         _trajectory_actions(i - 1)));
   }
 }
 
 void QLearningAgent::reinforceTrajectory(size_t episode_length) {
-  _q_values(_trajectory_states(episode_length - 1), _trajectory_actions(episode_length - 1)) +=
+  auto last = episode_length - 1;
+  _q_values(_trajectory_states(last), _trajectory_actions(last)) +=
       _alpha * _payoff;
-  for (size_t i = episode_length - 1; i > 0; i--) {
+  for (size_t i = last; i >= 0; i--) {
     _q_values(_trajectory_states(i - 1), _trajectory_actions(i - 1)) += _alpha *
-        (_lambda * _q_values.row(_trajectory_states(i)).maxCoeff() - _q_values(_trajectory_states(i - 1),
-                                                                               _trajectory_actions(i - 1)));
+        (_payoff + _lambda * _q_values.row(_trajectory_states(i)).maxCoeff() - _q_values(_trajectory_states(i - 1),
+                                                                                         _trajectory_actions(i - 1)));
   }
 }
 

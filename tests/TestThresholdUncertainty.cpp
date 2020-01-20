@@ -15,13 +15,13 @@ int main() {
   std::mt19937 gen(rd());
   size_t sum = 0;
   size_t threshold = 60;
-  size_t delta = 0;
+  size_t delta = 20;
   // Define the distribution for the threshold
   std::uniform_int_distribution<size_t> t_dist(threshold - delta / 2, threshold + delta / 2);
 
-  std::map<int, size_t> hist;
+  std::map<int, double> hist;
   for (int n = 0; n < 10000; ++n) {
-    ++hist[t_dist(gen)];
+    ++hist[static_cast<double>(t_dist(gen))];
   }
   for (auto p : hist) {
     std::cout << p.first <<
