@@ -343,15 +343,48 @@ class CRDSim {
        * @return a data container with the information of the simulation and a pointer to the population.
        */
   DataTypes::CRDData
-  runWellMixedThresholdU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
-                         size_t threshold, size_t delta, double risk,
-                         const std::string &agent_type,
-                         const std::vector<double> &args = {});
+  runWellMixedThU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                  size_t threshold, size_t delta, double risk,
+                  const std::string &agent_type,
+                  const std::vector<double> &args = {});
 
-  Matrix2D runWellMixedThresholdU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
-                                  size_t nb_games, size_t threshold, size_t delta, double risk, size_t transient,
-                                  const std::string &agent_type,
-                                  const std::vector<double> &args = {});
+  Matrix2D runWellMixedThU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
+                           size_t nb_games, size_t threshold, size_t delta, double risk, size_t transient,
+                           const std::string &agent_type,
+                           const std::vector<double> &args = {});
+
+  /**
+     * @brief Runs a simulation with threshold uncertainty
+     *
+     * This simulations run the Collective Risk Game with threshold uncertainty.
+     * Here the threshold is uncertain. The threshold of the game is a stochastic uniform
+     * variable in the range \f$(threshold - delta/2, threshold + delta/2)\f$ .
+     *
+     * In the simulations performed here, agents of a population of size Z = @param pop_size
+     * are selected randomly from the population to form a group of size @param group_size and play a game.
+     * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
+     *
+     * @param pop_size : size of the population
+     * @param group_size : group size
+     * @param nb_generations : number of training time-steps
+     * @param nb_games : number of games per time-step / generation
+     * @param threshold : target of the game
+     * @param risk : probability of loosing all endowment if the target isn't reached
+     * @param delta : variance / uncertainty of the threshold
+     * @param agent_type : string indicating the learning algorithm that the agents will use
+     * @param args : specific parameters for the learning algorithm
+     * @return a data container with the information of the simulation and a pointer to the population.
+     */
+  DataTypes::CRDData
+  runWellMixedThUSync(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                      size_t threshold, size_t delta, double risk,
+                      const std::string &agent_type,
+                      const std::vector<double> &args = {});
+
+  Matrix2D runWellMixedThUSync(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
+                               size_t nb_games, size_t threshold, size_t delta, double risk, size_t transient,
+                               const std::string &agent_type,
+                               const std::vector<double> &args = {});
 
   /**
    * @brief Runs one simulation with both Timing uncertainty and Threshold uncertainty
@@ -467,10 +500,10 @@ class CRDSim {
        * @return an Eigen 2D matrix with the average group achievement and average donations at each episode.
        */
   Matrix2D
-  runConditionalTimingUncertainty(size_t nb_episodes, size_t nb_games, size_t min_rounds, size_t mean_rounds,
-                                  size_t max_rounds, double p,
-                                  double risk,
-                                  const std::vector<double> &args = {}, const std::string &crd_type = "milinski");
+  runConditionalTU(size_t nb_episodes, size_t nb_games, size_t min_rounds, size_t mean_rounds,
+                   size_t max_rounds, double p,
+                   double risk,
+                   const std::vector<double> &args = {}, const std::string &crd_type = "milinski");
 
   /**
        * @brief Runs several independent simulations with conditional agents.
@@ -824,7 +857,10 @@ class CRDSim {
        *
        * This simulations run the Collective Risk Game with threshold uncertainty.
        * Here the threshold is uncertain. The threshold of the game is a stochastic uniform
-       * variable in the range \f$(threshold - delta/2, threshold + delta/2)\f$ .
+       * variable in the range \f$(threshold - \delta/2, threshold + \delta/2)\f$ .
+       *
+       * Parameter \p delta must be divisible by 2! Otherwise the simulation will not produce
+       * correct results.
        *
        * This simulation uses agents whose state consists of a tuple \f$(t, d^{t-1}_{-i})\f$,
        * where t is the current round of the game, and \f$d^{t-1}_{-i}\f$ is the sum of donations
@@ -842,16 +878,16 @@ class CRDSim {
        * @param nb_games : number of games per time-step / generation
        * @param threshold : target of the game
        * @param risk : probability of loosing all endowment if the target isn't reached
-       * @param delta : variance / uncertainty of the threshold
+       * @param delta : variance / uncertainty of the threshold. Must be divisible by 2!
        * @param agent_type : string indicating the learning algorithm that the agents will use
        * @param args : specific parameters for the learning algorithm
        * @return a data container with the information of the simulation and a pointer to the population.
        */
   DataTypes::CRDData
-  runConditionalWellMixedThresholdU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
-                                    size_t threshold, size_t delta, double risk,
-                                    const std::string &agent_type,
-                                    const std::vector<double> &args = {});
+  runConditionalWellMixedThU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                             size_t threshold, size_t delta, double risk,
+                             const std::string &agent_type,
+                             const std::vector<double> &args = {});
 
   /**
        * @brief Runs a simulation with threshold uncertainty and conditional agents.
@@ -859,6 +895,9 @@ class CRDSim {
        * This simulations run the Collective Risk Game with threshold uncertainty.
        * Here the threshold is uncertain. The threshold of the game is a stochastic uniform
        * variable in the range \f$(threshold - delta/2, threshold + delta/2)\f$ .
+       *
+       * Parameter \p delta must be divisible by 2! Otherwise the simulation will not produce
+       * correct results.
        *
        * This simulation uses agents whose state consists of a tuple \f$(t, d^{t-1}_{-i})\f$,
        * where t is the current round of the game, and \f$d^{t-1}_{-i}\f$ is the sum of donations
@@ -883,17 +922,17 @@ class CRDSim {
        * @return : a matrix indicating the averaged group achievement and agent contributions
        *           over the last \p transient generations of each simulation
        */
-  Matrix2D runConditionalWellMixedThresholdU(size_t nb_runs,
-                                             size_t pop_size,
-                                             size_t group_size,
-                                             size_t nb_generations,
-                                             size_t nb_games,
-                                             size_t threshold,
-                                             size_t delta,
-                                             double risk,
-                                             size_t transient,
-                                             const std::string &agent_type,
-                                             const std::vector<double> &args = {});
+  Matrix2D runConditionalWellMixedThU(size_t nb_runs,
+                                      size_t pop_size,
+                                      size_t group_size,
+                                      size_t nb_generations,
+                                      size_t nb_games,
+                                      size_t threshold,
+                                      size_t delta,
+                                      double risk,
+                                      size_t transient,
+                                      const std::string &agent_type,
+                                      const std::vector<double> &args = {});
 
   /**
      * @brief Runs a simulation with threshold uncertainty and conditional agents with synchronous updates.
@@ -924,10 +963,10 @@ class CRDSim {
      * @return a data container with the information of the simulation and a pointer to the population.
      */
   DataTypes::CRDData
-  runConditionalWellMixedThresholdUSync(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
-                                        size_t threshold, size_t delta, double risk,
-                                        const std::string &agent_type,
-                                        const std::vector<double> &args = {});
+  runConditionalWellMixedThUSync(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+                                 size_t threshold, size_t delta, double risk,
+                                 const std::string &agent_type,
+                                 const std::vector<double> &args = {});
 
   /**
        * @brief Runs multiple simulations with threshold uncertainty and conditional agents with synchronous updates.
@@ -959,17 +998,17 @@ class CRDSim {
        * @return : a matrix indicating the averaged group achievement and agent contributions
        *           over the last \p transient generations of each simulation
        */
-  Matrix2D runConditionalWellMixedThresholdUSync(size_t nb_runs,
-                                                 size_t pop_size,
-                                                 size_t group_size,
-                                                 size_t nb_generations,
-                                                 size_t nb_games,
-                                                 size_t threshold,
-                                                 size_t delta,
-                                                 double risk,
-                                                 size_t transient,
-                                                 const std::string &agent_type,
-                                                 const std::vector<double> &args = {});
+  Matrix2D runConditionalWellMixedThUSync(size_t nb_runs,
+                                          size_t pop_size,
+                                          size_t group_size,
+                                          size_t nb_generations,
+                                          size_t nb_games,
+                                          size_t threshold,
+                                          size_t delta,
+                                          double risk,
+                                          size_t transient,
+                                          const std::string &agent_type,
+                                          const std::vector<double> &args = {});
 
   /**
    * @brief Runs several independent simulations with both Timing uncertainty and Threshold uncertainty

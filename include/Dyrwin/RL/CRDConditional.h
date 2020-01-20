@@ -502,9 +502,9 @@ class CRDConditional<PopContainer, void> {
     for (size_t i = 0; i < rounds; ++i) {
       _state[0] = i, _state[1] = static_cast<size_t>(partial);
       partial = 0.0;
-      for (auto &a : players) {
-        unsigned idx = a->selectAction(i, _flatten.toIndex(_state));
-        a->decrease(actions[idx]);
+      for (auto &player : players) {
+        unsigned idx = player->selectAction(i, _flatten.toIndex(_state));
+        player->decrease(actions[idx]);
         partial += actions[idx];
       }
       total += partial;
