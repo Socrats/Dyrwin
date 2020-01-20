@@ -18,7 +18,7 @@ void ESARSA::reinforceTrajectory() {
   _q_values(_trajectory_states(last), _trajectory_actions(last)) +=
       _alpha * (_payoff - _q_values(_trajectory_states(last),
                                     _trajectory_actions(last)));
-  for (size_t i = last - 1; i >= 0; i--) {
+  for (int i = last - 1; i >= 0; i--) {
     double expected_value = (_policy.row(i + 1).transpose() * _q_values.row(i + 1))(0);
     _q_values(_trajectory_states(i), _trajectory_actions(i)) += _alpha *
         (_lambda * expected_value -
@@ -32,7 +32,7 @@ void ESARSA::reinforceTrajectory(size_t episode_length) {
   _q_values(_trajectory_states(last), _trajectory_actions(last)) +=
       _alpha * (_payoff - _q_values(_trajectory_states(last),
                                     _trajectory_actions(last)));
-  for (size_t i = last - 1; i >= 0; i--) {
+  for (int i = last - 1; i >= 0; i--) {
     double expected_value = (_policy.row(i + 1).transpose() * _q_values.row(i + 1))(0);
     _q_values(_trajectory_states(i), _trajectory_actions(i)) += _alpha *
         (_lambda * expected_value -
