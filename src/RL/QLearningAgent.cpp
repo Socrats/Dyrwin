@@ -13,27 +13,27 @@ QLearningAgent::QLearningAgent(size_t nb_states, size_t nb_actions, size_t episo
                                                                                   _temperature(temperature) {}
 
 void QLearningAgent::reinforceTrajectory() {
-  auto last = _episode_length - 1;
+  int last = static_cast<int>(_episode_length) - 1;
   _q_values(_trajectory_states(last),
             _trajectory_actions(last)) +=
       _alpha * (_payoff - _q_values(_trajectory_states(last),
                                     _trajectory_actions(last)));
-  for (size_t i = last; i >= 0; i--) {
-    _q_values(_trajectory_states(i - 1),
-              _trajectory_actions(i - 1)) += _alpha *
-        (_payoff + _lambda * _q_values.row(_trajectory_states(i)).maxCoeff() - _q_values(_trajectory_states(i - 1),
-                                                                                         _trajectory_actions(i - 1)));
+  for (int i = last - 1; i >= 0; i--) {
+    _q_values(_trajectory_states(i),
+              _trajectory_actions(i)) += _alpha *
+        (_payoff + _lambda * _q_values.row(_trajectory_states(i)).maxCoeff() - _q_values(_trajectory_states(i),
+                                                                                         _trajectory_actions(i)));
   }
 }
 
 void QLearningAgent::reinforceTrajectory(size_t episode_length) {
-  auto last = episode_length - 1;
+  int last = static_cast<int>(episode_length) - 1;
   _q_values(_trajectory_states(last), _trajectory_actions(last)) +=
       _alpha * _payoff;
-  for (size_t i = last; i >= 0; i--) {
-    _q_values(_trajectory_states(i - 1), _trajectory_actions(i - 1)) += _alpha *
-        (_payoff + _lambda * _q_values.row(_trajectory_states(i)).maxCoeff() - _q_values(_trajectory_states(i - 1),
-                                                                                         _trajectory_actions(i - 1)));
+  for (int i = last - 1; i >= 0; i--) {
+    _q_values(_trajectory_states(i), _trajectory_actions(i)) += _alpha *
+        (_payoff + _lambda * _q_values.row(_trajectory_states(i)).maxCoeff() - _q_values(_trajectory_states(i),
+                                                                                         _trajectory_actions(i)));
   }
 }
 
