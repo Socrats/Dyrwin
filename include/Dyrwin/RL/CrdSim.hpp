@@ -8,6 +8,7 @@
 #define DYRWIN_RL_CRDSIM_HPP
 
 #include <random>
+#include <unordered_set>
 #include <Dyrwin/RL/BatchQLearningAgent.h>
 #include <Dyrwin/RL/QLearningAgent.h>
 #include <Dyrwin/RL/RothErevAgent.h>
@@ -17,6 +18,7 @@
 #include <Dyrwin/RL/PopContainer.hpp>
 #include <Dyrwin/RL/Utils.h>
 #include <Dyrwin/RL/Data.hpp>
+#include <Dyrwin/Sampling.h>
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/OpenMPUtils.hpp>
 

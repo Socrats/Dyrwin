@@ -258,8 +258,10 @@ EGTTools::RL::CRDSim::runWellMixed(size_t pop_size, size_t group_size, size_t nb
   PopContainer wmPop(agent_type, pop_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
   EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
   PopContainer group;
-  std::vector<size_t> groups(pop_size);
-  std::iota(groups.begin(), groups.end(), 0);
+//  std::vector<size_t> groups(pop_size);
+//  std::iota(groups.begin(), groups.end(), 0);
+  std::unordered_set<size_t> container;
+  container.reserve(group_size);
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.population(i));
 
@@ -269,14 +271,18 @@ EGTTools::RL::CRDSim::runWellMixed(size_t pop_size, size_t group_size, size_t nb
     avg_contribution = 0.;
     avg_rounds = 0.;
     for (size_t i = 0; i < nb_games; ++i) {
-      std::shuffle(groups.begin(), groups.end(), generator);
-      for (size_t j = 0; j < group_size; ++j)
-        group(j) = data.population(groups[j]);
+      EGTTools::sampling::sample_without_replacement(pop_size, group_size, container, generator);
+      int j = 0;
+      for (const auto& elem: container) {
+        group(j) = data.population(elem);
+        j++;
+      }
       // First we play the game
       auto[pool, final_round] = game.playGame(group, _available_actions, _nb_rounds);
       avg_contribution += (game.playersContribution(group) / double(group_size));
       reinforceAll(pool, success, threshold, risk, group, game, generator);
       avg_rounds += final_round;
+      container.clear();
     }
     data.eta(generation) += static_cast<double>(success) / static_cast<double>(nb_games);
     data.avg_contribution(generation) += avg_contribution / static_cast<double>(nb_games);
