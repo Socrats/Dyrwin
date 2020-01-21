@@ -313,7 +313,7 @@ EGTTools::RL::CRDSim::runWellMixedSync(size_t pop_size, size_t group_size, size_
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.population(i));
   std::unordered_set<size_t> container;
-  container.reserve(group_size);
+  container.reserve(group_size - 1);
 
   for (size_t generation = 0; generation < nb_generations; ++generation) {
     // First we select random groups and let them play nb_games
@@ -322,14 +322,14 @@ EGTTools::RL::CRDSim::runWellMixedSync(size_t pop_size, size_t group_size, size_
     avg_rounds = 0.;
     for (size_t i = 0; i < pop_size; ++i) {
       // Get current player
-      group(group_size - 1) = data.population(i);
+      group(0) = data.population(i);
       for (size_t k = 0; k < nb_games; ++k) {
         // Get a random group
         EGTTools::sampling::sample_without_replacement(pop_size,
-                                                       group_size - 1,
+                                                       static_cast<size_t>(group_size - 1),
                                                        container,
                                                        generator);
-        int j = 0;
+        int j = 1;
         for (const auto &elem: container) {
           group(j) = data.population(elem);
           j++;
@@ -340,6 +340,7 @@ EGTTools::RL::CRDSim::runWellMixedSync(size_t pop_size, size_t group_size, size_
         avg_rounds += final_round;
         // Reinforce only the current player
         reinforceOnePlayer(pool, success, threshold, risk, data.population(i), generator);
+        container.clear();
       }
     }
     data.eta(generation) += static_cast<double>(success) / static_cast<double>(pop_size * nb_games);
