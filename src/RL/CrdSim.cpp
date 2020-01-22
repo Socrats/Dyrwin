@@ -323,6 +323,7 @@ EGTTools::RL::CRDSim::runWellMixedSync(size_t pop_size, size_t group_size, size_
     for (size_t i = 0; i < pop_size; ++i) {
       // Get current player
       group(0) = data.population(i);
+      container.insert(i);
       for (size_t k = 0; k < nb_games; ++k) {
         // Get a random group
         EGTTools::sampling::sample_without_replacement(pop_size,
@@ -331,8 +332,11 @@ EGTTools::RL::CRDSim::runWellMixedSync(size_t pop_size, size_t group_size, size_
                                                        generator);
         int j = 1;
         for (const auto &elem: container) {
-          group(j) = data.population(elem);
-          j++;
+          if (elem == i) continue;
+          else {
+            group(j) = data.population(elem);
+            ++j;
+          }
         }
         // First we play the game
         auto[pool, final_round] = game.playGame(group, _available_actions, _nb_rounds);

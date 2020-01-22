@@ -31,7 +31,7 @@ template<typename T=int, typename G>
 std::unordered_set<T> sample_without_replacement(int N, int k, G &gen) {
   std::unordered_set<T> elements;
   for (int r = N - k; r < N; ++r) {
-    auto v = std::uniform_int_distribution<>(1, r)(gen);
+    auto v = std::uniform_int_distribution<T>(1, r)(gen);
 
     // there are two cases.
     // v is not in candidates ===> add it
@@ -71,7 +71,7 @@ std::unordered_set<T> sample_without_replacement(int N, int k, G &gen) {
 template<typename T=int, typename G>
 void sample_without_replacement(int N, int k, std::unordered_set<T> &container, G &gen) {
   for (int r = N - k; r < N; ++r) {
-    auto v = std::uniform_int_distribution<>(1, r)(gen);
+    auto v = std::uniform_int_distribution<T>(1, r)(gen);
 
     // there are two cases.
     // v is not in candidates ===> add it

@@ -33,8 +33,8 @@ int main() {
                              cataclysm, endowment, threshold,
                              available_actions, agent_type,
                              args);
-    EGTTools::RL::DataTypes::CRDData results = sim.runWellMixed(100, group_size, 100, 10, threshold, cataclysm,
-                                                                agent_type, args);
+    EGTTools::RL::DataTypes::CRDData results = sim.runWellMixedSync(6, group_size, 100, 10, threshold, cataclysm,
+                                                                    agent_type, args);
     std::cout << "success: " << results.eta << std::endl;
     std::cout << "avg_contrib: " << results.avg_contribution << std::endl;
     sim.Game.printGroup(results.population);
