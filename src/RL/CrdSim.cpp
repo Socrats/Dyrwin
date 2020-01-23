@@ -219,9 +219,9 @@ EGTTools::RL::CRDSim::run(size_t group_size,
     for (size_t i = 0; i < nb_games; ++i) {
       // First we play the game
       // First we play the game
-      auto[pool, final_round] = game.playGame(group, _available_actions, _nb_rounds);
-      avg_contribution += (game.playersContribution(group) / double(group_size));
-      reinforceAll(pool, success, threshold, risk, group, game, generator);
+      auto[pool, final_round] = game.playGame(data.population, _available_actions, _nb_rounds);
+      avg_contribution += (game.playersContribution(data.population) / double(group_size));
+      reinforceAll(pool, success, threshold, risk, data.population, game, generator);
       avg_rounds += final_round;
     }
     data.eta(generation) += static_cast<double>(success) / static_cast<double>(nb_games);
