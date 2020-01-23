@@ -195,6 +195,44 @@ EGTTools::RL::CRDSim::run(size_t nb_groups, size_t group_size, size_t nb_episode
   return data;
 }
 
+EGTTools::RL::DataTypes::CRDData
+EGTTools::RL::CRDSim::run(size_t group_size,
+                          size_t nb_generations,
+                          size_t nb_games,
+                          double threshold,
+                          double risk,
+                          const std::string &agent_type,
+                          const std::vector<double> &args) {
+  size_t success;
+  double avg_contribution;
+  double avg_rounds;
+  CRDGame<PopContainer> game;
+  std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
+  // Create a population of _group_size * nb_groups
+  PopContainer group(agent_type, group_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
+  EGTTools::RL::DataTypes::CRDData data(nb_generations, group);
+
+  for (size_t generation = 0; generation < nb_generations; ++generation) {
+    success = 0;
+    avg_contribution = 0;
+    avg_rounds = 0.;
+    for (size_t i = 0; i < nb_games; ++i) {
+      // First we play the game
+      // First we play the game
+      auto[pool, final_round] = game.playGame(group, _available_actions, _nb_rounds);
+      avg_contribution += (game.playersContribution(group) / double(group_size));
+      reinforceAll(pool, success, threshold, risk, group, game, generator);
+      avg_rounds += final_round;
+    }
+    data.eta(generation) += static_cast<double>(success) / static_cast<double>(nb_games);
+    data.avg_contribution(generation) += avg_contribution / static_cast<double>(nb_games);
+    // Update population
+    game.calcProbabilities(data.population);
+    game.resetEpisode(data.population);
+  }
+  return data;
+}
+
 EGTTools::Matrix2D
 EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_t nb_groups, size_t group_size,
                                    double threshold,
@@ -751,7 +789,7 @@ EGTTools::RL::CRDSim::runWellMixedTUnThU(size_t nb_runs, size_t pop_size, size_t
 }
 
 EGTTools::RL::DataTypes::CRDData
-EGTTools::RL::CRDSim::runWellMixedSyncTU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+EGTTools::RL::CRDSim::runWellMixedTUSync(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
                                          double threshold, double risk, size_t min_rounds, size_t mean_rounds,
                                          size_t max_rounds,
                                          double p,
@@ -815,7 +853,7 @@ EGTTools::RL::CRDSim::runWellMixedSyncTU(size_t pop_size, size_t group_size, siz
 }
 
 EGTTools::Matrix2D
-EGTTools::RL::CRDSim::runWellMixedSyncTU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
+EGTTools::RL::CRDSim::runWellMixedTUSync(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations,
                                          size_t nb_games, double threshold,
                                          double risk, size_t transient, size_t min_rounds, size_t mean_rounds,
                                          size_t max_rounds, double p,
@@ -826,7 +864,7 @@ EGTTools::RL::CRDSim::runWellMixedSyncTU(size_t nb_runs, size_t pop_size, size_t
 #pragma omp parallel for default(none) shared(transient, results, nb_runs, pop_size, group_size, nb_generations, \
   nb_games, threshold, risk, min_rounds, mean_rounds, max_rounds, p, agent_type, args)
   for (size_t run = 0; run < nb_runs; ++run) {
-    EGTTools::RL::DataTypes::CRDData tmp = runWellMixedSyncTU(pop_size, group_size, nb_generations, nb_games,
+    EGTTools::RL::DataTypes::CRDData tmp = runWellMixedTUSync(pop_size, group_size, nb_generations, nb_games,
                                                               threshold, risk, min_rounds, mean_rounds, max_rounds,
                                                               p, agent_type, args);
     results(0, run) = tmp.eta.tail(transient).mean();

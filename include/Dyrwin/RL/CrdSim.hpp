@@ -69,6 +69,31 @@ class CRDSim {
   Matrix2D run(size_t nb_episodes, size_t nb_games);
 
   /**
+   * @brief Runs a CRD simulation where the population consists of a single group that always remains the same.
+   *
+   * Since the group does not change, players always interact among each other and adapt to the
+   * specific characteristics of the group.
+   *
+   * At each generations the group players \param nb_games before updating the policy.
+   *
+   * @param group_size : size of the group/population
+   * @param nb_generations : number of generations through which the agents will adapt
+   * @param nb_games : number of games per generation
+   * @param threshold : collective target of the game
+   * @param risk : probability that all players will loose their remaining endowment
+   * @param agent_type : string indicating the algorithm that agents use to adapt
+   * @param args : arguments for the agent
+   * @return : a data container with the population, the average success and the average contributions per generation.
+   */
+  DataTypes::CRDData run(size_t group_size,
+                         size_t nb_generations,
+                         size_t nb_games,
+                         double threshold,
+                         double risk,
+                         const std::string &agent_type,
+                         const std::vector<double> &args = {});
+
+  /**
        * @brief Runs a simulation of the CRD for multiple independent groups.
        *
        * This method runs a simulation of the CRD for @param nb_episodes.
@@ -123,6 +148,7 @@ class CRDSim {
        * The @param args is a vector that should contain the arguments specific of the agent type of
        * the population.
        *
+       *
        * @param nb_generations : number of generations per simulation
        * @param nb_games : number of games per generation
        * @param nb_groups : will define the population size (Z = nb_groups * _group_size)
@@ -146,6 +172,8 @@ class CRDSim {
        * The @param args is a vector that should contain the arguments specific of the agent type of
        * the population.
        *
+       * \param pop_size must always be bigger than \param group_size!
+       *
        * @param pop_size : size of the population
        * @param group_size : group size
        * @param nb_generations : number of generations per simulation
@@ -161,6 +189,21 @@ class CRDSim {
                double risk, const std::string &agent_type,
                const std::vector<double> &args = {});
 
+  /**
+   * @brief runs the CRD in a well-mixed population with synchronised updates.
+   *
+   * \param pop_size must always be bigger than \param group_size!
+   *
+   * @param pop_size : size of the population
+   * @param group_size : size of the group
+   * @param nb_generations : number of generations
+   * @param nb_games : number of games
+   * @param threshold : collective target of the game
+   * @param risk : risk that all players will receive 0 payoff if the target isn't met
+   * @param agent_type : string indicating the algorithm, that the agents use to adapt
+   * @param args : vector of arguments for the agent
+   * @return : a data structure containing the population and the average success and contributions.
+   */
   DataTypes::CRDData
   runWellMixedSync(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games, double threshold,
                    double risk, const std::string &agent_type,
@@ -177,6 +220,8 @@ class CRDSim {
        * the population.
        *
        * The simulation is repeated for @param nb_runs with independent populations.
+       *
+       * \param pop_size must always be bigger than \param group_size!
        *
        * @param nb_runs : number of independent simulations
        * @param pop_size : size of the population
@@ -195,6 +240,32 @@ class CRDSim {
                         const std::string &agent_type,
                         const std::vector<double> &args = {});
 
+  /**
+       * @brief Runs several simulations with a well mixed population with synchronised updates.
+       *
+       * In the simulations performed here, agents of a population of size Z = _group_size * nb_groups
+       * are selected randomly from the population to form a group of size _group_size and play a game.
+       * At each generation @param nb_games are played. The simulation is run for @param nb_generations.
+       *
+       * The @param args is a vector that should contain the arguments specific of the agent type of
+       * the population.
+       *
+       * The simulation is repeated for @param nb_runs with independent populations.
+       *
+       * \param pop_size must always be bigger than \param group_size!
+       *
+       * @param nb_runs : number of independent simulations
+       * @param pop_size : size of the population
+       * @param group_size : size of the group
+       * @param nb_generations : number of generations per simulation
+       * @param nb_games : number of games per generation
+       * @param threshold : collective target
+       * @param risk : probability of loosing all endowment if the target isn't reached
+       * @param transient : number of generations to take into account for calculating the average
+       * @param agent_type : string indicating whcoh agent implementation to use
+       * @param args : vector of arguments to instantiate the agent_type of the population
+       * @return Eigen 2D matrix with the average group achievement and avg. donations across independent runs.
+       */
   Matrix2D
   runWellMixedSync(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
                    double threshold, double risk, size_t transient,
@@ -248,6 +319,8 @@ class CRDSim {
        *
        * The results are transfered to a data container and returned.
        *
+       * \param pop_size must always be bigger than \param group_size!
+       *
        * @param pop_size : size of the population
        * @param group_size : group size
        * @param nb_generations : total number of generations
@@ -264,7 +337,7 @@ class CRDSim {
                  const std::vector<double> &args = {});
 
   DataTypes::CRDData
-  runWellMixedSyncTU(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+  runWellMixedTUSync(size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
                      double threshold, double risk, size_t min_rounds, size_t mean_rounds, size_t max_rounds,
                      double p,
                      const std::string &agent_type,
@@ -315,7 +388,7 @@ class CRDSim {
                  const std::vector<double> &args = {});
 
   Matrix2D
-  runWellMixedSyncTU(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
+  runWellMixedTUSync(size_t nb_runs, size_t pop_size, size_t group_size, size_t nb_generations, size_t nb_games,
                      double threshold,
                      double risk, size_t transient, size_t min_rounds, size_t mean_rounds, size_t max_rounds,
                      double p,
