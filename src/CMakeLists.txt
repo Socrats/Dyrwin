@@ -26,6 +26,7 @@ add_library(EGTTools
         RL/Utils.cpp
         RL/PopContainer.cpp
         RL/algorithms/QLearning.cpp
+        RL/simulators/CrdIslands.cpp
         AbouCRD/CollectiveRiskDilemma.cpp
         AbouCRD/CRDPlayer.cpp
         AbouCRD/CRDSimulator.cpp
