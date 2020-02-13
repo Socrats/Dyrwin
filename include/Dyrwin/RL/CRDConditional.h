@@ -521,10 +521,11 @@ class CRDConditional<PopContainer, void> {
  * @param actions : available actions per round
  * @param rounds : number of rounds
  */
-  void playGameVerbose(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds, Matrix2D &results) {
+  int playGameVerbose(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds, Matrix2D &results) {
     size_t action_idx;
     std::vector<size_t> state(2, 0); // creates a vector of size 2 with all members equal to 0
-    int partial = 0.0;
+    int partial = 0;
+    int total = 0;
     for (auto &player : players) {
       player->resetPayoff();
     }
@@ -538,7 +539,9 @@ class CRDConditional<PopContainer, void> {
         // now we store this data on results
         results(j, i) = action_idx;
       }
+      total += partial;
     }
+    return total;
   }
 
   bool reinforcePath(PopContainer &players) {

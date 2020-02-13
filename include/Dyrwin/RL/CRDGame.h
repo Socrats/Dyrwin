@@ -510,8 +510,9 @@ class CRDGame<PopContainer, void> {
    * @param actions : available actions per round
    * @param rounds : number of rounds
    */
-  void playGameVerbose(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds, Matrix2D &results) {
+  int playGameVerbose(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds, Matrix2D &results) {
     size_t action_idx;
+    int total = 0;
     for (auto &player : players) {
       player->resetPayoff();
     }
@@ -520,9 +521,11 @@ class CRDGame<PopContainer, void> {
         action_idx = players[j].selectAction(i);
         players[j].decrease(actions[action_idx]);
         // now we store this data on results
-        results(j, i) = action_idx;
+        results(j, i) = actions[action_idx];
+        total += actions[action_idx];
       }
     }
+    return total;
   }
 
   bool reinforcePath(PopContainer &players) {
