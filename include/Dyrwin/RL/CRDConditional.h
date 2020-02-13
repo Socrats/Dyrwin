@@ -533,8 +533,8 @@ class CRDConditional<PopContainer, void> {
       state[0] = i, state[1] = static_cast<size_t>(partial);
       partial = 0.0;
       for (size_t j = 0; j < players.size(); ++j) {
-        action_idx = players[j].selectAction(i, _flatten.toIndex(state));
-        players[j].decrease(actions[action_idx]);
+        action_idx = players(j)->selectAction(i, _flatten.toIndex(state));
+        players(j)->decrease(actions[action_idx]);
         partial += actions[action_idx];
         // now we store this data on results
         results(j, i) = action_idx;

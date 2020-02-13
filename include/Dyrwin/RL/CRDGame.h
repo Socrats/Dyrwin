@@ -518,8 +518,8 @@ class CRDGame<PopContainer, void> {
     }
     for (size_t i = 0; i < rounds; i++) {
       for (size_t j = 0; j < players.size(); ++j) {
-        action_idx = players[j].selectAction(i);
-        players[j].decrease(actions[action_idx]);
+        action_idx = players(j)->selectAction(i);
+        players(j)->decrease(actions[action_idx]);
         // now we store this data on results
         results(j, i) = actions[action_idx];
         total += actions[action_idx];
