@@ -476,9 +476,7 @@ class CRDConditional<PopContainer, void> {
 
  public:
 
-  explicit CRDConditional(FlattenState flatten) : _flatten(std::move(flatten)) {
-    _state = EGTTools::RL::Factors(2);
-  }
+  explicit CRDConditional(FlattenState flatten) : _flatten(std::move(flatten)) {}
 
   /**
    * @brief Model of the Collective-Risk dilemma game.
@@ -494,22 +492,53 @@ class CRDConditional<PopContainer, void> {
    */
   std::pair<double, size_t>
   playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds) {
-
+    size_t action_idx;
     double total = 0.0, partial = 0.0;
+    std::vector<size_t> state(2, 0); // creates a vector of size 2 with all members equal to 0
     for (auto &player : players) {
       player->resetPayoff();
     }
     for (size_t i = 0; i < rounds; ++i) {
-      _state[0] = i, _state[1] = static_cast<size_t>(partial);
+      state[0] = i, state[1] = static_cast<size_t>(partial);
       partial = 0.0;
       for (auto &player : players) {
-        unsigned idx = player->selectAction(i, _flatten.toIndex(_state));
-        player->decrease(actions[idx]);
-        partial += actions[idx];
+        action_idx = player->selectAction(i, _flatten.toIndex(state));
+        player->decrease(actions[action_idx]);
+        partial += actions[action_idx];
       }
       total += partial;
     }
     return std::make_pair(total, rounds);
+  }
+
+  /**
+ * @brief stores the data of each round
+ *
+ * This method must return:
+ * a) actions per round of each player
+ *
+ * @param players : PopContainer with the agents that will play the game
+ * @param actions : available actions per round
+ * @param rounds : number of rounds
+ */
+  void playGameVerbose(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds, Matrix2D &results) {
+    size_t action_idx;
+    std::vector<size_t> state(2, 0); // creates a vector of size 2 with all members equal to 0
+    int partial = 0.0;
+    for (auto &player : players) {
+      player->resetPayoff();
+    }
+    for (size_t i = 0; i < rounds; i++) {
+      state[0] = i, state[1] = static_cast<size_t>(partial);
+      partial = 0.0;
+      for (size_t j = 0; j < players.size(); ++j) {
+        action_idx = players[j].selectAction(i, _flatten.toIndex(state));
+        players[j].decrease(actions[action_idx]);
+        partial += actions[action_idx];
+        // now we store this data on results
+        results(j, i) = action_idx;
+      }
+    }
   }
 
   bool reinforcePath(PopContainer &players) {
@@ -564,7 +593,7 @@ class CRDConditional<PopContainer, void> {
 
  private:
   FlattenState _flatten;
-  EGTTools::RL::Factors _state;
+//  EGTTools::RL::Factors _state;
   // Random generators
   std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 };
