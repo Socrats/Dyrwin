@@ -383,7 +383,7 @@ class CRDSimIslands {
    * @param game : game object
    * @param generator : reference to a random generator
    */
-  template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>>>
+  template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>, std::mt19937_64>>
   void reinforce_population(double &pool,
                             size_t &success,
                             double target,
@@ -405,7 +405,7 @@ class CRDSimIslands {
  * @param game : game object
  * @param generator : reference to a random generator
  */
-  template<class G = CRDGame<PopContainer>>
+  template<class G = CRDGame<PopContainer, void, void>>
   void reinforce_population(double &pool,
                             size_t &success,
                             double threshold,

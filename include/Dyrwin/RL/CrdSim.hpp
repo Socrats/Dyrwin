@@ -1207,7 +1207,7 @@ class CRDSim {
        * @param pop : population container
        * @param game : game object
        */
-  template<class G = CRDGame<PopContainer>>
+  template<class G = CRDGame<PopContainer, void, void>>
   void reinforceOnlyPositive(double &pool, size_t &success, double &risk, PopContainer &pop,
                              G &game);
 
@@ -1221,7 +1221,7 @@ class CRDSim {
        * @param final_round : number of rounds of the last played game.
        * @param game : game object
        */
-  template<class G = CRDGame<PopContainer>>
+  template<class G = CRDGame<PopContainer, void, void>>
   void reinforceOnlyPositive(double &pool, size_t &success, double &risk, PopContainer &pop, size_t &final_round,
                              G &game);
 
@@ -1234,7 +1234,7 @@ class CRDSim {
        * @param pop : population container
        * @param game : game object
        */
-  template<class G = CRDGame<PopContainer>>
+  template<class G = CRDGame<PopContainer, void, void>>
   void reinforceAll(double &pool, size_t &success, double &risk, PopContainer &pop,
                     G &game);
 
@@ -1248,11 +1248,11 @@ class CRDSim {
        * @param final_round : number of rounds of the last played game.
        * @param game : game object
        */
-  template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>>>
+  template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>, std::mt19937_64>>
   void reinforceAll(double &pool, size_t &success, double &risk, PopContainer &pop, size_t &final_round,
                     G &game);
 
-  template<class G = CRDGame<PopContainer>>
+  template<class G = CRDGame<PopContainer, void, void>>
   void reinforceAll(double &pool, size_t &success, double threshold, double &risk, PopContainer &pop,
                     G &game, std::mt19937_64 &generator);
 
@@ -1268,12 +1268,12 @@ class CRDSim {
    * @param game
    * @param generator
    */
-  template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>>>
+  template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>, std::mt19937_64>>
   void reinforceAll(double &pool, size_t &success, double threshold, double &risk, PopContainer &pop,
                     size_t &final_round,
                     G &game, std::mt19937_64 &generator);
 
-  template<class G = CRDGame<PopContainer>>
+  template<class G = CRDGame<PopContainer, void, void>>
   void reinforceOnePlayer(double &pool, size_t &success, double threshold, double &risk,
                           EGTTools::RL::Individual &player, std::mt19937_64 &generator);
 
@@ -1289,7 +1289,7 @@ class CRDSim {
    * @param game
    * @param generator
    */
-  template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>>>
+  template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>, std::mt19937_64>>
   void reinforceOnePlayer(double &pool, size_t &success, double threshold, double &risk,
                           size_t &final_round, EGTTools::RL::Individual &player, std::mt19937_64 &generator);
 
@@ -1302,7 +1302,7 @@ class CRDSim {
        * @param pop : population container
        * @param game : game object
        */
-  template<class G = CRDGame<PopContainer>>
+  template<class G = CRDGame<PopContainer, void, void>>
   void reinforceXico(double &pool, size_t &success, double &risk, PopContainer &pop,
                      G &game);
 
@@ -1316,7 +1316,7 @@ class CRDSim {
        * @param final_round : number of rounds of the last played game.
        * @param game : game object
        */
-  template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>>>
+  template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>, std::mt19937_64>>
   void reinforceXico(double &pool, size_t &success, double &risk, PopContainer &pop, size_t &final_round,
                      G &game);
 

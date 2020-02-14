@@ -184,7 +184,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsTU(size_t 
                                                     data);
 
   // Finally we clear the unused rows
-  auto total_rows = nb_evaluation_games * group_size * total_nb_rounds;
+  auto total_rows = group_size * total_nb_rounds;
   data.data.conservativeResize(total_rows, 10);
 
   return data;

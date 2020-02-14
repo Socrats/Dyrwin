@@ -11,7 +11,7 @@
 #include <tuple>
 #include <iostream>
 #include <Dyrwin/SeedGenerator.h>
-#include <Dyrwin/RL/Agent.h>
+//#include <Dyrwin/RL/Agent.h>
 #include <Dyrwin/RL/TimingUncertainty.hpp>
 #include <Dyrwin/RL/PopContainer.hpp>
 #include <Dyrwin/RL/Utils.h>
@@ -22,7 +22,7 @@ namespace EGTTools::RL {
  *
  * @tparam A. Container for the agents.
  */
-template<typename A = Agent, typename R = EGTTools::TimingUncertainty<std::mt19937_64>, typename G = std::mt19937_64>
+template<typename A, typename R, typename G>
 class CRDGame {
 
  public:

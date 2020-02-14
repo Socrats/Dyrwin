@@ -36,7 +36,7 @@ int main() {
 
   std::vector<double> args{alpha, temperature};
 
-  EGTTools::RL::CRDGame <EGTTools::RL::PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game;
+  EGTTools::RL::CRDGame <EGTTools::RL::PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game;
 
   try {
     EGTTools::RL::CRDSim sim(attempts, games, rounds, actions, group_size,

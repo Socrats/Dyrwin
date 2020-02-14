@@ -633,56 +633,66 @@ PYBIND11_MODULE(EGTtools, m) {
       .def("reset_q_values", &RL::RothErevAgent::resetQValues)
       .def("__repr__", &RL::RothErevAgent::toString);
 
-  py::class_<RL::CRDGame<RL::Agent>>(mRL, "CRDGame")
+  py::class_<RL::CRDGame<RL::Agent, void, void>>(mRL, "CRDGame")
       .def(py::init<>(), "Collective-risk dilemma without uncertainty")
-      .def("play", static_cast<std::pair<double, size_t> (RL::CRDGame<RL::Agent>::*)(std::vector<RL::Agent> &,
-                                                                                     EGTTools::RL::ActionSpace &,
-                                                                                     size_t)>(&RL::CRDGame<RL::Agent>::playGame),
+      .def("play",
+           static_cast<std::pair<double, size_t> (RL::CRDGame<RL::Agent, void, void>::*)(std::vector<RL::Agent> &,
+                                                                                         EGTTools::RL::ActionSpace &,
+                                                                                         size_t)>(&RL::CRDGame<RL::Agent,
+                                                                                                               void,
+                                                                                                               void>::playGame),
            "plays the game for a fixed number of rounds",
-           py::arg("players"), py::arg("actions"), py::arg("rounds"))
-      .def("reinforce_players", static_cast<bool (RL::CRDGame<RL::Agent>::*)(
-               std::vector<RL::Agent> &)>(&RL::CRDGame<RL::Agent>::reinforcePath),
+           py::arg("players"),
+           py::arg("actions"),
+           py::arg("rounds"))
+      .def("reinforce_players", static_cast<bool (RL::CRDGame<RL::Agent, void, void>::*)(
+               std::vector<RL::Agent> &)>(&RL::CRDGame<RL::Agent, void, void>::reinforcePath),
            "reinforces the actions of all agents in the group", py::arg("players"))
-      .def("update_strategies", static_cast<bool (RL::CRDGame<RL::Agent>::*)(
-               std::vector<RL::Agent> &)>(&RL::CRDGame<RL::Agent>::calcProbabilities),
+      .def("update_strategies", static_cast<bool (RL::CRDGame<RL::Agent, void, void>::*)(
+               std::vector<RL::Agent> &)>(&RL::CRDGame<RL::Agent, void, void>::calcProbabilities),
            "updates the payoffs of the players in the group", py::arg("players"))
-      .def("reset_episode", static_cast<bool (RL::CRDGame<RL::Agent>::*)(
-               std::vector<RL::Agent> &)>(&RL::CRDGame<RL::Agent>::resetEpisode),
+      .def("reset_episode", static_cast<bool (RL::CRDGame<RL::Agent, void, void>::*)(
+               std::vector<RL::Agent> &)>(&RL::CRDGame<RL::Agent, void, void>::resetEpisode),
            "resets the trajectories of the players", py::arg("players"))
-      .def("group_payoff", static_cast<double (RL::CRDGame<RL::Agent>::*)(
-               std::vector<RL::Agent> &)>(&RL::CRDGame<RL::Agent>::playersPayoff),
+      .def("group_payoff", static_cast<double (RL::CRDGame<RL::Agent, void, void>::*)(
+               std::vector<RL::Agent> &)>(&RL::CRDGame<RL::Agent, void, void>::playersPayoff),
            "returns the total payoff of the group", py::arg("players"))
-      .def("group_contributions", static_cast<double (RL::CRDGame<RL::Agent>::*)(
-               std::vector<RL::Agent> &)>(&RL::CRDGame<RL::Agent>::playersContribution),
+      .def("group_contributions", static_cast<double (RL::CRDGame<RL::Agent, void, void>::*)(
+               std::vector<RL::Agent> &)>(&RL::CRDGame<RL::Agent, void, void>::playersContribution),
            "returns the total contribution of the group", py::arg("players"))
-      .def("set_payoffs", static_cast<void (RL::CRDGame<RL::Agent>::*)(
-               std::vector<RL::Agent> &, unsigned int)>(&RL::CRDGame<RL::Agent>::setPayoffs),
+      .def("set_payoffs", static_cast<void (RL::CRDGame<RL::Agent, void, void>::*)(
+               std::vector<RL::Agent> &, unsigned int)>(&RL::CRDGame<RL::Agent, void, void>::setPayoffs),
            "sets players payoffs", py::arg("players"), py::arg("payoff"));
 
-  py::class_<RL::CRDGame<RL::PopContainer>>(mRL, "CRDGameGeneric")
+  py::class_<RL::CRDGame<RL::PopContainer, void, void>>(mRL, "CRDGameGeneric")
       .def(py::init<>(), "Collective-risk dilemma without uncertainty")
-      .def("play", static_cast<std::pair<double, size_t> (RL::CRDGame<RL::PopContainer>::*)(RL::PopContainer &,
-                                                                                            EGTTools::RL::ActionSpace &,
-                                                                                            size_t)>(&RL::CRDGame<RL::PopContainer>::playGame),
+      .def("play",
+           static_cast<std::pair<double, size_t> (RL::CRDGame<RL::PopContainer, void, void>::*)(RL::PopContainer &,
+                                                                                                EGTTools::RL::ActionSpace &,
+                                                                                                size_t)>(&RL::CRDGame<RL::PopContainer,
+                                                                                                                      void,
+                                                                                                                      void>::playGame),
            "plays the game for a fixed number of rounds",
-           py::arg("players"), py::arg("actions"), py::arg("rounds"))
-      .def("reinforce_players", static_cast<bool (RL::CRDGame<RL::PopContainer>::*)(
-               RL::PopContainer &)>(&RL::CRDGame<RL::PopContainer>::reinforcePath),
+           py::arg("players"),
+           py::arg("actions"),
+           py::arg("rounds"))
+      .def("reinforce_players", static_cast<bool (RL::CRDGame<RL::PopContainer, void, void>::*)(
+               RL::PopContainer &)>(&RL::CRDGame<RL::PopContainer, void, void>::reinforcePath),
            "reinforces the actions of all agents in the group", py::arg("players"))
-      .def("update_strategies", static_cast<bool (RL::CRDGame<RL::PopContainer>::*)(
-               RL::PopContainer &)>(&RL::CRDGame<RL::PopContainer>::calcProbabilities),
+      .def("update_strategies", static_cast<bool (RL::CRDGame<RL::PopContainer, void, void>::*)(
+               RL::PopContainer &)>(&RL::CRDGame<RL::PopContainer, void, void>::calcProbabilities),
            "updates the payoffs of the players in the group", py::arg("players"))
-      .def("reset_episode", static_cast<bool (RL::CRDGame<RL::PopContainer>::*)(
-               RL::PopContainer &)>(&RL::CRDGame<RL::PopContainer>::resetEpisode),
+      .def("reset_episode", static_cast<bool (RL::CRDGame<RL::PopContainer, void, void>::*)(
+               RL::PopContainer &)>(&RL::CRDGame<RL::PopContainer, void, void>::resetEpisode),
            "resets the trajectories of the players", py::arg("players"))
-      .def("group_payoff", static_cast<double (RL::CRDGame<RL::PopContainer>::*)(
-               RL::PopContainer &)>(&RL::CRDGame<RL::PopContainer>::playersPayoff),
+      .def("group_payoff", static_cast<double (RL::CRDGame<RL::PopContainer, void, void>::*)(
+               RL::PopContainer &)>(&RL::CRDGame<RL::PopContainer, void, void>::playersPayoff),
            "returns the total payoff of the group", py::arg("players"))
-      .def("group_contributions", static_cast<double (RL::CRDGame<RL::PopContainer>::*)(
-               RL::PopContainer &)>(&RL::CRDGame<RL::PopContainer>::playersContribution),
+      .def("group_contributions", static_cast<double (RL::CRDGame<RL::PopContainer, void, void>::*)(
+               RL::PopContainer &)>(&RL::CRDGame<RL::PopContainer, void, void>::playersContribution),
            "returns the total contribution of the group", py::arg("players"))
-      .def("set_payoffs", static_cast<void (RL::CRDGame<RL::PopContainer>::*)(
-               RL::PopContainer &, unsigned int)>(&RL::CRDGame<RL::PopContainer>::setPayoffs),
+      .def("set_payoffs", static_cast<void (RL::CRDGame<RL::PopContainer, void, void>::*)(
+               RL::PopContainer &, unsigned int)>(&RL::CRDGame<RL::PopContainer, void, void>::setPayoffs),
            "sets players payoffs", py::arg("players"), py::arg("payoff"));
 
   py::class_<RL::PopContainer>(mRL, "Population")

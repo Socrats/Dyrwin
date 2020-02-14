@@ -17,7 +17,7 @@ int main() {
   size_t nb_groups = 4;
   size_t group_size = 6;
   size_t nb_actions = 3; //0, 2 and 4
-  size_t min_rounds = 10;
+  size_t min_rounds = 8;
   size_t max_rounds = 50;
   size_t mean_rounds = 10;
   double p = 0;
