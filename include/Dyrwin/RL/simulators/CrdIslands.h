@@ -16,7 +16,7 @@
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/OpenMPUtils.hpp>
 
-namespace EGTTools::RL::CRD::Simulators {
+namespace EGTTools::RL::Simulators::CRD {
 
 /**
  * This namespace contains functions, classes & methods used to

@@ -41,3 +41,7 @@ target_link_libraries(testCrdSimCond EGTTools)
 add_executable(testCrdSimWMTU TestCrdSimRunWellMixedTU.cpp)
 set_target_properties(testCrdSimWMTU PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(testCrdSimWMTU EGTTools)
+
+add_executable(testCrdSimIslands TestCrdSimIslands.cpp)
+set_target_properties(testCrdSimIslands PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
+target_link_libraries(testCrdSimIslands EGTTools)

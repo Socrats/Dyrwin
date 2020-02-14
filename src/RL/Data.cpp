@@ -36,7 +36,8 @@ EGTTools::RL::DataTypes::DataTableCRD::DataTableCRD(size_t nb_rows,
                                                     std::vector<std::string> &column_types,
                                                     std::vector<EGTTools::RL::PopContainer> &container)
     : header(std::move(headers)),
-      column_types(std::move(column_types)) {
+      column_types(std::move(column_types)),
+      populations(std::move(container)) {
   // We first instantiate the data container
   data = Matrix2D::Zero(nb_rows, nb_columns);
 }

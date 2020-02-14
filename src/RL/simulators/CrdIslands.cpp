@@ -3,7 +3,7 @@
 //
 #include <Dyrwin/RL/simulators/CrdIslands.h>
 
-using namespace EGTTools::RL::CRD::Simulators;
+using namespace EGTTools::RL::Simulators::CRD;
 
 CRDSimIslands::CRDSimIslands() {
   _real_rand = std::uniform_real_distribution<double>(0.0, 1.0);
@@ -25,7 +25,7 @@ CRDSimIslands::run_group_islands(size_t nb_evaluation_games,
   CRDGame <PopContainer> game;
 
   // Create a vector of groups - nb_actions = available_actions.size()
-  std::vector<PopContainer> groups(nb_groups);
+  std::vector<PopContainer> groups;
   for (size_t i = 0; i < nb_groups; i++)
     groups.emplace_back(agent_type, group_size, nb_rounds, available_actions.size(), nb_rounds, endowment, args);
 
@@ -45,7 +45,7 @@ CRDSimIslands::run_group_islands(size_t nb_evaluation_games,
        "total_contribution", "payoff", "success"};
   std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(10, nb_evaluation_games * group_size * nb_rounds,
+      data(nb_evaluation_games * group_size * nb_rounds, 10,
            headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
