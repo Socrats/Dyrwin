@@ -62,7 +62,6 @@ CRDSimIslands::run_group_islands(size_t nb_evaluation_games,
 
   return data;
 }
-
 EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islands(size_t nb_evaluation_games,
                                                                             size_t nb_populations,
                                                                             size_t population_size,
@@ -182,6 +181,129 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsTU(size_t 
                                                     available_actions,
                                                     game,
                                                     data);
+
+  // Finally we clear the unused rows
+  auto total_rows = group_size * total_nb_rounds;
+  data.data.conservativeResize(total_rows, 10);
+
+  return data;
+}
+EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsThU(size_t nb_evaluation_games,
+                                                                          size_t nb_groups,
+                                                                          size_t group_size,
+                                                                          size_t nb_generations,
+                                                                          size_t nb_games,
+                                                                          size_t nb_rounds,
+                                                                          int target,
+                                                                          int delta,
+                                                                          int endowment,
+                                                                          double risk,
+                                                                          ActionSpace &available_actions,
+                                                                          const std::string &agent_type,
+                                                                          const std::vector<double> &args) {
+  // First we instantiate a game - for now the game is always an Unconditional CRDGame
+  CRDGame<PopContainer, void, void> game;
+
+  // Create a vector of groups - nb_actions = available_actions.size()
+  std::vector<PopContainer> groups;
+  for (size_t i = 0; i < nb_groups; i++)
+    groups.emplace_back(agent_type, group_size, nb_rounds, available_actions.size(), nb_rounds, endowment, args);
+
+  // First we let all the groups adapt
+#pragma omp parallel for default(none) shared(groups, nb_groups, nb_generations, \
+  nb_games, nb_rounds, target, delta, risk, available_actions, game)
+  for (size_t group = 0; group < nb_groups; ++group) {
+    run_crd_single_groupThU(nb_generations, nb_games, nb_rounds, target, delta,
+                            risk, available_actions, groups[group], game);
+  }
+
+  // Now we create the data container
+  // It will contain a data matrix/table of 10 columns and
+  // nb_evaluation_games * group_size * nb_rounds
+  std::vector<std::string> headers =
+      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+       "total_contribution", "payoff", "success"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  EGTTools::RL::DataTypes::DataTableCRD
+      data(nb_evaluation_games * group_size * nb_rounds, 10,
+           headers, column_types, groups);
+
+  // Then we evaluate the agents by creating randomly mixed groups
+  evaluate_crd_populationsThU(nb_groups,
+                              group_size,
+                              group_size,
+                              nb_games,
+                              nb_rounds,
+                              target,
+                              delta,
+                              risk,
+                              available_actions,
+                              game,
+                              data);
+
+  return data;
+}
+EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsTUThU(size_t nb_evaluation_games,
+                                                                            size_t nb_groups,
+                                                                            size_t group_size,
+                                                                            size_t nb_generations,
+                                                                            size_t nb_games,
+                                                                            size_t min_rounds,
+                                                                            size_t mean_rounds,
+                                                                            size_t max_rounds,
+                                                                            double p,
+                                                                            int target,
+                                                                            int delta,
+                                                                            int endowment,
+                                                                            double risk,
+                                                                            ActionSpace &available_actions,
+                                                                            const std::string &agent_type,
+                                                                            const std::vector<double> &args) {
+  // First we calculate the probability of the game ending after the minimum number of rounds
+  if (mean_rounds > 0) {
+    p = 1.0 / static_cast<double>(mean_rounds - min_rounds + 1);
+  }
+  EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
+  // Then we instantiate a game with uncertainty
+  CRDGame <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game;
+
+  // Create a vector of groups - nb_actions = available_actions.size()
+  std::vector<PopContainer> groups;
+  for (size_t i = 0; i < nb_groups; i++)
+    groups.emplace_back(agent_type, group_size, max_rounds, available_actions.size(), max_rounds, endowment, args);
+
+  // First we let all the groups adapt
+#pragma omp parallel for default(none) shared(groups, tu, nb_groups, nb_generations, \
+  nb_games, min_rounds, target, delta, risk, available_actions, game)
+  for (size_t group = 0; group < nb_groups; ++group) {
+    run_crd_single_groupTUThU(nb_generations, nb_games, min_rounds, tu, target, delta,
+                              risk, available_actions, groups[group], game);
+  }
+
+  // Now we create the data container
+  // It will contain a data matrix/table of 10 columns and
+  // nb_evaluation_games * group_size * nb_rounds
+  std::vector<std::string> headers =
+      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+       "total_contribution", "payoff", "success"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  EGTTools::RL::DataTypes::DataTableCRD
+      data(nb_evaluation_games * group_size * max_rounds, 10,
+           headers, column_types, groups);
+
+  // Then we evaluate the agents by creating randomly mixed groups
+  auto total_nb_rounds = evaluate_crd_populationsTUThU(nb_groups,
+                                                       group_size,
+                                                       group_size,
+                                                       nb_games,
+                                                       min_rounds,
+                                                       tu,
+                                                       target,
+                                                       delta,
+                                                       risk,
+                                                       available_actions,
+                                                       game,
+                                                       data);
 
   // Finally we clear the unused rows
   auto total_rows = group_size * total_nb_rounds;
