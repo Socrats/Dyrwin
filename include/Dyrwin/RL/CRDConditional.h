@@ -23,7 +23,7 @@ namespace EGTTools::RL {
  *
  * @tparam A. Container for the agents.
  */
-template<typename A = Agent, typename R = void>
+template<typename A = Agent, typename R = EGTTools::TimingUncertainty<std::mt19937_64>, typename G = std::mt19937_64>
 class CRDConditional {
 
  public:
@@ -203,7 +203,7 @@ class CRDConditional {
 };
 
 template<typename A>
-class CRDConditional<A, void> {
+class CRDConditional<A, void, void> {
 
  public:
   explicit CRDConditional(FlattenState flatten) : _flatten(std::move(flatten)) {
@@ -353,13 +353,11 @@ class CRDConditional<A, void> {
   std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 };
 
-template<typename R>
-class CRDConditional<PopContainer, R> {
+template<typename R, typename G>
+class CRDConditional<PopContainer, R, G> {
 
  public:
-  explicit CRDConditional(FlattenState flatten) : _flatten(std::move(flatten)) {
-    _state = EGTTools::RL::Factors(2);
-  }
+  explicit CRDConditional(FlattenState flatten) : _flatten(std::move(flatten)) {}
 
   /**
    * @brief Model of the Collective-Risk dillemma game.
@@ -374,17 +372,18 @@ class CRDConditional<PopContainer, R> {
    * @return std::tuple (donations, rounds)
    */
   std::pair<double, size_t>
-  playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t min_rounds, R &gen_round) {
-    auto final_round = gen_round.calculateEnd(min_rounds, _mt);
+  playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t min_rounds, R &gen_round, G &generator) {
+    auto final_round = gen_round.calculateEnd(min_rounds, generator);
 
     double total = 0.0, partial = 0.0;
     size_t action, idx;
+    std::vector<size_t> state(2, 0); // creates a vector of size 2 with all members equal to 0
     for (auto &player : players) {
       player->resetPayoff();
     }
     for (size_t i = 0; i < final_round; i++) {
-      _state[0] = i, _state[1] = static_cast<size_t>(partial);
-      idx = _flatten.toIndex(_state);
+      state[0] = i, state[1] = static_cast<size_t>(partial);
+      idx = _flatten.toIndex(state);
       partial = 0.0;
       for (auto &player : players) {
         action = player->selectAction(i, idx);
@@ -402,6 +401,59 @@ class CRDConditional<PopContainer, R> {
           player->set_trajectory_round(i, action);
         }
         partial += actions[action];
+      }
+      total += partial;
+    }
+    return std::make_pair(total, final_round);
+  }
+
+  /**
+ * @brief stores the data of each round
+ *
+ * This method must return:
+ * a) actions per round of each player
+ *
+ * @param players : PopContainer with the agents that will play the game
+ * @param actions : available actions per round
+ * @param rounds : number of rounds
+ */
+  std::pair<int, size_t>
+  playGameVerbose(PopContainer &players,
+                  EGTTools::RL::ActionSpace &actions,
+                  size_t min_rounds,
+                  R &gen_round,
+                  G &generator,
+                  Matrix2D &results) {
+    auto final_round = gen_round.calculateEnd(min_rounds, generator);
+
+    size_t action_idx, state_idx;
+    std::vector<size_t> state(2, 0); // creates a vector of size 2 with all members equal to 0
+    int partial = 0;
+    int total = 0;
+    for (auto &player : players) {
+      player->resetPayoff();
+    }
+    for (size_t i = 0; i < final_round; i++) {
+      state[0] = i, state[1] = static_cast<size_t>(partial);
+      state_idx = _flatten.toIndex(state);
+      partial = 0.0;
+      for (size_t j = 0; j < players.size(); ++j) {
+        action_idx = players(j)->selectAction(i, state_idx);
+        if (!players(j)->decrease(actions[action_idx])) {
+          // Select the next best action
+          if (action_idx > 1) {
+            for (size_t n = 0; n < action_idx; ++n) {
+              if (players(j)->decrease(actions[action_idx - n - 1])) {
+                action_idx = action_idx - n - 1;
+                break;
+              }
+            }
+          }
+          players(j)->set_trajectory_round(i, action_idx);
+        }
+        partial += actions[action_idx];
+        // now we store this data on results
+        results(j, i) = action_idx;
       }
       total += partial;
     }
@@ -466,13 +518,10 @@ class CRDConditional<PopContainer, R> {
 
  private:
   FlattenState _flatten;
-  EGTTools::RL::Factors _state;
-  // Random generators
-  std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 };
 
 template<>
-class CRDConditional<PopContainer, void> {
+class CRDConditional<PopContainer, void, void> {
 
  public:
 
@@ -492,7 +541,7 @@ class CRDConditional<PopContainer, void> {
    */
   std::pair<double, size_t>
   playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds) {
-    size_t action_idx;
+    size_t action_idx, state_idx;
     double total = 0.0, partial = 0.0;
     std::vector<size_t> state(2, 0); // creates a vector of size 2 with all members equal to 0
     for (auto &player : players) {
@@ -500,9 +549,10 @@ class CRDConditional<PopContainer, void> {
     }
     for (size_t i = 0; i < rounds; ++i) {
       state[0] = i, state[1] = static_cast<size_t>(partial);
+      state_idx = _flatten.toIndex(state);
       partial = 0.0;
       for (auto &player : players) {
-        action_idx = player->selectAction(i, _flatten.toIndex(state));
+        action_idx = player->selectAction(i, state_idx);
         player->decrease(actions[action_idx]);
         partial += actions[action_idx];
       }
@@ -596,9 +646,6 @@ class CRDConditional<PopContainer, void> {
 
  private:
   FlattenState _flatten;
-//  EGTTools::RL::Factors _state;
-  // Random generators
-  std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 };
 
 }

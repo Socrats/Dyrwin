@@ -81,7 +81,7 @@ EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups,
   size_t transient = (nb_episodes > 100) ? nb_episodes - 100 : 0;
 
   // Create a vector of groups
-  std::vector<PopContainer> groups;
+  std::vector <PopContainer> groups;
 
   for (size_t i = 0; i < nb_groups; ++i) {
     try {
@@ -98,7 +98,7 @@ EGTTools::RL::CRDSim::run(size_t nb_episodes, size_t nb_games, size_t nb_groups,
     size_t success;
     double avg_contribution;
     double avg_rounds;
-    CRDGame<PopContainer> game;
+    CRDGame<PopContainer, void, void> game;
 
     for (size_t step = 0; step < nb_episodes; ++step) {
       success = 0;
@@ -141,7 +141,7 @@ EGTTools::RL::CRDSim::run(size_t nb_groups, size_t group_size, size_t nb_episode
   EGTTools::Vector avg_donations = Vector::Zero(nb_groups);
 
   // Create a vector of groups
-  std::vector<PopContainer> groups;
+  std::vector <PopContainer> groups;
   // Initialise al the independent groups
   for (size_t i = 0; i < nb_groups; ++i) {
     try {
@@ -157,7 +157,7 @@ EGTTools::RL::CRDSim::run(size_t nb_groups, size_t group_size, size_t nb_episode
     size_t success;
     double avg_contribution;
     double avg_rounds;
-    CRDGame<PopContainer> game;
+    CRDGame<PopContainer, void, void> game;
     std::mt19937_64 generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 
     for (size_t step = 0; step < nb_episodes; ++step) {
@@ -206,7 +206,7 @@ EGTTools::RL::CRDSim::run(size_t group_size,
   size_t success;
   double avg_contribution;
   double avg_rounds;
-  CRDGame<PopContainer> game;
+  CRDGame<PopContainer, void, void> game;
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
   // Create a population of _group_size * nb_groups
   PopContainer group(agent_type, group_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
@@ -243,14 +243,14 @@ EGTTools::RL::CRDSim::runWellMixed(size_t nb_generations, size_t nb_games, size_
   size_t success;
   double avg_contribution;
   double avg_rounds;
-  CRDGame<PopContainer> game;
+  CRDGame<PopContainer, void, void> game;
 
   std::mt19937_64 generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 
   // Create a population of _group_size * nb_groups
   PopContainer wmPop(_agent_type, pop_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
   PopContainer group;
-  std::vector<size_t> groups(pop_size);
+  std::vector <size_t> groups(pop_size);
   std::iota(groups.begin(), groups.end(), 0);
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(wmPop(i));
@@ -288,7 +288,7 @@ EGTTools::RL::CRDSim::runWellMixed(size_t pop_size, size_t group_size, size_t nb
   size_t success;
   double avg_contribution;
   double avg_rounds;
-  CRDGame<PopContainer> game;
+  CRDGame<PopContainer, void, void> game;
 
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
@@ -296,7 +296,7 @@ EGTTools::RL::CRDSim::runWellMixed(size_t pop_size, size_t group_size, size_t nb
   PopContainer wmPop(agent_type, pop_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
   EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
   PopContainer group;
-  std::unordered_set<size_t> container;
+  std::unordered_set <size_t> container;
   container.reserve(group_size);
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.population(i));
@@ -339,7 +339,7 @@ EGTTools::RL::CRDSim::runWellMixedSync(size_t pop_size, size_t group_size, size_
   size_t success;
   double avg_contribution;
   double avg_rounds;
-  CRDGame<PopContainer> game;
+  CRDGame<PopContainer, void, void> game;
 
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
@@ -350,7 +350,7 @@ EGTTools::RL::CRDSim::runWellMixedSync(size_t pop_size, size_t group_size, size_
   PopContainer group;
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.population(i));
-  std::unordered_set<size_t> container;
+  std::unordered_set <size_t> container;
   container.reserve(group_size - 1);
 
   for (size_t generation = 0; generation < nb_generations; ++generation) {
@@ -448,7 +448,7 @@ EGTTools::RL::CRDSim::runTimingUncertainty(size_t nb_episodes, size_t nb_games, 
     p = 1.0 / static_cast<double>(mean_rounds - min_rounds + 1);
   }
   EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
-  CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game;
+  CRDGame <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game;
   Matrix2D results = Matrix2D::Zero(2, nb_episodes);
 
   // Now create agent pool
@@ -457,17 +457,22 @@ EGTTools::RL::CRDSim::runTimingUncertainty(size_t nb_episodes, size_t nb_games, 
 
   // Choose function to use
   void (EGTTools::RL::CRDSim::*reinforce)(double &, size_t &, double &, PopContainer &, size_t &,
-                                          CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> &);
+                                          CRDGame <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> &);
 
   if (_agent_type == "rothErev")
     reinforce = &EGTTools::RL::CRDSim::reinforceOnlyPositive<CRDGame<PopContainer,
-                                                                     EGTTools::TimingUncertainty<std::mt19937_64>>>;
+                                                                     EGTTools::TimingUncertainty<std::mt19937_64>,
+                                                                     std::mt19937_64>>;
   else if (crd_type == "milinski")
     reinforce =
-        &EGTTools::RL::CRDSim::reinforceAll<CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>>>;
+        &EGTTools::RL::CRDSim::reinforceAll<CRDGame < PopContainer,
+                                            EGTTools::TimingUncertainty<std::mt19937_64>,
+                                            std::mt19937_64>>;
   else
-    reinforce =
-        &EGTTools::RL::CRDSim::reinforceXico<CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>>>;
+  reinforce =
+      &EGTTools::RL::CRDSim::reinforceXico<CRDGame < PopContainer,
+                                           EGTTools::TimingUncertainty<std::mt19937_64>,
+                                           std::mt19937_64> >;
 
   for (size_t step = 0; step < nb_episodes; ++step) {
     size_t success = 0;
@@ -475,7 +480,7 @@ EGTTools::RL::CRDSim::runTimingUncertainty(size_t nb_episodes, size_t nb_games, 
     double avg_rounds = 0.;
     for (unsigned int i = 0; i < nb_games; ++i) {
       // First we play the game
-      auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu);
+      auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu, _generator);
       avg_contribution += (game.playersContribution(group) / double(_group_size));
       (this->*reinforce)(pool, success, risk, group, final_round, game);
       avg_rounds += final_round;
@@ -501,14 +506,14 @@ EGTTools::RL::CRDSim::runWellMixedTU(size_t pop_size, size_t group_size, size_t 
     p = 1.0 / static_cast<double>(mean_rounds - min_rounds + 1);
   }
   EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
-  CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game;
+  CRDGame <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game;
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
   // Create a population of _group_size * nb_groups
   PopContainer wmPop(agent_type, pop_size, max_rounds, _nb_actions, max_rounds, _endowment, args);
   EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
   PopContainer group;
-  std::vector<size_t> groups(pop_size);
+  std::vector <size_t> groups(pop_size);
   std::iota(groups.begin(), groups.end(), 0);
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.population(i));
@@ -527,7 +532,7 @@ EGTTools::RL::CRDSim::runWellMixedTU(size_t pop_size, size_t group_size, size_t 
       for (size_t j = 0; j < group_size; ++j)
         group(j) = data.population(groups[j]);
       // First we play the game
-      auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu);
+      auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu, generator);
       avg_contribution += (game.playersContribution(group) / double(group_size));
       reinforceAll(pool, success, threshold, risk, group, final_round, game, generator);
       avg_rounds += final_round;
@@ -571,17 +576,17 @@ EGTTools::RL::CRDSim::runWellMixedThU(size_t pop_size, size_t group_size, size_t
   size_t success;
   double avg_contribution;
   double avg_rounds;
-  CRDGame<PopContainer> game;
+  CRDGame<PopContainer, void, void> game;
 
   // Define the distribution for the threshold
-  std::uniform_int_distribution<size_t> t_dist(threshold - delta / 2, threshold + delta / 2);
+  std::uniform_int_distribution <size_t> t_dist(threshold - delta / 2, threshold + delta / 2);
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
   // Create a population of _group_size * nb_groups
   PopContainer wmPop(agent_type, pop_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
   EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
   PopContainer group;
-  std::vector<size_t> groups(pop_size);
+  std::vector <size_t> groups(pop_size);
   std::iota(groups.begin(), groups.end(), 0);
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.population(i));
@@ -639,17 +644,17 @@ EGTTools::RL::CRDSim::runWellMixedThUSync(size_t pop_size, size_t group_size, si
   size_t success;
   double avg_contribution;
   double avg_rounds;
-  CRDGame<PopContainer> game;
+  CRDGame<PopContainer, void, void> game;
 
   // Define the distribution for the threshold
-  std::uniform_int_distribution<size_t> t_dist(threshold - delta / 2, threshold + delta / 2);
+  std::uniform_int_distribution <size_t> t_dist(threshold - delta / 2, threshold + delta / 2);
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
   // Create a population of _group_size * nb_groups
   PopContainer wmPop(agent_type, pop_size, _nb_rounds, _nb_actions, _nb_rounds, _endowment, args);
   EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
   PopContainer group;
-  std::vector<size_t> pop_index(pop_size);
+  std::vector <size_t> pop_index(pop_size);
   std::iota(pop_index.begin(), pop_index.end(), 0);
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.population(i));
@@ -720,16 +725,16 @@ EGTTools::RL::CRDSim::runWellMixedTUnThU(size_t pop_size, size_t group_size, siz
     p = 1.0 / static_cast<double>(mean_rounds - min_rounds + 1);
   }
   EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
-  CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game;
+  CRDGame <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game;
   // Define the distribution for the threshold
-  std::uniform_int_distribution<size_t> t_dist(threshold - delta / 2, threshold + delta / 2);
+  std::uniform_int_distribution <size_t> t_dist(threshold - delta / 2, threshold + delta / 2);
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
   // Create a population of _group_size * nb_groups
   PopContainer wmPop(agent_type, pop_size, max_rounds, _nb_actions, max_rounds, _endowment, args);
   EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
   PopContainer group;
-  std::vector<size_t> groups(pop_size);
+  std::vector <size_t> groups(pop_size);
   std::iota(groups.begin(), groups.end(), 0);
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.population(i));
@@ -748,7 +753,7 @@ EGTTools::RL::CRDSim::runWellMixedTUnThU(size_t pop_size, size_t group_size, siz
       for (size_t j = 0; j < group_size; ++j)
         group(j) = data.population(groups[j]);
       // First we play the game
-      auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu);
+      auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu, generator);
       avg_contribution += (game.playersContribution(group) / double(group_size));
       reinforceAll(pool, success, static_cast<double>(t_dist(generator)), risk, group, final_round, game,
                    generator);
@@ -800,14 +805,14 @@ EGTTools::RL::CRDSim::runWellMixedTUSync(size_t pop_size, size_t group_size, siz
     p = 1.0 / static_cast<double>(mean_rounds - min_rounds + 1);
   }
   EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
-  CRDGame<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game;
+  CRDGame <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game;
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
   // Create a population of _group_size * nb_groups
   PopContainer wmPop(agent_type, pop_size, max_rounds, _nb_actions, max_rounds, _endowment, args);
   EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
   PopContainer group;
-  std::vector<size_t> groups(pop_size);
+  std::vector <size_t> groups(pop_size);
   std::iota(groups.begin(), groups.end(), 0);
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.population(i));
@@ -834,7 +839,7 @@ EGTTools::RL::CRDSim::runWellMixedTUSync(size_t pop_size, size_t group_size, siz
             group(j + 1) = data.population(groups[j]);
           }
         // First we play the game
-        auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu);
+        auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu, generator);
         avg_contribution += (game.playersContribution(group) / double(group_size));
         avg_rounds += final_round;
         // Reinforce only the current player
@@ -895,7 +900,7 @@ EGTTools::RL::CRDSim::runConditionalTU(size_t nb_episodes, size_t nb_games, size
   ActionSpace available_actions(_nb_actions);
   std::iota(available_actions.begin(), available_actions.end(), 0);
   FlattenState flatten(Factors{max_rounds, (_group_size * _nb_actions) + 1});
-  CRDConditional<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game(flatten);
+  CRDConditional <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
 
   // Now create agent pool
   // Create a population of _group_size
@@ -904,17 +909,20 @@ EGTTools::RL::CRDSim::runConditionalTU(size_t nb_episodes, size_t nb_games, size
 
   // Choose function to use
   void (EGTTools::RL::CRDSim::*reinforce)(double &, size_t &, double &, PopContainer &, size_t &,
-                                          CRDConditional<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> &);
+                                          CRDConditional <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> &);
 
   if (_agent_type == "rothErev")
-    reinforce = &EGTTools::RL::CRDSim::reinforceOnlyPositive<CRDConditional<PopContainer,
-                                                                            EGTTools::TimingUncertainty<std::mt19937_64>>>;
+    reinforce = &EGTTools::RL::CRDSim::reinforceOnlyPositive<CRDConditional < PopContainer,
+                                                             EGTTools::TimingUncertainty<std::mt19937_64>,
+                                                             std::mt19937_64> >;
   else if (crd_type == "milinski")
     reinforce =
-        &EGTTools::RL::CRDSim::reinforceAll<CRDConditional<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>>>;
+        &EGTTools::RL::CRDSim::reinforceAll<CRDConditional < PopContainer,
+                                            EGTTools::TimingUncertainty<std::mt19937_64>,
+                                            std::mt19937_64>>;
   else
-    reinforce = &EGTTools::RL::CRDSim::reinforceXico<CRDConditional<PopContainer,
-                                                                    EGTTools::TimingUncertainty<std::mt19937_64>>>;
+  reinforce = &EGTTools::RL::CRDSim::reinforceXico<CRDConditional < PopContainer,
+                                                   EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64>>;
 
   for (size_t step = 0; step < nb_episodes; ++step) {
     success = 0;
@@ -922,7 +930,7 @@ EGTTools::RL::CRDSim::runConditionalTU(size_t nb_episodes, size_t nb_games, size
     avg_rounds = 0.;
     for (unsigned int i = 0; i < nb_games; ++i) {
       // First we play the game
-      auto[pool, final_round] = game.playGame(group, available_actions, min_rounds, tu);
+      auto[pool, final_round] = game.playGame(group, available_actions, min_rounds, tu, _generator);
       avg_contribution += (game.playersContribution(group) / double(_group_size));
       (this->*reinforce)(pool, success, risk, group, final_round, game);
       avg_rounds += final_round;
@@ -946,20 +954,20 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
   ActionSpace available_actions(_nb_actions);
   std::iota(available_actions.begin(), available_actions.end(), 0);
   FlattenState flatten(Factors{_nb_rounds, (_group_size * _nb_actions) + 1});
-  CRDConditional<PopContainer> game(flatten);
+  CRDConditional <PopContainer, void, void> game(flatten);
 
   // Create a population of _group_size * nb_groups
   PopContainer popConditional(_agent_type, _group_size, game.flatten().factor_space, _nb_actions, _nb_rounds,
                               _endowment, args);
   void
-  (EGTTools::RL::CRDSim::*reinforce)(double &, size_t &, double &, PopContainer &, CRDConditional<PopContainer> &);
+  (EGTTools::RL::CRDSim::*reinforce)(double &, size_t &, double &, PopContainer &, CRDConditional <PopContainer, void, void> &);
 
   if (_agent_type == "rothErev")
-    reinforce = &EGTTools::RL::CRDSim::reinforceOnlyPositive<CRDConditional<PopContainer>>;
+    reinforce = &EGTTools::RL::CRDSim::reinforceOnlyPositive<CRDConditional < PopContainer, void, void>>;
   else if (crd_type == "milinski")
-    reinforce = &EGTTools::RL::CRDSim::reinforceAll<CRDConditional<PopContainer>>;
+    reinforce = &EGTTools::RL::CRDSim::reinforceAll<CRDConditional < PopContainer, void, void>>;
   else
-    reinforce = &EGTTools::RL::CRDSim::reinforceXico<CRDConditional<PopContainer>>;
+  reinforce = &EGTTools::RL::CRDSim::reinforceXico<CRDConditional < PopContainer, void, void>>;
 
   for (size_t step = 0; step < nb_episodes; ++step) {
     success = 0;
@@ -993,7 +1001,7 @@ EGTTools::RL::CRDSim::runConditional(size_t group_size, size_t nb_episodes, size
   ActionSpace available_actions(_nb_actions);
   std::iota(available_actions.begin(), available_actions.end(), 0);
   FlattenState flatten(Factors{_nb_rounds, (_group_size * _nb_actions) + 1});
-  CRDConditional<PopContainer> game(flatten);
+  CRDConditional <PopContainer, void, void> game(flatten);
   // Random generator
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
@@ -1037,17 +1045,17 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
   std::iota(available_actions.begin(), available_actions.end(), 0);
 
   void
-  (EGTTools::RL::CRDSim::*reinforce)(double &, size_t &, double &, PopContainer &, CRDConditional<PopContainer> &);
+  (EGTTools::RL::CRDSim::*reinforce)(double &, size_t &, double &, PopContainer &, CRDConditional <PopContainer, void, void> &);
 
   if (_agent_type == "rothErev")
-    reinforce = &EGTTools::RL::CRDSim::reinforceOnlyPositive<CRDConditional<PopContainer>>;
+    reinforce = &EGTTools::RL::CRDSim::reinforceOnlyPositive<CRDConditional < PopContainer, void, void>>;
   else if (crd_type == "milinski")
-    reinforce = &EGTTools::RL::CRDSim::reinforceAll<CRDConditional<PopContainer>>;
+    reinforce = &EGTTools::RL::CRDSim::reinforceAll<CRDConditional < PopContainer, void, void>>;
   else
-    reinforce = &EGTTools::RL::CRDSim::reinforceXico<CRDConditional<PopContainer>>;
+  reinforce = &EGTTools::RL::CRDSim::reinforceXico<CRDConditional < PopContainer, void, void>>;
 
   // Create a vector of groups
-  std::vector<PopContainer> groups;
+  std::vector <PopContainer> groups;
 
   for (size_t i = 0; i < nb_groups; ++i) {
     try {
@@ -1067,7 +1075,7 @@ EGTTools::Matrix2D EGTTools::RL::CRDSim::runConditional(size_t nb_episodes, size
     double avg_contribution;
     double avg_rounds;
     FlattenState flatten(Factors{_nb_rounds, (_group_size * _nb_actions) + 1});
-    CRDConditional<PopContainer> game(flatten);
+    CRDConditional <PopContainer, void, void> game(flatten);
 
     for (size_t step = 0; step < nb_episodes; ++step) {
       success = 0;
@@ -1108,7 +1116,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixed(size_t pop_size, size_t group_size
   // and the second the donations of the group in the previous round (maximum group_size * (nb_action - 1) + 1)
   FlattenState flatten(Factors{_nb_rounds, (group_size * (_nb_actions - 1)) + 1});
   // Instantiate game
-  CRDConditional<PopContainer> game(flatten);
+  CRDConditional <PopContainer, void, void> game(flatten);
 
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
@@ -1117,7 +1125,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixed(size_t pop_size, size_t group_size
                      _endowment, args);
   EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
   PopContainer group;
-  std::vector<size_t> pop_index(pop_size);
+  std::vector <size_t> pop_index(pop_size);
   std::iota(pop_index.begin(), pop_index.end(), 0);
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.population(i));
@@ -1184,7 +1192,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixedSync(size_t pop_size, size_t group_
   // and the second the donations of the group in the previous round (maximum group_size * (nb_action - 1) + 1)
   FlattenState flatten(Factors{_nb_rounds, (group_size * (_nb_actions - 1)) + 1});
   // Instantiate game
-  CRDConditional<PopContainer> game(flatten);
+  CRDConditional <PopContainer, void, void> game(flatten);
 
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
@@ -1193,7 +1201,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixedSync(size_t pop_size, size_t group_
                      _endowment, args);
   EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
   PopContainer group;
-  std::vector<size_t> pop_index(pop_size);
+  std::vector <size_t> pop_index(pop_size);
   std::iota(pop_index.begin(), pop_index.end(), 0);
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.population(i));
@@ -1273,7 +1281,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixedTU(size_t pop_size, size_t group_si
   // Calculate threshold (dependent on group size)
   EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
   FlattenState flatten(Factors{max_rounds, (group_size * (_nb_actions - 1)) + 1});
-  CRDConditional<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game(flatten);
+  CRDConditional <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
 
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
@@ -1282,7 +1290,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixedTU(size_t pop_size, size_t group_si
                      _endowment, args);
   EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
   PopContainer group;
-  std::vector<size_t> pop_index(pop_size);
+  std::vector <size_t> pop_index(pop_size);
   std::iota(pop_index.begin(), pop_index.end(), 0);
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.population(i));
@@ -1302,7 +1310,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixedTU(size_t pop_size, size_t group_si
       for (size_t j = 0; j < group_size; ++j)
         group(j) = data.population(pop_index[j]);
       // First we play the game
-      auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu);
+      auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu, generator);
       avg_contribution += (game.playersContribution(group) / double(group_size));
       reinforceAll(pool, success, threshold, risk, group, final_round, game, generator);
       avg_rounds += final_round;
@@ -1361,7 +1369,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixedTUSync(size_t pop_size,
   // Calculate threshold (dependent on group size)
   EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
   FlattenState flatten(Factors{max_rounds, (group_size * (_nb_actions - 1)) + 1});
-  CRDConditional<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game(flatten);
+  CRDConditional <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
 
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
@@ -1370,7 +1378,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixedTUSync(size_t pop_size,
                      _endowment, args);
   EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
   PopContainer group;
-  std::vector<size_t> pop_index(pop_size);
+  std::vector <size_t> pop_index(pop_size);
   std::iota(pop_index.begin(), pop_index.end(), 0);
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.population(i));
@@ -1398,7 +1406,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixedTUSync(size_t pop_size,
             group(j + 1) = data.population(pop_index[j]);
           }
         // First we play the game
-        auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu);
+        auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu, generator);
         avg_contribution += (game.playersContribution(group) / double(group_size));
         avg_rounds += final_round;
         // Reinforce only current player
@@ -1458,11 +1466,11 @@ EGTTools::RL::CRDSim::runConditionalWellMixedThU(size_t pop_size,
                                                  const std::string &agent_type,
                                                  const std::vector<double> &args) {
   // Define the distribution for the threshold
-  std::uniform_int_distribution<size_t> t_dist(threshold - delta / 2, threshold + delta / 2);
+  std::uniform_int_distribution <size_t> t_dist(threshold - delta / 2, threshold + delta / 2);
 
   // Define the game with conditional agents
   FlattenState flatten(Factors{_nb_rounds, (group_size * (_nb_actions - 1)) + 1});
-  CRDConditional<PopContainer> game(flatten);
+  CRDConditional <PopContainer, void, void> game(flatten);
 
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
@@ -1470,7 +1478,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixedThU(size_t pop_size,
   PopContainer wmPop(agent_type, pop_size, game.flatten().factor_space, _nb_actions, _nb_rounds, _endowment, args);
   EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
   PopContainer group;
-  std::vector<size_t> pop_index(pop_size);
+  std::vector <size_t> pop_index(pop_size);
   std::iota(pop_index.begin(), pop_index.end(), 0);
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.population(i));
@@ -1544,11 +1552,11 @@ EGTTools::RL::CRDSim::runConditionalWellMixedThUSync(size_t pop_size,
                                                      const std::string &agent_type,
                                                      const std::vector<double> &args) {
   // Define the distribution for the threshold
-  std::uniform_int_distribution<size_t> t_dist(threshold - delta / 2, threshold + delta / 2);
+  std::uniform_int_distribution <size_t> t_dist(threshold - delta / 2, threshold + delta / 2);
 
   // Define the game with conditional agents
   FlattenState flatten(Factors{_nb_rounds, (group_size * (_nb_actions - 1)) + 1});
-  CRDConditional<PopContainer> game(flatten);
+  CRDConditional <PopContainer, void, void> game(flatten);
 
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
@@ -1556,7 +1564,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixedThUSync(size_t pop_size,
   PopContainer wmPop(agent_type, pop_size, game.flatten().factor_space, _nb_actions, _nb_rounds, _endowment, args);
   EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
   PopContainer group;
-  std::vector<size_t> groups(pop_size);
+  std::vector <size_t> groups(pop_size);
   std::iota(groups.begin(), groups.end(), 0);
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.population(i));
@@ -1650,16 +1658,16 @@ EGTTools::RL::CRDSim::runConditionalWellMixedTUnThU(size_t pop_size,
   EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
   // Define the game with conditional agents
   FlattenState flatten(Factors{max_rounds, (group_size * (_nb_actions - 1)) + 1});
-  CRDConditional<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>> game(flatten);
+  CRDConditional <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
   // Define the distribution for the threshold
-  std::uniform_int_distribution<size_t> t_dist(threshold - delta / 2, threshold + delta / 2);
+  std::uniform_int_distribution <size_t> t_dist(threshold - delta / 2, threshold + delta / 2);
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
   // Create a population of conditional agents of size \p pop_size
   PopContainer wmPop(agent_type, pop_size, game.flatten().factor_space, _nb_actions, max_rounds, _endowment, args);
   EGTTools::RL::DataTypes::CRDData data(nb_generations, wmPop);
   PopContainer group;
-  std::vector<size_t> groups(pop_size);
+  std::vector <size_t> groups(pop_size);
   std::iota(groups.begin(), groups.end(), 0);
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.population(i));
@@ -1678,7 +1686,7 @@ EGTTools::RL::CRDSim::runConditionalWellMixedTUnThU(size_t pop_size,
       for (size_t j = 0; j < group_size; ++j)
         group(j) = data.population(groups[j]);
       // First we play the game
-      auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu);
+      auto[pool, final_round] = game.playGame(group, _available_actions, min_rounds, tu, generator);
       avg_contribution += (game.playersContribution(group) / double(group_size));
       reinforceAll(pool, success, static_cast<double>(t_dist(generator)), risk, group, final_round, game,
                    generator);

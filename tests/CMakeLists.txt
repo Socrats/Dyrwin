@@ -49,3 +49,7 @@ target_link_libraries(testCrdSimIslandsGroup EGTTools)
 add_executable(testCrdSimIslandsPop TestCrdSimIslandsPopulation.cpp)
 set_target_properties(testCrdSimIslandsPop PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(testCrdSimIslandsPop EGTTools)
+
+add_executable(testCrdSimIslandsTUGroup TestCrdSimIslandsTUGroup.cpp)
+set_target_properties(testCrdSimIslandsTUGroup PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
+target_link_libraries(testCrdSimIslandsTUGroup EGTTools)

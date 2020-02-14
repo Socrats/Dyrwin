@@ -1372,7 +1372,7 @@ class CRDSim {
 
   void set_agent_type(const std::string &agent_type);
 
-  CRDGame<PopContainer> Game;
+  CRDGame<PopContainer, void, void> Game;
   PopContainer population;
 
  private:
@@ -1384,7 +1384,7 @@ class CRDSim {
   std::uniform_real_distribution<double> _real_rand;
 
   void (EGTTools::RL::CRDSim::*_reinforce)(double &, size_t &, double &, PopContainer &,
-                                           CRDGame<PopContainer> &) = nullptr;
+                                           CRDGame<PopContainer, void, void> &) = nullptr;
 
   // Random generators
   std::mt19937_64 _generator{EGTTools::Random::SeedGenerator::getInstance().getSeed()};

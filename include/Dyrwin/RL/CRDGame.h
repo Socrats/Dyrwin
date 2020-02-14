@@ -22,7 +22,7 @@ namespace EGTTools::RL {
  *
  * @tparam A. Container for the agents.
  */
-template<typename A = Agent, typename R = void>
+template<typename A = Agent, typename R = EGTTools::TimingUncertainty<std::mt19937_64>, typename G = std::mt19937_64>
 class CRDGame {
 
  public:
@@ -205,7 +205,7 @@ class CRDGame {
 };
 
 template<typename A>
-class CRDGame<A, void> {
+class CRDGame<A, void, void> {
 
  public:
 
@@ -359,8 +359,8 @@ class CRDGame<A, void> {
   std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 };
 
-template<typename R>
-class CRDGame<PopContainer, R> {
+template<typename R, typename G>
+class CRDGame<PopContainer, R, G> {
 
  public:
   /**
@@ -376,8 +376,8 @@ class CRDGame<PopContainer, R> {
    * @return std::tuple (donations, rounds)
    */
   std::pair<double, size_t>
-  playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t min_rounds, R &gen_round) {
-    auto final_round = gen_round.calculateEnd(min_rounds, _mt);
+  playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t min_rounds, R &gen_round, G &generator) {
+    auto final_round = gen_round.calculateEnd(min_rounds, generator);
 
     double total = 0.0;
     size_t idx;
@@ -402,6 +402,53 @@ class CRDGame<PopContainer, R> {
         }
 //                    player->decrease(actions[idx]);
         total += actions[idx];
+      }
+    }
+    return std::make_pair(total, final_round);
+  }
+
+  /**
+   * @brief stores the data of each round
+   *
+   * This method must return:
+   * a) actions per round of each player
+   *
+   * @param players : PopContainer with the agents that will play the game
+   * @param actions : available actions per round
+   * @param rounds : number of rounds
+   */
+  std::pair<int, size_t>
+  playGameVerbose(PopContainer &players,
+                  EGTTools::RL::ActionSpace &actions,
+                  size_t min_rounds,
+                  R &gen_round,
+                  G &generator,
+                  Matrix2D &results) {
+    auto final_round = gen_round.calculateEnd(min_rounds, generator);
+
+    size_t action_idx;
+    int total = 0;
+    for (auto &player : players) {
+      player->resetPayoff();
+    }
+    for (size_t i = 0; i < final_round; i++) {
+      for (size_t j = 0; j < players.size(); ++j) {
+        action_idx = players(j)->selectAction(i);
+        // In case nothing is left of the player's endowment, then donate 0
+        if (!players(j)->decrease(actions[action_idx])) {
+          // Select the next best action
+          if (action_idx > 1) {
+            for (size_t n = 0; n < action_idx; ++n) {
+              if (players(j)->decrease(actions[action_idx - n - 1])) {
+                action_idx = action_idx - n - 1;
+                break;
+              }
+            }
+          }
+          players(j)->set_trajectory_round(i, action_idx);
+        }
+        results(j, i) = actions[action_idx];
+        total += actions[action_idx];
       }
     }
     return std::make_pair(total, final_round);
@@ -460,15 +507,10 @@ class CRDGame<PopContainer, R> {
 
     return total;
   }
-
- private:
-
-  // Random generators
-  std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 };
 
 template<>
-class CRDGame<PopContainer, void> {
+class CRDGame<PopContainer, void, void> {
 
  public:
   /**
@@ -575,11 +617,6 @@ class CRDGame<PopContainer, void> {
 
     return total;
   }
-
- private:
-
-  // Random generators
-  std::mt19937_64 _mt{EGTTools::Random::SeedGenerator::getInstance().getSeed()};
 };
 
 }

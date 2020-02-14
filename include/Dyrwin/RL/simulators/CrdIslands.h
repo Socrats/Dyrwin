@@ -78,6 +78,17 @@ class CRDSimIslands {
                             PopContainer &population,
                             G &game);
 
+  template<class G, class U>
+  void run_crd_single_groupTU(size_t nb_generations,
+                              size_t nb_games,
+                              size_t min_rounds,
+                              U timing_uncertainty,
+                              int target,
+                              double risk,
+                              ActionSpace &available_actions,
+                              PopContainer &population,
+                              G &game);
+
   /**
    * @brief Runs a CRD game for \param nb_generations over a population of agents.
    *
@@ -162,6 +173,36 @@ class CRDSimIslands {
                                 DataTypes::DataTableCRD &data);
 
   /**
+   *
+   * @tparam G
+   * @tparam U
+   * @param nb_populations
+   * @param population_size
+   * @param group_size
+   * @param nb_games
+   * @param min_rounds
+   * @param timing_uncertainty
+   * @param target
+   * @param risk
+   * @param available_actions
+   * @param game
+   * @param data
+   * @return the total number of rounds (since it is uncertain) so that the data can be resized.
+   */
+  template<class G, class U>
+  size_t evaluate_crd_populationsTU(size_t nb_populations,
+                                    size_t population_size,
+                                    size_t group_size,
+                                    size_t nb_games,
+                                    size_t min_rounds,
+                                    U &timing_uncertainty,
+                                    int target,
+                                    double risk,
+                                    ActionSpace &available_actions,
+                                    G &game,
+                                    DataTypes::DataTableCRD &data);
+
+  /**
    * @brief Runs a CRD simulation, without uncertainty, where players learn in groups and later mix for evaluation.
    *
    * @param nb_groups : number of islands/groups.
@@ -210,8 +251,9 @@ class CRDSimIslands {
    * @param args
    * @return
    */
-  DataTypes::CRDDataIslands
-  run_group_islandsTU(size_t nb_groups,
+  DataTypes::DataTableCRD
+  run_group_islandsTU(size_t nb_evaluation_games,
+                      size_t nb_groups,
                       size_t group_size,
                       size_t nb_generations,
                       size_t nb_games,
@@ -442,6 +484,35 @@ void CRDSimIslands::run_crd_population(size_t population_size,
   }
 
 }
+template<class G, class U>
+void CRDSimIslands::run_crd_single_groupTU(size_t nb_generations,
+                                           size_t nb_games,
+                                           size_t min_rounds,
+                                           U timing_uncertainty,
+                                           int target,
+                                           double risk,
+                                           EGTTools::RL::ActionSpace &available_actions,
+                                           EGTTools::RL::PopContainer &population,
+                                           G &game) {
+  size_t success = 0;
+  std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
+
+  for (size_t generation = 0; generation < nb_generations; ++generation) {
+    success = 0;
+    for (size_t i = 0; i < nb_games; ++i) {
+      // First we play several games
+      auto[pool, final_round] = game.playGame(population, available_actions, min_rounds, timing_uncertainty, generator);
+      reinforce_population(pool, success, target, risk, population, final_round, game, generator);
+    }
+    // Then, update the population
+    game.calcProbabilities(population);
+    game.resetEpisode(population);
+  }
+
+  game.calcProbabilities(population);
+  game.resetEpisode(population);
+}
+
 template<class G>
 void CRDSimIslands::reinforce_population(double &pool,
                                          size_t &success,
@@ -544,6 +615,86 @@ void CRDSimIslands::evaluate_crd_populations(size_t nb_populations,
     }
     container.clear();
   }
+}
+template<class G, class U>
+size_t CRDSimIslands::evaluate_crd_populationsTU(size_t nb_populations,
+                                                 size_t population_size,
+                                                 size_t group_size,
+                                                 size_t nb_games,
+                                                 size_t min_rounds,
+                                                 U &timing_uncertainty,
+                                                 int target,
+                                                 double risk,
+                                                 ActionSpace &available_actions,
+                                                 G &game,
+                                                 DataTypes::DataTableCRD &data) {
+  // Some helpful variables
+  size_t total_population_size = nb_populations * population_size;
+  bool success;
+  size_t total_nb_rounds = 0;
+  size_t data_index = 0;
+  Matrix2D game_data = Matrix2D::Zero(group_size, timing_uncertainty.max_rounds());
+  std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
+
+  // We will need a container for the random groups
+  PopContainer group;
+  std::unordered_set<size_t> container;
+  container.reserve(group_size);
+
+  // This step is simply to make sure that we have allocated memory for the group
+  for (size_t i = 0; i < group_size; ++i)
+    group.push_back(data.populations[0](i));
+
+  // The agents will be evaluated through nb_games games
+  for (size_t i = 0; i < nb_games; ++i) {
+    // At each iteration, we sample a random group, taking players
+    // randomly from any population. For that we sample integers from the range
+    // [0, nb_populations * population_size)
+    EGTTools::sampling::sample_without_replacement(total_population_size, group_size, container, generator);
+    int j = 0;
+    for (const auto &elem: container) {
+      group(j) = data.populations[elem / population_size](elem % population_size);
+      j++;
+    }
+    // First we play the game
+    auto[public_pool, final_round] = game.playGameVerbose(group,
+                                                          available_actions,
+                                                          min_rounds,
+                                                          timing_uncertainty,
+                                                          generator,
+                                                          game_data);
+    total_nb_rounds += final_round;
+    // Check if the game was successful
+    success = public_pool >= target;
+    if ((!success) && _real_rand(generator) < risk)
+      game.setPayoffs(group, 0);
+
+    // Now we update the data table with the info of this game
+    // For each player and round, we add:
+    // group, player, game_index, round, action, group_contributions, contributions_others,
+    // total_contribution, payoff, success
+    j = 0;
+    for (const auto &elem: container) {
+      auto total_contribution = game_data.row(j).sum();
+      for (size_t r = 0; r < final_round; ++r) {
+        auto group_contributions = game_data.col(r).sum();
+        data.data(data_index, 0) = i;
+        data.data(data_index, 1) = elem;
+        data.data(data_index, 2) = j;
+        data.data(data_index, 3) = r;
+        data.data(data_index, 4) = game_data(j, r);
+        data.data(data_index, 5) = group_contributions;
+        data.data(data_index, 6) = group_contributions - game_data(j, r);
+        data.data(data_index, 7) = total_contribution;
+        data.data(data_index, 8) = group(j)->payoff();
+        data.data(data_index, 9) = success;
+        data_index++;
+      }
+      j++;
+    }
+    container.clear();
+  }
+  return total_nb_rounds;
 }
 } // namespace EGTTools::RL::Simulators
 

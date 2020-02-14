@@ -22,7 +22,7 @@ CRDSimIslands::run_group_islands(size_t nb_evaluation_games,
                                  const std::string &agent_type,
                                  const std::vector<double> &args) {
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
-  CRDGame <PopContainer> game;
+  CRDGame<PopContainer, void, void> game;
 
   // Create a vector of groups - nb_actions = available_actions.size()
   std::vector<PopContainer> groups;
@@ -77,7 +77,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islands(size
                                                                             const std::string &agent_type,
                                                                             const std::vector<double> &args) {
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
-  CRDGame <PopContainer> game;
+  CRDGame<PopContainer, void, void> game;
 
   // Create a vector of groups - nb_actions = available_actions.size()
   std::vector<PopContainer> populations;
@@ -91,7 +91,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islands(size
                              args);
 
   // First we let all the groups adapt
-#pragma omp parallel for default(none) shared(populations, nb_populations, population_size, group_size, nb_generations,\
+#pragma omp parallel for default(none) shared(populations, nb_populations, population_size, group_size, nb_generations, \
   nb_games, nb_rounds, target, risk, available_actions, game)
   for (size_t population = 0; population < nb_populations; ++population) {
     run_crd_population(population_size, group_size, nb_generations, nb_games, nb_rounds, target,
@@ -120,6 +120,72 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islands(size
                            available_actions,
                            game,
                            data);
+
+  return data;
+}
+EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsTU(size_t nb_evaluation_games,
+                                                                         size_t nb_groups,
+                                                                         size_t group_size,
+                                                                         size_t nb_generations,
+                                                                         size_t nb_games,
+                                                                         size_t min_rounds,
+                                                                         size_t mean_rounds,
+                                                                         size_t max_rounds,
+                                                                         double p,
+                                                                         int target,
+                                                                         int endowment,
+                                                                         double risk,
+                                                                         EGTTools::RL::ActionSpace &available_actions,
+                                                                         const std::string &agent_type,
+                                                                         const std::vector<double> &args) {
+  // First we calculate the probability of the game ending after the minimum number of rounds
+  if (mean_rounds > 0) {
+    p = 1.0 / static_cast<double>(mean_rounds - min_rounds + 1);
+  }
+  EGTTools::TimingUncertainty<std::mt19937_64> tu(p, max_rounds);
+  // Then we instantiate a game with uncertainty
+  CRDGame <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game;
+
+  // Create a vector of groups - nb_actions = available_actions.size()
+  std::vector<PopContainer> groups;
+  for (size_t i = 0; i < nb_groups; i++)
+    groups.emplace_back(agent_type, group_size, max_rounds, available_actions.size(), max_rounds, endowment, args);
+
+  // First we let all the groups adapt
+#pragma omp parallel for default(none) shared(groups, tu, nb_groups, nb_generations, \
+  nb_games, min_rounds, target, risk, available_actions, game)
+  for (size_t group = 0; group < nb_groups; ++group) {
+    run_crd_single_groupTU(nb_generations, nb_games, min_rounds, tu, target,
+                           risk, available_actions, groups[group], game);
+  }
+
+  // Now we create the data container
+  // It will contain a data matrix/table of 10 columns and
+  // nb_evaluation_games * group_size * nb_rounds
+  std::vector<std::string> headers =
+      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+       "total_contribution", "payoff", "success"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  EGTTools::RL::DataTypes::DataTableCRD
+      data(nb_evaluation_games * group_size * max_rounds, 10,
+           headers, column_types, groups);
+
+  // Then we evaluate the agents by creating randomly mixed groups
+  auto total_nb_rounds = evaluate_crd_populationsTU(nb_groups,
+                                                    group_size,
+                                                    group_size,
+                                                    nb_games,
+                                                    min_rounds,
+                                                    tu,
+                                                    target,
+                                                    risk,
+                                                    available_actions,
+                                                    game,
+                                                    data);
+
+  // Finally we clear the unused rows
+  auto total_rows = nb_evaluation_games * group_size * total_nb_rounds;
+  data.data.conservativeResize(total_rows, 10);
 
   return data;
 }
