@@ -314,8 +314,9 @@ class CRDSimIslands {
    * @param args : arguments to initialize the agent.
    * @return : a data structure that includes the adapted population and the average group achievement and donations.
    */
-  DataTypes::CRDDataIslands
-  run_population_islands(size_t nb_populations,
+  DataTypes::DataTableCRD
+  run_population_islands(size_t nb_evaluation_games,
+                         size_t nb_populations,
                          size_t population_size,
                          size_t group_size,
                          size_t nb_generations,
@@ -432,7 +433,7 @@ void CRDSimIslands::run_crd_population(size_t population_size,
       }
       // First we play the game
       auto[pool, final_round] = game.playGame(group, available_actions, nb_rounds);
-      reinforceAll(pool, success, target, risk, group, game, generator);
+      reinforce_population(pool, success, target, risk, group, game, generator);
       container.clear();
     }
 

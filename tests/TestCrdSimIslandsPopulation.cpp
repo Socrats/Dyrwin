@@ -14,7 +14,8 @@ int main() {
   //parameters
   size_t nb_evaluation_games = 1000;
   size_t nb_generations = 100;
-  size_t nb_groups = 4;
+  size_t nb_populations = 2;
+  size_t population_size = 24;
   size_t group_size = 6;
   size_t nb_actions = 3; //0, 2 and 4
   size_t nb_rounds = 10;
@@ -33,25 +34,26 @@ int main() {
 
   try {
     EGTTools::RL::Simulators::CRD::CRDSimIslands sim;
-    EGTTools::RL::DataTypes::DataTableCRD results = sim.run_group_islands(nb_evaluation_games,
-                                                                          nb_groups,
-                                                                          group_size,
-                                                                          nb_generations,
-                                                                          nb_games,
-                                                                          nb_rounds,
-                                                                          target,
-                                                                          endowment,
-                                                                          risk,
-                                                                          available_actions,
-                                                                          agent_type,
-                                                                          args);
+    EGTTools::RL::DataTypes::DataTableCRD results = sim.run_population_islands(nb_evaluation_games,
+                                                                               nb_populations,
+                                                                               population_size,
+                                                                               group_size,
+                                                                               nb_generations,
+                                                                               nb_games,
+                                                                               nb_rounds,
+                                                                               target,
+                                                                               endowment,
+                                                                               risk,
+                                                                               available_actions,
+                                                                               agent_type,
+                                                                               args);
     std::cout << "Finished simulation" << std::endl;
     std::string header =
         std::accumulate(results.header.begin(), results.header.end(), std::string(""),
                         [](string &ss, string &s) {
                           return ss.empty() ? s : ss + "," + s;
                         });
-    EGTTools::OutputHandler::writeToCSVFile("testIslands.csv", header, results.data);
+    EGTTools::OutputHandler::writeToCSVFile("testIslandsPopulation.csv", header, results.data);
 
   } catch (std::invalid_argument &e) {
     std::cerr << "\033[1;31m[EXCEPTION] Invalid argument: " << e.what() << "\033[0m" << std::endl;
