@@ -37,6 +37,7 @@ using namespace EGTTools;
 using PairwiseComparison = EGTTools::SED::PairwiseMoran<EGTTools::Utils::LRUCache<std::string, double>>;
 using crdData = EGTTools::RL::DataTypes::CRDData;
 using crdDataIslands = EGTTools::RL::DataTypes::CRDDataIslands;
+using DataTableCRD = EGTTools::RL::DataTypes::DataTableCRD;
 
 PYBIND11_MODULE(EGTtools, m) {
   m.doc() = R"pbdoc(
@@ -728,6 +729,25 @@ PYBIND11_MODULE(EGTtools, m) {
       .def_readwrite("avg_contributions", &crdDataIslands::avg_contribution,
                      py::return_value_policy::reference_internal)
       .def_readwrite("groups", &crdDataIslands::groups, py::return_value_policy::reference_internal);
+
+  py::class_<DataTableCRD>(mRL, "DataTableCRD")
+      .def(py::init<size_t,
+                    size_t,
+                    std::vector<std::string> &,
+                    std::vector<std::string> &,
+                    std::vector<EGTTools::RL::PopContainer> &>(),
+           "CRD Data container with Table format",
+           py::arg("nb_rows"),
+           py::arg("nb_columns"),
+           py::arg("headers"),
+           py::arg("column_types"),
+           py::arg("populations"))
+      .def_readwrite("data", &DataTableCRD::data, py::return_value_policy::reference_internal)
+      .def_readwrite("headers", &DataTableCRD::header,
+                     py::return_value_policy::reference_internal)
+      .def_readwrite("column_types", &DataTableCRD::column_types,
+                     py::return_value_policy::reference_internal)
+      .def_readwrite("populations", &DataTableCRD::populations, py::return_value_policy::reference_internal);
 
   py::class_<EGTTools::RL::FlattenState>(mRL, "FlattenState")
       .def(py::init<const EGTTools::RL::Factors &>(), py::keep_alive<1, 2>(),
