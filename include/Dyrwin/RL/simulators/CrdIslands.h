@@ -160,6 +160,46 @@ class CRDSimIslands {
                           PopContainer &population,
                           G &game);
 
+  template<class G, class U>
+  void run_crd_populationTU(size_t population_size,
+                            size_t group_size,
+                            size_t nb_generations,
+                            size_t nb_games,
+                            size_t min_rounds,
+                            U timing_uncertainty,
+                            int target,
+                            double risk,
+                            ActionSpace &available_actions,
+                            PopContainer &population,
+                            G &game);
+
+  template<class G>
+  void run_crd_populationThU(size_t population_size,
+                             size_t group_size,
+                             size_t nb_generations,
+                             size_t nb_games,
+                             size_t nb_rounds,
+                             int target,
+                             int delta,
+                             double risk,
+                             ActionSpace &available_actions,
+                             PopContainer &population,
+                             G &game);
+
+  template<class G, class U>
+  void run_crd_populationTUThU(size_t population_size,
+                               size_t group_size,
+                               size_t nb_generations,
+                               size_t nb_games,
+                               size_t min_rounds,
+                               U timing_uncertainty,
+                               int target,
+                               int delta,
+                               double risk,
+                               ActionSpace &available_actions,
+                               PopContainer &population,
+                               G &game);
+
   /**
    * @brief Evaluates behaviors from several population sin the CRD.
    *
@@ -423,6 +463,59 @@ class CRDSimIslands {
                          const std::string &agent_type,
                          const std::vector<double> &args = {});
 
+  DataTypes::DataTableCRD
+  run_population_islandsTU(size_t nb_evaluation_games,
+                           size_t nb_populations,
+                           size_t population_size,
+                           size_t group_size,
+                           size_t nb_generations,
+                           size_t nb_games,
+                           size_t min_rounds,
+                           size_t mean_rounds,
+                           size_t max_rounds,
+                           double p,
+                           int target,
+                           int endowment,
+                           double risk,
+                           ActionSpace &available_actions,
+                           const std::string &agent_type,
+                           const std::vector<double> &args = {});
+
+  DataTypes::DataTableCRD
+  run_population_islandsThU(size_t nb_evaluation_games,
+                            size_t nb_populations,
+                            size_t population_size,
+                            size_t group_size,
+                            size_t nb_generations,
+                            size_t nb_games,
+                            size_t nb_rounds,
+                            int target,
+                            int delta,
+                            int endowment,
+                            double risk,
+                            ActionSpace &available_actions,
+                            const std::string &agent_type,
+                            const std::vector<double> &args = {});
+
+  DataTypes::DataTableCRD
+  run_population_islandsTUThU(size_t nb_evaluation_games,
+                              size_t nb_populations,
+                              size_t population_size,
+                              size_t group_size,
+                              size_t nb_generations,
+                              size_t nb_games,
+                              size_t min_rounds,
+                              size_t mean_rounds,
+                              size_t max_rounds,
+                              double p,
+                              int target,
+                              int delta,
+                              int endowment,
+                              double risk,
+                              ActionSpace &available_actions,
+                              const std::string &agent_type,
+                              const std::vector<double> &args = {});
+
   /**
    * @brief This method reinforces agents proportionally to the obtained payoff for Timing uncertainty games.
    * @tparam G : game type
@@ -524,49 +617,6 @@ void CRDSimIslands::run_crd_single_group(size_t nb_generations,
     game.resetEpisode(population);
   }
 }
-template<class G>
-void CRDSimIslands::run_crd_population(size_t population_size,
-                                       size_t group_size,
-                                       size_t nb_generations,
-                                       size_t nb_games,
-                                       size_t nb_rounds,
-                                       int target,
-                                       double risk,
-                                       ActionSpace &available_actions,
-                                       EGTTools::RL::PopContainer &population,
-                                       G &game) {
-  size_t success = 0;
-  std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
-
-  // Prepare group container
-  PopContainer group;
-  std::unordered_set<size_t> container;
-  container.reserve(group_size);
-  for (size_t i = 0; i < group_size; ++i)
-    group.push_back(population(i));
-
-  for (size_t generation = 0; generation < nb_generations; ++generation) {
-    // First we select random groups and let them play nb_games
-    success = 0;
-    for (size_t i = 0; i < nb_games; ++i) {
-      EGTTools::sampling::sample_without_replacement(population_size, group_size, container, generator);
-      int j = 0;
-      // Sample group
-      for (const auto &elem: container) {
-        group(j) = population(elem);
-        j++;
-      }
-      // First we play the game
-      auto[pool, final_round] = game.playGame(group, available_actions, nb_rounds);
-      reinforce_population(pool, success, target, risk, group, game, generator);
-      container.clear();
-    }
-
-    game.calcProbabilities(population);
-    game.resetEpisode(population);
-  }
-
-}
 template<class G, class U>
 void CRDSimIslands::run_crd_single_groupTU(size_t nb_generations,
                                            size_t nb_games,
@@ -646,6 +696,190 @@ void CRDSimIslands::run_crd_single_groupTUThU(size_t nb_generations,
       // First we play several games
       auto[pool, final_round] = game.playGame(population, available_actions, min_rounds, timing_uncertainty, generator);
       reinforce_population(pool, success, t_dist(generator), risk, population, final_round, game, generator);
+    }
+    // Then, update the population
+    game.calcProbabilities(population);
+    game.resetEpisode(population);
+  }
+
+  game.calcProbabilities(population);
+  game.resetEpisode(population);
+}
+template<class G>
+void CRDSimIslands::run_crd_population(size_t population_size,
+                                       size_t group_size,
+                                       size_t nb_generations,
+                                       size_t nb_games,
+                                       size_t nb_rounds,
+                                       int target,
+                                       double risk,
+                                       ActionSpace &available_actions,
+                                       EGTTools::RL::PopContainer &population,
+                                       G &game) {
+  size_t success = 0;
+  std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
+
+  // Prepare group container
+  PopContainer group;
+  std::unordered_set<size_t> container;
+  container.reserve(group_size);
+  for (size_t i = 0; i < group_size; ++i)
+    group.push_back(population(i));
+
+  for (size_t generation = 0; generation < nb_generations; ++generation) {
+    // First we select random groups and let them play nb_games
+    success = 0;
+    for (size_t i = 0; i < nb_games; ++i) {
+      EGTTools::sampling::sample_without_replacement(population_size, group_size, container, generator);
+      int j = 0;
+      // Sample group
+      for (const auto &elem: container) {
+        group(j) = population(elem);
+        j++;
+      }
+      // First we play the game
+      auto[pool, final_round] = game.playGame(group, available_actions, nb_rounds);
+      reinforce_population(pool, success, target, risk, group, game, generator);
+      container.clear();
+    }
+
+    game.calcProbabilities(population);
+    game.resetEpisode(population);
+  }
+
+}
+template<class G, class U>
+void CRDSimIslands::run_crd_populationTU(size_t population_size,
+                                         size_t group_size,
+                                         size_t nb_generations,
+                                         size_t nb_games,
+                                         size_t min_rounds,
+                                         U timing_uncertainty,
+                                         int target,
+                                         double risk,
+                                         ActionSpace &available_actions,
+                                         PopContainer &population,
+                                         G &game) {
+  size_t success = 0;
+  std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
+
+  // Prepare group container
+  PopContainer group;
+  std::unordered_set<size_t> container;
+  container.reserve(group_size);
+  for (size_t i = 0; i < group_size; ++i)
+    group.push_back(population(i));
+
+  for (size_t generation = 0; generation < nb_generations; ++generation) {
+    success = 0;
+    for (size_t i = 0; i < nb_games; ++i) {
+      EGTTools::sampling::sample_without_replacement(population_size, group_size, container, generator);
+      int j = 0;
+      // Sample group
+      for (const auto &elem: container) {
+        group(j) = population(elem);
+        j++;
+      }
+      // First we play several games
+      auto[pool, final_round] = game.playGame(group, available_actions, min_rounds, timing_uncertainty, generator);
+      reinforce_population(pool, success, target, risk, group, final_round, game, generator);
+      container.clear();
+    }
+    // Then, update the population
+    game.calcProbabilities(population);
+    game.resetEpisode(population);
+  }
+
+  game.calcProbabilities(population);
+  game.resetEpisode(population);
+}
+template<class G>
+void CRDSimIslands::run_crd_populationThU(size_t population_size,
+                                          size_t group_size,
+                                          size_t nb_generations,
+                                          size_t nb_games,
+                                          size_t nb_rounds,
+                                          int target,
+                                          int delta,
+                                          double risk,
+                                          ActionSpace &available_actions,
+                                          PopContainer &population,
+                                          G &game) {
+  size_t success = 0;
+  std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
+
+  // Define the distribution for the threshold
+  std::uniform_int_distribution<int> t_dist(target - delta / 2, target + delta / 2);
+
+  // Prepare group container
+  PopContainer group;
+  std::unordered_set<size_t> container;
+  container.reserve(group_size);
+  for (size_t i = 0; i < group_size; ++i)
+    group.push_back(population(i));
+
+  for (size_t generation = 0; generation < nb_generations; ++generation) {
+    // First we select random groups and let them play nb_games
+    success = 0;
+    for (size_t i = 0; i < nb_games; ++i) {
+      EGTTools::sampling::sample_without_replacement(population_size, group_size, container, generator);
+      int j = 0;
+      // Sample group
+      for (const auto &elem: container) {
+        group(j) = population(elem);
+        j++;
+      }
+      // First we play the game
+      auto[pool, final_round] = game.playGame(group, available_actions, nb_rounds);
+      reinforce_population(pool, success, t_dist(generator), risk, group, game, generator);
+      container.clear();
+    }
+
+    game.calcProbabilities(population);
+    game.resetEpisode(population);
+  }
+
+}
+template<class G, class U>
+void CRDSimIslands::run_crd_populationTUThU(size_t population_size,
+                                            size_t group_size,
+                                            size_t nb_generations,
+                                            size_t nb_games,
+                                            size_t min_rounds,
+                                            U timing_uncertainty,
+                                            int target,
+                                            int delta,
+                                            double risk,
+                                            ActionSpace &available_actions,
+                                            PopContainer &population,
+                                            G &game) {
+  size_t success = 0;
+  std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
+
+  // Define the distribution for the threshold
+  std::uniform_int_distribution<int> t_dist(target - delta / 2, target + delta / 2);
+
+  // Prepare group container
+  PopContainer group;
+  std::unordered_set<size_t> container;
+  container.reserve(group_size);
+  for (size_t i = 0; i < group_size; ++i)
+    group.push_back(population(i));
+
+  for (size_t generation = 0; generation < nb_generations; ++generation) {
+    success = 0;
+    for (size_t i = 0; i < nb_games; ++i) {
+      EGTTools::sampling::sample_without_replacement(population_size, group_size, container, generator);
+      int j = 0;
+      // Sample group
+      for (const auto &elem: container) {
+        group(j) = population(elem);
+        j++;
+      }
+      // First we play several games
+      auto[pool, final_round] = game.playGame(group, available_actions, min_rounds, timing_uncertainty, generator);
+      reinforce_population(pool, success, t_dist(generator), risk, group, final_round, game, generator);
+      container.clear();
     }
     // Then, update the population
     game.calcProbabilities(population);
