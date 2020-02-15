@@ -694,8 +694,8 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsTU(si
                              args);
 
   // First we let all the groups adapt
-//#pragma omp parallel for default(none) shared(populations, tu, nb_populations, population_size, group_size, nb_generations, \
-//  nb_games, min_rounds, target, risk, available_actions, game)
+#pragma omp parallel for default(none) shared(populations, tu, nb_populations, population_size, group_size, nb_generations, \
+  nb_games, min_rounds, target, risk, available_actions, game)
   for (size_t population = 0; population < nb_populations; ++population) {
     run_crd_populationTU(population_size, group_size, nb_generations, nb_games, min_rounds, tu, target,
                          risk, available_actions, populations[population], game);
@@ -771,8 +771,8 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
                              args);
 
   // First we let all the groups adapt
-//#pragma omp parallel for default(none) shared(populations, tu, nb_populations, population_size, group_size, nb_generations, \
-//  nb_games, min_rounds, target, risk, available_actions, game)
+#pragma omp parallel for default(none) shared(populations, tu, nb_populations, population_size, group_size, nb_generations, \
+  nb_games, min_rounds, target, risk, available_actions, game)
   for (size_t population = 0; population < nb_populations; ++population) {
     run_crd_populationTU(population_size, group_size, nb_generations, nb_games, min_rounds, tu, target,
                          risk, available_actions, populations[population], game);
