@@ -35,6 +35,8 @@ class CRDSimIslands {
 
   CRDSimIslands();
 
+  // Helper methods
+
   /**
    * @brief Runs a CRD game for \param nb_generations and a single group.
    *
@@ -292,6 +294,8 @@ class CRDSimIslands {
                                        G &game,
                                        DataTypes::DataTableCRD &data);
 
+  // Simulation methods
+
   /**
    * @brief Runs a CRD simulation, without uncertainty, where players learn in groups and later mix for evaluation.
    *
@@ -321,6 +325,20 @@ class CRDSimIslands {
                     ActionSpace &available_actions,
                     const std::string &agent_type,
                     const std::vector<double> &args = {});
+
+  DataTypes::DataTableCRD
+  run_conditional_group_islands(size_t nb_evaluation_games,
+                                size_t nb_groups,
+                                size_t group_size,
+                                size_t nb_generations,
+                                size_t nb_games,
+                                size_t nb_rounds,
+                                int target,
+                                int endowment,
+                                double risk,
+                                ActionSpace &available_actions,
+                                const std::string &agent_type,
+                                const std::vector<double> &args = {});
 
   /**
    * @brief CRD islands simulations with Timing uncertainty.
@@ -358,6 +376,23 @@ class CRDSimIslands {
                       const std::string &agent_type,
                       const std::vector<double> &args = {});
 
+  DataTypes::DataTableCRD
+  run_conditional_group_islandsTU(size_t nb_evaluation_games,
+                                  size_t nb_groups,
+                                  size_t group_size,
+                                  size_t nb_generations,
+                                  size_t nb_games,
+                                  size_t min_rounds,
+                                  size_t mean_rounds,
+                                  size_t max_rounds,
+                                  double p,
+                                  int target,
+                                  int endowment,
+                                  double risk,
+                                  ActionSpace &available_actions,
+                                  const std::string &agent_type,
+                                  const std::vector<double> &args = {});
+
   /**
    * @brief CRD Islands simulation with Threshold uncertainty.
    *
@@ -389,6 +424,21 @@ class CRDSimIslands {
                        ActionSpace &available_actions,
                        const std::string &agent_type,
                        const std::vector<double> &args = {});
+
+  DataTypes::DataTableCRD
+  run_conditional_group_islandsThU(size_t nb_evaluation_games,
+                                   size_t nb_groups,
+                                   size_t group_size,
+                                   size_t nb_generations,
+                                   size_t nb_games,
+                                   size_t nb_rounds,
+                                   int target,
+                                   int delta,
+                                   int endowment,
+                                   double risk,
+                                   ActionSpace &available_actions,
+                                   const std::string &agent_type,
+                                   const std::vector<double> &args = {});
 
   /**
    * @brief CRD Islands simulations with Timing and Threshold uncertainties.
@@ -428,6 +478,24 @@ class CRDSimIslands {
                          const std::string &agent_type,
                          const std::vector<double> &args = {});
 
+  DataTypes::DataTableCRD
+  run_conditional_group_islandsTUThU(size_t nb_evaluation_games,
+                                     size_t nb_groups,
+                                     size_t group_size,
+                                     size_t nb_generations,
+                                     size_t nb_games,
+                                     size_t min_rounds,
+                                     size_t mean_rounds,
+                                     size_t max_rounds,
+                                     double p,
+                                     int target,
+                                     int delta,
+                                     int endowment,
+                                     double risk,
+                                     ActionSpace &available_actions,
+                                     const std::string &agent_type,
+                                     const std::vector<double> &args = {});
+
   /**
    * @brief Runs \param nb_populations independent population based CRD simulations.
    *
@@ -464,6 +532,21 @@ class CRDSimIslands {
                          const std::vector<double> &args = {});
 
   DataTypes::DataTableCRD
+  run_conditional_population_islands(size_t nb_evaluation_games,
+                                     size_t nb_populations,
+                                     size_t population_size,
+                                     size_t group_size,
+                                     size_t nb_generations,
+                                     size_t nb_games,
+                                     size_t nb_rounds,
+                                     int target,
+                                     int endowment,
+                                     double risk,
+                                     ActionSpace &available_actions,
+                                     const std::string &agent_type,
+                                     const std::vector<double> &args = {});
+
+  DataTypes::DataTableCRD
   run_population_islandsTU(size_t nb_evaluation_games,
                            size_t nb_populations,
                            size_t population_size,
@@ -482,6 +565,24 @@ class CRDSimIslands {
                            const std::vector<double> &args = {});
 
   DataTypes::DataTableCRD
+  run_conditional_population_islandsTU(size_t nb_evaluation_games,
+                                       size_t nb_populations,
+                                       size_t population_size,
+                                       size_t group_size,
+                                       size_t nb_generations,
+                                       size_t nb_games,
+                                       size_t min_rounds,
+                                       size_t mean_rounds,
+                                       size_t max_rounds,
+                                       double p,
+                                       int target,
+                                       int endowment,
+                                       double risk,
+                                       ActionSpace &available_actions,
+                                       const std::string &agent_type,
+                                       const std::vector<double> &args = {});
+
+  DataTypes::DataTableCRD
   run_population_islandsThU(size_t nb_evaluation_games,
                             size_t nb_populations,
                             size_t population_size,
@@ -496,6 +597,22 @@ class CRDSimIslands {
                             ActionSpace &available_actions,
                             const std::string &agent_type,
                             const std::vector<double> &args = {});
+
+  DataTypes::DataTableCRD
+  run_conditional_population_islandsThU(size_t nb_evaluation_games,
+                                        size_t nb_populations,
+                                        size_t population_size,
+                                        size_t group_size,
+                                        size_t nb_generations,
+                                        size_t nb_games,
+                                        size_t nb_rounds,
+                                        int target,
+                                        int delta,
+                                        int endowment,
+                                        double risk,
+                                        ActionSpace &available_actions,
+                                        const std::string &agent_type,
+                                        const std::vector<double> &args = {});
 
   DataTypes::DataTableCRD
   run_population_islandsTUThU(size_t nb_evaluation_games,
@@ -515,6 +632,25 @@ class CRDSimIslands {
                               ActionSpace &available_actions,
                               const std::string &agent_type,
                               const std::vector<double> &args = {});
+
+  DataTypes::DataTableCRD
+  run_conditional_population_islandsTUThU(size_t nb_evaluation_games,
+                                          size_t nb_populations,
+                                          size_t population_size,
+                                          size_t group_size,
+                                          size_t nb_generations,
+                                          size_t nb_games,
+                                          size_t min_rounds,
+                                          size_t mean_rounds,
+                                          size_t max_rounds,
+                                          double p,
+                                          int target,
+                                          int delta,
+                                          int endowment,
+                                          double risk,
+                                          ActionSpace &available_actions,
+                                          const std::string &agent_type,
+                                          const std::vector<double> &args = {});
 
   /**
    * @brief This method reinforces agents proportionally to the obtained payoff for Timing uncertainty games.
