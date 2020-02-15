@@ -43,7 +43,7 @@ CRDSimIslands::run_group_islands(size_t nb_evaluation_games,
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * nb_rounds, 10,
            headers, column_types, groups);
@@ -52,7 +52,7 @@ CRDSimIslands::run_group_islands(size_t nb_evaluation_games,
   evaluate_crd_populations(nb_groups,
                            group_size,
                            group_size,
-                           nb_games,
+                           nb_evaluation_games,
                            nb_rounds,
                            target,
                            risk,
@@ -107,7 +107,7 @@ CRDSimIslands::run_conditional_group_islands(size_t nb_evaluation_games,
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * nb_rounds, 10,
            headers, column_types, groups);
@@ -116,7 +116,7 @@ CRDSimIslands::run_conditional_group_islands(size_t nb_evaluation_games,
   evaluate_crd_populations(nb_groups,
                            group_size,
                            group_size,
-                           nb_games,
+                           nb_evaluation_games,
                            nb_rounds,
                            target,
                            risk,
@@ -168,7 +168,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsTU(size_t 
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * max_rounds, 10,
            headers, column_types, groups);
@@ -177,7 +177,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsTU(size_t 
   auto total_nb_rounds = evaluate_crd_populationsTU(nb_groups,
                                                     group_size,
                                                     group_size,
-                                                    nb_games,
+                                                    nb_evaluation_games,
                                                     min_rounds,
                                                     tu,
                                                     target,
@@ -244,7 +244,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * max_rounds, 10,
            headers, column_types, groups);
@@ -253,7 +253,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
   auto total_nb_rounds = evaluate_crd_populationsTU(nb_groups,
                                                     group_size,
                                                     group_size,
-                                                    nb_games,
+                                                    nb_evaluation_games,
                                                     min_rounds,
                                                     tu,
                                                     target,
@@ -303,7 +303,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsThU(size_t
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * nb_rounds, 10,
            headers, column_types, groups);
@@ -312,7 +312,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsThU(size_t
   evaluate_crd_populationsThU(nb_groups,
                               group_size,
                               group_size,
-                              nb_games,
+                              nb_evaluation_games,
                               nb_rounds,
                               target,
                               delta,
@@ -368,7 +368,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * nb_rounds, 10,
            headers, column_types, groups);
@@ -377,7 +377,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
   evaluate_crd_populationsThU(nb_groups,
                               group_size,
                               group_size,
-                              nb_games,
+                              nb_evaluation_games,
                               nb_rounds,
                               target,
                               delta,
@@ -431,7 +431,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsTUThU(size
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * max_rounds, 10,
            headers, column_types, groups);
@@ -440,7 +440,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsTUThU(size
   auto total_nb_rounds = evaluate_crd_populationsTUThU(nb_groups,
                                                        group_size,
                                                        group_size,
-                                                       nb_games,
+                                                       nb_evaluation_games,
                                                        min_rounds,
                                                        tu,
                                                        target,
@@ -509,7 +509,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * max_rounds, 10,
            headers, column_types, groups);
@@ -518,7 +518,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
   auto total_nb_rounds = evaluate_crd_populationsTUThU(nb_groups,
                                                        group_size,
                                                        group_size,
-                                                       nb_games,
+                                                       nb_evaluation_games,
                                                        min_rounds,
                                                        tu,
                                                        target,
@@ -575,7 +575,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islands(size
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * nb_rounds, 10,
            headers, column_types, populations);
@@ -584,7 +584,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islands(size
   evaluate_crd_populations(nb_populations,
                            population_size,
                            group_size,
-                           nb_games,
+                           nb_evaluation_games,
                            nb_rounds,
                            target,
                            risk,
@@ -639,7 +639,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * nb_rounds, 10,
            headers, column_types, populations);
@@ -648,7 +648,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   evaluate_crd_populations(nb_populations,
                            population_size,
                            group_size,
-                           nb_games,
+                           nb_evaluation_games,
                            nb_rounds,
                            target,
                            risk,
@@ -707,7 +707,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsTU(si
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * max_rounds, 10,
            headers, column_types, populations);
@@ -716,7 +716,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsTU(si
   auto total_nb_rounds = evaluate_crd_populationsTU(nb_populations,
                                                     population_size,
                                                     group_size,
-                                                    nb_games,
+                                                    nb_evaluation_games,
                                                     min_rounds,
                                                     tu,
                                                     target,
@@ -784,7 +784,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * max_rounds, 10,
            headers, column_types, populations);
@@ -793,7 +793,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   auto total_nb_rounds = evaluate_crd_populationsTU(nb_populations,
                                                     population_size,
                                                     group_size,
-                                                    nb_games,
+                                                    nb_evaluation_games,
                                                     min_rounds,
                                                     tu,
                                                     target,
@@ -850,7 +850,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsThU(s
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * nb_rounds, 10,
            headers, column_types, populations);
@@ -859,7 +859,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsThU(s
   evaluate_crd_populationsThU(nb_populations,
                               population_size,
                               group_size,
-                              nb_games,
+                              nb_evaluation_games,
                               nb_rounds,
                               target,
                               delta,
@@ -916,7 +916,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * nb_rounds, 10,
            headers, column_types, populations);
@@ -925,7 +925,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   evaluate_crd_populationsThU(nb_populations,
                               population_size,
                               group_size,
-                              nb_games,
+                              nb_evaluation_games,
                               nb_rounds,
                               target,
                               delta,
@@ -986,7 +986,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsTUThU
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * max_rounds, 10,
            headers, column_types, populations);
@@ -995,7 +995,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsTUThU
   auto total_nb_rounds = evaluate_crd_populationsTUThU(nb_populations,
                                                        population_size,
                                                        group_size,
-                                                       nb_games,
+                                                       nb_evaluation_games,
                                                        min_rounds,
                                                        tu,
                                                        target,
@@ -1065,7 +1065,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "int"};
+  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * max_rounds, 10,
            headers, column_types, populations);
@@ -1074,7 +1074,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   auto total_nb_rounds = evaluate_crd_populationsTUThU(nb_populations,
                                                        population_size,
                                                        group_size,
-                                                       nb_games,
+                                                       nb_evaluation_games,
                                                        min_rounds,
                                                        tu,
                                                        target,
