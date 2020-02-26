@@ -1074,7 +1074,7 @@ void CRDSimIslands::evaluate_crd_populations(size_t nb_populations,
     // Now we update the data table with the info of this game
     // For each player and round, we add:
     // group, player, game_index, round, action, group_contributions, contributions_others,
-    // total_contribution, payoff, success
+    // total_contribution, payoff, success, target, final_public_account, final_round
     j = 0;
     for (const auto &elem: container) {
       auto total_contribution = game_data.row(j).sum();
@@ -1090,6 +1090,9 @@ void CRDSimIslands::evaluate_crd_populations(size_t nb_populations,
         data.data(data_index, 7) = total_contribution;
         data.data(data_index, 8) = group(j)->payoff();
         data.data(data_index, 9) = success;
+        data.data(data_index, 10) = target;
+        data.data(data_index, 11) = public_pool;
+        data.data(data_index, 12) = nb_rounds;
         data_index++;
       }
       j++;
@@ -1151,9 +1154,10 @@ size_t CRDSimIslands::evaluate_crd_populationsTU(size_t nb_populations,
       game.setPayoffs(group, 0);
 
     // Now we update the data table with the info of this game
+    // TODO: let's add here per round: public_account, private_account, contributions_others_prev
     // For each player and round, we add:
     // group, player, game_index, round, action, group_contributions, contributions_others,
-    // total_contribution, payoff, success
+    // total_contribution, payoff, success, target, final_public_account, final_round
     j = 0;
     for (const auto &elem: container) {
       auto total_contribution = game_data.leftCols(final_round).row(j).sum();
@@ -1169,6 +1173,9 @@ size_t CRDSimIslands::evaluate_crd_populationsTU(size_t nb_populations,
         data.data(data_index, 7) = total_contribution;
         data.data(data_index, 8) = group(j)->payoff();
         data.data(data_index, 9) = success;
+        data.data(data_index, 10) = target;
+        data.data(data_index, 11) = public_pool;
+        data.data(data_index, 12) = final_round;
         data_index++;
       }
       j++;
@@ -1222,14 +1229,15 @@ void CRDSimIslands::evaluate_crd_populationsThU(size_t nb_populations,
     // First we play the game
     public_pool = game.playGameVerbose(group, available_actions, nb_rounds, game_data);
     // Check if the game was successful
-    success = public_pool >= t_dist(generator);
+    auto final_target = t_dist(generator);
+    success = public_pool >= final_target;
     if ((!success) && _real_rand(generator) < risk)
       game.setPayoffs(group, 0);
 
     // Now we update the data table with the info of this game
     // For each player and round, we add:
     // group, player, game_index, round, action, group_contributions, contributions_others,
-    // total_contribution, payoff, success
+    // total_contribution, payoff, success, target, final_public_account, final_round
     j = 0;
     for (const auto &elem: container) {
       auto total_contribution = game_data.row(j).sum();
@@ -1245,6 +1253,9 @@ void CRDSimIslands::evaluate_crd_populationsThU(size_t nb_populations,
         data.data(data_index, 7) = total_contribution;
         data.data(data_index, 8) = group(j)->payoff();
         data.data(data_index, 9) = success;
+        data.data(data_index, 10) = final_target;
+        data.data(data_index, 11) = public_pool;
+        data.data(data_index, 12) = nb_rounds;
         data_index++;
       }
       j++;
@@ -1304,14 +1315,15 @@ size_t CRDSimIslands::evaluate_crd_populationsTUThU(size_t nb_populations,
                                                           game_data);
     total_nb_rounds += final_round;
     // Check if the game was successful
-    success = public_pool >= t_dist(generator);
+    auto final_target = t_dist(generator);
+    success = public_pool >= final_target;
     if ((!success) && _real_rand(generator) < risk)
       game.setPayoffs(group, 0);
 
     // Now we update the data table with the info of this game
     // For each player and round, we add:
     // group, player, game_index, round, action, group_contributions, contributions_others,
-    // total_contribution, payoff, success
+    // total_contribution, payoff, success, target, final_public_account, final_round
     j = 0;
     for (const auto &elem: container) {
       auto total_contribution = game_data.leftCols(final_round).row(j).sum();
@@ -1327,6 +1339,9 @@ size_t CRDSimIslands::evaluate_crd_populationsTUThU(size_t nb_populations,
         data.data(data_index, 7) = total_contribution;
         data.data(data_index, 8) = group(j)->payoff();
         data.data(data_index, 9) = success;
+        data.data(data_index, 10) = final_target;
+        data.data(data_index, 11) = public_pool;
+        data.data(data_index, 12) = final_round;
         data_index++;
       }
       j++;

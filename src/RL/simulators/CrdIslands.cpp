@@ -42,10 +42,11 @@ CRDSimIslands::run_group_islands(size_t nb_evaluation_games,
   // nb_evaluation_games * group_size * nb_rounds
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
+       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+  std::vector<std::string>
+      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * nb_rounds, 10,
+      data(nb_evaluation_games * group_size * nb_rounds, 13,
            headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
@@ -106,10 +107,11 @@ CRDSimIslands::run_conditional_group_islands(size_t nb_evaluation_games,
   // nb_evaluation_games * group_size * nb_rounds
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
+       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+  std::vector<std::string>
+      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * nb_rounds, 10,
+      data(nb_evaluation_games * group_size * nb_rounds, 13,
            headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
@@ -167,10 +169,11 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsTU(size_t 
   // nb_evaluation_games * group_size * nb_rounds
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
+       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+  std::vector<std::string>
+      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * max_rounds, 10,
+      data(nb_evaluation_games * group_size * max_rounds, 13,
            headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
@@ -188,7 +191,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsTU(size_t 
 
   // Finally we clear the unused rows
   auto total_rows = group_size * total_nb_rounds;
-  data.data.conservativeResize(total_rows, 10);
+  data.data.conservativeResize(total_rows, 13);
 
   return data;
 }
@@ -243,10 +246,11 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
   // nb_evaluation_games * group_size * nb_rounds
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
+       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+  std::vector<std::string>
+      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * max_rounds, 10,
+      data(nb_evaluation_games * group_size * max_rounds, 13,
            headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
@@ -264,7 +268,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
 
   // Finally we clear the unused rows
   auto total_rows = group_size * total_nb_rounds;
-  data.data.conservativeResize(total_rows, 10);
+  data.data.conservativeResize(total_rows, 13);
 
   return data;
 }
@@ -302,10 +306,11 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsThU(size_t
   // nb_evaluation_games * group_size * nb_rounds
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
+       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+  std::vector<std::string>
+      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * nb_rounds, 10,
+      data(nb_evaluation_games * group_size * nb_rounds, 13,
            headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
@@ -367,10 +372,11 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
   // nb_evaluation_games * group_size * nb_rounds
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
+       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+  std::vector<std::string>
+      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * nb_rounds, 10,
+      data(nb_evaluation_games * group_size * nb_rounds, 13,
            headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
@@ -430,10 +436,11 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsTUThU(size
   // nb_evaluation_games * group_size * nb_rounds
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
+       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+  std::vector<std::string>
+      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * max_rounds, 10,
+      data(nb_evaluation_games * group_size * max_rounds, 13,
            headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
@@ -452,7 +459,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsTUThU(size
 
   // Finally we clear the unused rows
   auto total_rows = group_size * total_nb_rounds;
-  data.data.conservativeResize(total_rows, 10);
+  data.data.conservativeResize(total_rows, 13);
 
   return data;
 }
@@ -508,10 +515,11 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
   // nb_evaluation_games * group_size * nb_rounds
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
+       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+  std::vector<std::string>
+      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * max_rounds, 10,
+      data(nb_evaluation_games * group_size * max_rounds, 13,
            headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
@@ -530,7 +538,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
 
   // Finally we clear the unused rows
   auto total_rows = group_size * total_nb_rounds;
-  data.data.conservativeResize(total_rows, 10);
+  data.data.conservativeResize(total_rows, 13);
 
   return data;
 }
@@ -574,10 +582,11 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islands(size
   // nb_evaluation_games * group_size * nb_rounds
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
+       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+  std::vector<std::string>
+      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * nb_rounds, 10,
+      data(nb_evaluation_games * group_size * nb_rounds, 13,
            headers, column_types, populations);
 
   // Then we evaluate the agents by creating randomly mixed groups
@@ -638,10 +647,11 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   // nb_evaluation_games * group_size * nb_rounds
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
+       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+  std::vector<std::string>
+      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * nb_rounds, 10,
+      data(nb_evaluation_games * group_size * nb_rounds, 13,
            headers, column_types, populations);
 
   // Then we evaluate the agents by creating randomly mixed groups
@@ -706,10 +716,11 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsTU(si
   // nb_evaluation_games * group_size * nb_rounds
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
+       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+  std::vector<std::string>
+      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * max_rounds, 10,
+      data(nb_evaluation_games * group_size * max_rounds, 13,
            headers, column_types, populations);
 
   // Then we evaluate the agents by creating randomly mixed groups
@@ -727,7 +738,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsTU(si
 
   // Finally we clear the unused rows
   auto total_rows = group_size * total_nb_rounds;
-  data.data.conservativeResize(total_rows, 10);
+  data.data.conservativeResize(total_rows, 13);
 
   return data;
 }
@@ -783,10 +794,11 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   // nb_evaluation_games * group_size * nb_rounds
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
+       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+  std::vector<std::string>
+      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * max_rounds, 10,
+      data(nb_evaluation_games * group_size * max_rounds, 13,
            headers, column_types, populations);
 
   // Then we evaluate the agents by creating randomly mixed groups
@@ -804,7 +816,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
 
   // Finally we clear the unused rows
   auto total_rows = group_size * total_nb_rounds;
-  data.data.conservativeResize(total_rows, 10);
+  data.data.conservativeResize(total_rows, 13);
 
   return data;
 }
@@ -849,10 +861,11 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsThU(s
   // nb_evaluation_games * group_size * nb_rounds
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
+       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+  std::vector<std::string>
+      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * nb_rounds, 10,
+      data(nb_evaluation_games * group_size * nb_rounds, 13,
            headers, column_types, populations);
 
   // Then we evaluate the agents by creating randomly mixed groups
@@ -915,10 +928,11 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   // nb_evaluation_games * group_size * nb_rounds
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
+       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+  std::vector<std::string>
+      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * nb_rounds, 10,
+      data(nb_evaluation_games * group_size * nb_rounds, 13,
            headers, column_types, populations);
 
   // Then we evaluate the agents by creating randomly mixed groups
@@ -985,10 +999,11 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsTUThU
   // nb_evaluation_games * group_size * nb_rounds
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
+       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+  std::vector<std::string>
+      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * max_rounds, 10,
+      data(nb_evaluation_games * group_size * max_rounds, 13,
            headers, column_types, populations);
 
   // Then we evaluate the agents by creating randomly mixed groups
@@ -1007,7 +1022,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsTUThU
 
   // Finally we clear the unused rows
   auto total_rows = group_size * total_nb_rounds;
-  data.data.conservativeResize(total_rows, 10);
+  data.data.conservativeResize(total_rows, 13);
 
   return data;
 }
@@ -1038,7 +1053,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   // and the second the donations of the group in the previous round (maximum group_size * (nb_action - 1) + 1)
   FlattenState flatten(Factors{max_rounds, (group_size * (available_actions.size() - 1)) + 1});
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
-  CRDConditional<PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
+  CRDConditional <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
 
   // Create a vector of groups - nb_actions = available_actions.size()
   std::vector<PopContainer> populations;
@@ -1064,10 +1079,11 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   // nb_evaluation_games * group_size * nb_rounds
   std::vector<std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success"};
-  std::vector<std::string> column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool"};
+       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+  std::vector<std::string>
+      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * max_rounds, 10,
+      data(nb_evaluation_games * group_size * max_rounds, 13,
            headers, column_types, populations);
 
   // Then we evaluate the agents by creating randomly mixed groups
@@ -1086,7 +1102,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
 
   // Finally we clear the unused rows
   auto total_rows = group_size * total_nb_rounds;
-  data.data.conservativeResize(total_rows, 10);
+  data.data.conservativeResize(total_rows, 13);
 
   return data;
 }
