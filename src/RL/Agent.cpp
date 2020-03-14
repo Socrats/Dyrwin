@@ -230,3 +230,8 @@ void Agent::set_q_values(const Eigen::Ref<const Matrix2D> &q_values) {
 void Agent::set_trajectory_round(size_t round, size_t action) {
     _trajectory_actions(round) = action;
 }
+
+void Agent::set_trajectory_state(size_t round, size_t state, size_t action) {
+  _trajectory_states(round) = state;
+  _trajectory_actions(round) = action;
+}

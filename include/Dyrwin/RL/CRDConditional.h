@@ -387,10 +387,9 @@ class CRDConditional<PopContainer, R, G> {
       partial = 0.0;
       for (auto &player : players) {
         action = player->selectAction(i, idx);
-//                    player->decrease(actions[action]);
         if (!player->decrease(actions[action])) {
           // Select the next best action
-          if (action > 1) {
+          if (action > 0) {
             for (size_t n = 0; n < action; ++n) {
               if (player->decrease(actions[action - n - 1])) {
                 action = action - n - 1;
@@ -398,7 +397,7 @@ class CRDConditional<PopContainer, R, G> {
               }
             }
           }
-          player->set_trajectory_round(i, action);
+          player->set_trajectory_state(i, idx, action);
         }
         partial += actions[action];
       }
@@ -441,7 +440,7 @@ class CRDConditional<PopContainer, R, G> {
         action_idx = players(j)->selectAction(i, state_idx);
         if (!players(j)->decrease(actions[action_idx])) {
           // Select the next best action
-          if (action_idx > 1) {
+          if (action_idx > 0) {
             for (size_t n = 0; n < action_idx; ++n) {
               if (players(j)->decrease(actions[action_idx - n - 1])) {
                 action_idx = action_idx - n - 1;
@@ -449,7 +448,7 @@ class CRDConditional<PopContainer, R, G> {
               }
             }
           }
-          players(j)->set_trajectory_round(i, action_idx);
+          players(j)->set_trajectory_state(i, state_idx, action_idx);
         }
         partial += actions[action_idx];
         // now we store this data on results
@@ -553,7 +552,18 @@ class CRDConditional<PopContainer, void, void> {
       partial = 0.0;
       for (auto &player : players) {
         action_idx = player->selectAction(i, state_idx);
-        player->decrease(actions[action_idx]);
+        if (!player->decrease(actions[action_idx])) {
+          // Select the next best action
+          if (action_idx > 0) {
+            for (size_t n = 0; n < action_idx; ++n) {
+              if (player->decrease(actions[action_idx - n - 1])) {
+                action_idx = action_idx - n - 1;
+                break;
+              }
+            }
+          }
+          player->set_trajectory_state(i, state_idx, action_idx);
+        }
         partial += actions[action_idx];
       }
       total += partial;
@@ -572,7 +582,7 @@ class CRDConditional<PopContainer, void, void> {
  * @param rounds : number of rounds
  */
   int playGameVerbose(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds, Matrix2D &results) {
-    size_t action_idx;
+    size_t action_idx, state_idx;
     std::vector<size_t> state(2, 0); // creates a vector of size 2 with all members equal to 0
     int partial = 0;
     int total = 0;
@@ -581,10 +591,22 @@ class CRDConditional<PopContainer, void, void> {
     }
     for (size_t i = 0; i < rounds; i++) {
       state[0] = i, state[1] = static_cast<size_t>(partial);
+      state_idx = _flatten.toIndex(state);
       partial = 0.0;
       for (size_t j = 0; j < players.size(); ++j) {
-        action_idx = players(j)->selectAction(i, _flatten.toIndex(state));
-        players(j)->decrease(actions[action_idx]);
+        action_idx = players(j)->selectAction(i, state_idx);
+        if (!players(j)->decrease(actions[action_idx])) {
+          // Select the next best action
+          if (action_idx > 0) {
+            for (size_t n = 0; n < action_idx; ++n) {
+              if (players(j)->decrease(actions[action_idx - n - 1])) {
+                action_idx = action_idx - n - 1;
+                break;
+              }
+            }
+          }
+          players(j)->set_trajectory_state(i, state_idx, action_idx);
+        }
         partial += actions[action_idx];
         // now we store this data on results
         results(j, i) = action_idx;
