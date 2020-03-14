@@ -14,7 +14,7 @@ Agent::Agent(size_t nb_states, size_t nb_actions, size_t episode_length, double 
                                                                                              _endowment(endowment),
                                                                                              _payoff(endowment) {
 
-    _q_values = Matrix2D::Random(nb_states, _nb_actions);
+    _q_values = Matrix2D::Zero(nb_states, _nb_actions);
     // Initialise all actions with equal probability
     _policy = Matrix2D::Constant(nb_states, _nb_actions, 1.0 / static_cast<double>(_nb_actions));
     // Initialise trajectory (the actions taken at each round)

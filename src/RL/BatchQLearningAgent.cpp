@@ -53,7 +53,7 @@ bool BatchQLearningAgent::inferPolicy() {
        * the weights.
        */
 void BatchQLearningAgent::resetQValues() {
-    _q_values.setRandom();
+    _q_values.setZero();
 }
 
 std::string BatchQLearningAgent::type() const {
