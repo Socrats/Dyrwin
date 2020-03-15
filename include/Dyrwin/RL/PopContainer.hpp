@@ -10,6 +10,7 @@
 #include <Dyrwin/RL/RothErevAgent.h>
 #include <Dyrwin/RL/QLearningAgent.h>
 #include <Dyrwin/RL/BatchQLearningAgent.h>
+#include <Dyrwin/RL/BatchQLearningForgetAgent.h>
 #include <Dyrwin/RL/HistericQLearningAgent.hpp>
 #include <Dyrwin/RL/DiscountedQLearning.h>
 #include <Dyrwin/RL/ESARSA.h>

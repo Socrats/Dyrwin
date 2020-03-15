@@ -17,6 +17,7 @@ add_library(EGTTools
         ED/ReplicatorDynamics.cpp
         RL/Agent.cpp
         RL/BatchQLearningAgent.cpp
+        RL/BatchQLearningForgetAgent.cpp
         RL/QLearningAgent.cpp
         RL/ESARSA.cpp
         RL/HistericQLearningAgent.cpp

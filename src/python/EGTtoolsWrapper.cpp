@@ -21,6 +21,7 @@
 #include <Dyrwin/LruCache.hpp>
 #include <Dyrwin/RL/Agent.h>
 #include <Dyrwin/RL/BatchQLearningAgent.h>
+#include <Dyrwin/RL/BatchQLearningForgetAgent.h>
 #include <Dyrwin/RL/QLearningAgent.h>
 #include <Dyrwin/RL/RothErevAgent.h>
 #include <Dyrwin/RL/HistericQLearningAgent.hpp>
@@ -524,6 +525,32 @@ PYBIND11_MODULE(EGTtools, m) {
                                                                   size_t)>(&RL::BatchQLearningAgent::selectAction),
            "samples an action from the agent's policy", py::arg("round"), py::arg("state"))
       .def("reset_q_values", &RL::BatchQLearningAgent::resetQValues);
+
+  py::class_<RL::BatchQLearningForgetAgent, RL::Agent>(mRL, "BatchQLearningForgetAgent")
+      .def(py::init<size_t, size_t, size_t, double, double, double, double>(),
+           "Implementation of the Batch Q-Learning algorithm with forgetting factor.",
+           py::arg("nb_states"), py::arg("nb_actions"),
+           py::arg("episode_length"), py::arg("endowment"), py::arg("alpha"), py::arg("lambda"), py::arg("temperature"))
+      .def_property("alpha", &RL::BatchQLearningForgetAgent::alpha, &RL::BatchQLearningForgetAgent::setAlpha)
+      .def_property("lambda", &RL::BatchQLearningForgetAgent::lambda, &RL::BatchQLearningForgetAgent::setLambda)
+      .def_property("temperature", &RL::BatchQLearningForgetAgent::temperature,
+                    &RL::BatchQLearningForgetAgent::setTemperature)
+      .def("update_policy", &RL::BatchQLearningForgetAgent::inferPolicy)
+      .def("reset_trajectory", &RL::BatchQLearningForgetAgent::resetTrajectory)
+      .def("reinforce",
+           static_cast<void (RL::BatchQLearningForgetAgent::*)()>(&RL::BatchQLearningForgetAgent::reinforceTrajectory),
+           "reinforces the actions from the current trajectory, based on the agent's reward")
+      .def("reinforce",
+           static_cast<void (RL::BatchQLearningForgetAgent::*)(size_t)>(&RL::BatchQLearningForgetAgent::reinforceTrajectory),
+           "reinforces the actions from the current trajectory, based on the agent's reward",
+           py::arg("episode_length"))
+      .def("act",
+           static_cast<size_t (RL::BatchQLearningForgetAgent::*)(size_t)>(&RL::BatchQLearningForgetAgent::selectAction),
+           "samples an action from the agent's policy", py::arg("round"))
+      .def("act", static_cast<size_t (RL::BatchQLearningForgetAgent::*)(size_t,
+                                                                  size_t)>(&RL::BatchQLearningForgetAgent::selectAction),
+           "samples an action from the agent's policy", py::arg("round"), py::arg("state"))
+      .def("reset_q_values", &RL::BatchQLearningForgetAgent::resetQValues);
 
   py::class_<RL::QLearningAgent, RL::Agent>(mRL, "QLearningAgent")
       .def(py::init<size_t, size_t, size_t, double, double, double, double>(),
