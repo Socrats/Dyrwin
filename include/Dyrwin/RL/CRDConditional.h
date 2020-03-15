@@ -452,7 +452,7 @@ class CRDConditional<PopContainer, R, G> {
         }
         partial += actions[action_idx];
         // now we store this data on results
-        results(j, i) = action_idx;
+        results(j, i) = actions[action_idx];
       }
       total += partial;
     }
@@ -609,7 +609,7 @@ class CRDConditional<PopContainer, void, void> {
         }
         partial += actions[action_idx];
         // now we store this data on results
-        results(j, i) = action_idx;
+        results(j, i) = actions[action_idx];
       }
       total += partial;
     }

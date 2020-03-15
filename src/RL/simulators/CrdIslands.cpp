@@ -624,7 +624,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   CRDConditional<PopContainer, void, void> game(flatten);
 
   // Create a vector of groups - nb_actions = available_actions.size()
-  std::vector<PopContainer> populations;
+  std::vector <PopContainer> populations;
   for (size_t i = 0; i < nb_populations; i++)
     populations.emplace_back(agent_type,
                              population_size,
@@ -645,11 +645,12 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   // Now we create the data container
   // It will contain a data matrix/table of 10 columns and
   // nb_evaluation_games * group_size * nb_rounds
-  std::vector<std::string> headers =
+  std::vector <std::string> headers =
       {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
        "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector<std::string>
-      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+  std::vector <std::string>
+      column_types =
+      {"int", "int", "int", "int", "float", "float", "float", "float", "float", "bool", "float", "float", "int"};
   EGTTools::RL::DataTypes::DataTableCRD
       data(nb_evaluation_games * group_size * nb_rounds, 13,
            headers, column_types, populations);
