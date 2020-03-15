@@ -366,6 +366,10 @@ class CRDConditional<PopContainer, R, G> {
    *
    * This function plays the game for a number of rounds
    *
+   * Due to how conditional players are implemented, actions must be integers.
+   *
+   * Each conditional player has a state composed of a tuple (round, sum of the previous round contributions)
+   *
    * @param players
    * @param actions
    * @param min_rounds
@@ -375,7 +379,7 @@ class CRDConditional<PopContainer, R, G> {
   playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t min_rounds, R &gen_round, G &generator) {
     auto final_round = gen_round.calculateEnd(min_rounds, generator);
 
-    double total = 0.0, partial = 0.0;
+    int total = 0, partial = 0;
     size_t action, idx;
     std::vector<size_t> state(2, 0); // creates a vector of size 2 with all members equal to 0
     for (auto &player : players) {
@@ -403,7 +407,7 @@ class CRDConditional<PopContainer, R, G> {
       }
       total += partial;
     }
-    return std::make_pair(total, final_round);
+    return std::make_pair(static_cast<double>(total), final_round);
   }
 
   /**
@@ -541,7 +545,7 @@ class CRDConditional<PopContainer, void, void> {
   std::pair<double, size_t>
   playGame(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds) {
     size_t action_idx, state_idx;
-    double total = 0.0, partial = 0.0;
+    int total = 0, partial = 0;
     std::vector<size_t> state(2, 0); // creates a vector of size 2 with all members equal to 0
     for (auto &player : players) {
       player->resetPayoff();
@@ -568,7 +572,7 @@ class CRDConditional<PopContainer, void, void> {
       }
       total += partial;
     }
-    return std::make_pair(total, rounds);
+    return std::make_pair(static_cast<double>(total), rounds);
   }
 
   /**

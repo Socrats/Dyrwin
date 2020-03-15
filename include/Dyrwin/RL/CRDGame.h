@@ -416,7 +416,7 @@ class CRDGame<PopContainer, R, G> {
    * @param actions : available actions per round
    * @param rounds : number of rounds
    */
-  std::pair<int, size_t>
+  std::pair<double, size_t>
   playGameVerbose(PopContainer &players,
                   EGTTools::RL::ActionSpace &actions,
                   size_t min_rounds,
@@ -426,7 +426,7 @@ class CRDGame<PopContainer, R, G> {
     auto final_round = gen_round.calculateEnd(min_rounds, generator);
 
     size_t action_idx;
-    int total = 0;
+    double total = 0.0;
     for (auto &player : players) {
       player->resetPayoff();
     }
@@ -562,9 +562,9 @@ class CRDGame<PopContainer, void, void> {
    * @param actions : available actions per round
    * @param rounds : number of rounds
    */
-  int playGameVerbose(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds, Matrix2D &results) {
+  double playGameVerbose(PopContainer &players, EGTTools::RL::ActionSpace &actions, size_t rounds, Matrix2D &results) {
     size_t action_idx;
-    int total = 0;
+    double total = 0.0;
     for (auto &player : players) {
       player->resetPayoff();
     }
