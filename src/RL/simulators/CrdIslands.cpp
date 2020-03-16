@@ -79,9 +79,16 @@ CRDSimIslands::run_conditional_group_islands(size_t nb_evaluation_games,
   // Instantiate factored state
   // The first dimension indicate the round of the game,
   // and the second the donations of the group in the previous round (maximum group_size * (nb_action - 1) + 1)
-  FlattenState flatten(Factors{nb_rounds, (group_size * (available_actions.size() - 1)) + 1});
+//  FlattenState flatten(Factors{nb_rounds, (group_size * (available_actions.size() - 1)) + 1});
+  // The state is composed of the (current round, nb of times action 0 selected, ..., nb times action n selected)
+  // The state space depends on the number of actions
+  Factors state_space = Factors(available_actions.size(), 0);
+  state_space[0] = nb_rounds;
+  for (size_t i=1; i < available_actions.size(); ++i)
+    state_space[i] = group_size;
+  FlattenState flatten(state_space);
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
-  CRDConditional<PopContainer, void, void> game(flatten);
+  CRDConditionalCount<void, void> game(flatten);
 
   // Create a vector of groups - nb_actions = available_actions.size()
   std::vector<PopContainer> groups;
@@ -218,9 +225,16 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
   // Instantiate factored state
   // The first dimension indicate the round of the game,
   // and the second the donations of the group in the previous round (maximum group_size * (nb_action - 1) + 1)
-  FlattenState flatten(Factors{max_rounds, (group_size * (available_actions.size() - 1)) + 1});
+//  FlattenState flatten(Factors{max_rounds, (group_size * (available_actions.size() - 1)) + 1});
+  // The state is composed of the (current round, nb of times action 0 selected, ..., nb times action n selected)
+  // The state space depends on the number of actions
+  Factors state_space = Factors(available_actions.size(), 0);
+  state_space[0] = max_rounds;
+  for (size_t i=1; i < available_actions.size(); ++i)
+    state_space[i] = group_size;
+  FlattenState flatten(state_space);
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
-  CRDConditional <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
+  CRDConditionalCount <EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
 
   // Create a vector of groups - nb_actions = available_actions.size()
   std::vector<PopContainer> groups;
@@ -344,9 +358,16 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
   // Instantiate factored state
   // The first dimension indicate the round of the game,
   // and the second the donations of the group in the previous round (maximum group_size * (nb_action - 1) + 1)
-  FlattenState flatten(Factors{nb_rounds, (group_size * (available_actions.size() - 1)) + 1});
+//  FlattenState flatten(Factors{nb_rounds, (group_size * (available_actions.size() - 1)) + 1});
+  // The state is composed of the (current round, nb of times action 0 selected, ..., nb times action n selected)
+  // The state space depends on the number of actions
+  Factors state_space = Factors(available_actions.size(), 0);
+  state_space[0] = nb_rounds;
+  for (size_t i=1; i < available_actions.size(); ++i)
+    state_space[i] = group_size;
+  FlattenState flatten(state_space);
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
-  CRDConditional<PopContainer, void, void> game(flatten);
+  CRDConditionalCount<void, void> game(flatten);
 
   // Create a vector of groups - nb_actions = available_actions.size()
   std::vector<PopContainer> groups;
@@ -487,9 +508,16 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
   // Instantiate factored state
   // The first dimension indicate the round of the game,
   // and the second the donations of the group in the previous round (maximum group_size * (nb_action - 1) + 1)
-  FlattenState flatten(Factors{max_rounds, (group_size * (available_actions.size() - 1)) + 1});
+//  FlattenState flatten(Factors{max_rounds, (group_size * (available_actions.size() - 1)) + 1});
+  // The state is composed of the (current round, nb of times action 0 selected, ..., nb times action n selected)
+  // The state space depends on the number of actions
+  Factors state_space = Factors(available_actions.size(), 0);
+  state_space[0] = max_rounds;
+  for (size_t i=1; i < available_actions.size(); ++i)
+    state_space[i] = group_size;
+  FlattenState flatten(state_space);
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
-  CRDConditional <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
+  CRDConditionalCount <EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
 
   // Create a vector of groups - nb_actions = available_actions.size()
   std::vector<PopContainer> groups;
@@ -619,9 +647,16 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   // Instantiate factored state
   // The first dimension indicate the round of the game,
   // and the second the donations of the group in the previous round (maximum group_size * (nb_action - 1) + 1)
-  FlattenState flatten(Factors{nb_rounds, (group_size * (available_actions.size() - 1)) + 1});
+//  FlattenState flatten(Factors{nb_rounds, (group_size * (available_actions.size() - 1)) + 1});
+  // The state is composed of the (current round, nb of times action 0 selected, ..., nb times action n selected)
+  // The state space depends on the number of actions
+  Factors state_space = Factors(available_actions.size(), 0);
+  state_space[0] = nb_rounds;
+  for (size_t i=1; i < available_actions.size(); ++i)
+    state_space[i] = group_size;
+  FlattenState flatten(state_space);
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
-  CRDConditional<PopContainer, void, void> game(flatten);
+  CRDConditionalCount<void, void> game(flatten);
 
   // Create a vector of groups - nb_actions = available_actions.size()
   std::vector <PopContainer> populations;
@@ -767,9 +802,16 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   // Instantiate factored state
   // The first dimension indicate the round of the game,
   // and the second the donations of the group in the previous round (maximum group_size * (nb_action - 1) + 1)
-  FlattenState flatten(Factors{max_rounds, (group_size * (available_actions.size() - 1)) + 1});
+//  FlattenState flatten(Factors{max_rounds, (group_size * (available_actions.size() - 1)) + 1});
+  // The state is composed of the (current round, nb of times action 0 selected, ..., nb times action n selected)
+  // The state space depends on the number of actions
+  Factors state_space = Factors(available_actions.size(), 0);
+  state_space[0] = max_rounds;
+  for (size_t i=1; i < available_actions.size(); ++i)
+    state_space[i] = group_size;
+  FlattenState flatten(state_space);
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
-  CRDConditional <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
+  CRDConditionalCount <EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
 
   // Create a vector of groups - nb_actions = available_actions.size()
   std::vector<PopContainer> populations;
@@ -901,9 +943,16 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   // Instantiate factored state
   // The first dimension indicate the round of the game,
   // and the second the donations of the group in the previous round (maximum group_size * (nb_action - 1) + 1)
-  FlattenState flatten(Factors{nb_rounds, (group_size * (available_actions.size() - 1)) + 1});
+//  FlattenState flatten(Factors{nb_rounds, (group_size * (available_actions.size() - 1)) + 1});
+  // The state is composed of the (current round, nb of times action 0 selected, ..., nb times action n selected)
+  // The state space depends on the number of actions
+  Factors state_space = Factors(available_actions.size(), 0);
+  state_space[0] = nb_rounds;
+  for (size_t i=1; i < available_actions.size(); ++i)
+    state_space[i] = group_size;
+  FlattenState flatten(state_space);
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
-  CRDConditional<PopContainer, void, void> game(flatten);
+  CRDConditionalCount<void, void> game(flatten);
 
   // Create a vector of groups - nb_actions = available_actions.size()
   std::vector<PopContainer> populations;
@@ -1052,9 +1101,16 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   // Instantiate factored state
   // The first dimension indicate the round of the game,
   // and the second the donations of the group in the previous round (maximum group_size * (nb_action - 1) + 1)
-  FlattenState flatten(Factors{max_rounds, (group_size * (available_actions.size() - 1)) + 1});
+//  FlattenState flatten(Factors{max_rounds, (group_size * (available_actions.size() - 1)) + 1});
+  // The state is composed of the (current round, nb of times action 0 selected, ..., nb times action n selected)
+  // The state space depends on the number of actions
+  Factors state_space = Factors(available_actions.size(), 0);
+  state_space[0] = max_rounds;
+  for (size_t i=1; i < available_actions.size(); ++i)
+    state_space[i] = group_size;
+  FlattenState flatten(state_space);
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
-  CRDConditional <PopContainer, EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
+  CRDConditionalCount <EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
 
   // Create a vector of groups - nb_actions = available_actions.size()
   std::vector<PopContainer> populations;

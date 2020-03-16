@@ -8,7 +8,7 @@
 #include <random>
 #include <unordered_set>
 #include <Dyrwin/RL/CRDGame.h>
-#include <Dyrwin/RL/CRDConditional.h>
+#include <Dyrwin/RL/CRDConditionalCount.h>
 #include <Dyrwin/RL/PopContainer.hpp>
 #include <Dyrwin/RL/Utils.h>
 #include <Dyrwin/RL/Data.hpp>
