@@ -13,7 +13,7 @@
 #include <tuple>
 #include <iostream>
 #include <Dyrwin/SeedGenerator.h>
-#include <Dyrwin/RL/Agent.h>
+#include <Dyrwin/RL/PopContainer.hpp>
 #include <Dyrwin/RL/TimingUncertainty.hpp>
 #include <Dyrwin/RL/Utils.h>
 

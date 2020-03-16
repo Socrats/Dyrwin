@@ -82,10 +82,8 @@ CRDSimIslands::run_conditional_group_islands(size_t nb_evaluation_games,
 //  FlattenState flatten(Factors{nb_rounds, (group_size * (available_actions.size() - 1)) + 1});
   // The state is composed of the (current round, nb of times action 0 selected, ..., nb times action n selected)
   // The state space depends on the number of actions
-  Factors state_space = Factors(available_actions.size(), 0);
+  Factors state_space = Factors(available_actions.size() + 1, group_size + 1);
   state_space[0] = nb_rounds;
-  for (size_t i=1; i < available_actions.size(); ++i)
-    state_space[i] = group_size;
   FlattenState flatten(state_space);
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
   CRDConditionalCount<void, void> game(flatten);
@@ -228,10 +226,8 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
 //  FlattenState flatten(Factors{max_rounds, (group_size * (available_actions.size() - 1)) + 1});
   // The state is composed of the (current round, nb of times action 0 selected, ..., nb times action n selected)
   // The state space depends on the number of actions
-  Factors state_space = Factors(available_actions.size(), 0);
+  Factors state_space = Factors(available_actions.size() + 1, group_size + 1);
   state_space[0] = max_rounds;
-  for (size_t i=1; i < available_actions.size(); ++i)
-    state_space[i] = group_size;
   FlattenState flatten(state_space);
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
   CRDConditionalCount <EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
@@ -361,10 +357,8 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
 //  FlattenState flatten(Factors{nb_rounds, (group_size * (available_actions.size() - 1)) + 1});
   // The state is composed of the (current round, nb of times action 0 selected, ..., nb times action n selected)
   // The state space depends on the number of actions
-  Factors state_space = Factors(available_actions.size(), 0);
+  Factors state_space = Factors(available_actions.size() + 1, group_size + 1);
   state_space[0] = nb_rounds;
-  for (size_t i=1; i < available_actions.size(); ++i)
-    state_space[i] = group_size;
   FlattenState flatten(state_space);
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
   CRDConditionalCount<void, void> game(flatten);
@@ -511,10 +505,8 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
 //  FlattenState flatten(Factors{max_rounds, (group_size * (available_actions.size() - 1)) + 1});
   // The state is composed of the (current round, nb of times action 0 selected, ..., nb times action n selected)
   // The state space depends on the number of actions
-  Factors state_space = Factors(available_actions.size(), 0);
+  Factors state_space = Factors(available_actions.size() + 1, group_size + 1);
   state_space[0] = max_rounds;
-  for (size_t i=1; i < available_actions.size(); ++i)
-    state_space[i] = group_size;
   FlattenState flatten(state_space);
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
   CRDConditionalCount <EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
@@ -650,10 +642,8 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
 //  FlattenState flatten(Factors{nb_rounds, (group_size * (available_actions.size() - 1)) + 1});
   // The state is composed of the (current round, nb of times action 0 selected, ..., nb times action n selected)
   // The state space depends on the number of actions
-  Factors state_space = Factors(available_actions.size(), 0);
+  Factors state_space = Factors(available_actions.size() + 1, group_size + 1);
   state_space[0] = nb_rounds;
-  for (size_t i=1; i < available_actions.size(); ++i)
-    state_space[i] = group_size;
   FlattenState flatten(state_space);
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
   CRDConditionalCount<void, void> game(flatten);
@@ -805,10 +795,8 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
 //  FlattenState flatten(Factors{max_rounds, (group_size * (available_actions.size() - 1)) + 1});
   // The state is composed of the (current round, nb of times action 0 selected, ..., nb times action n selected)
   // The state space depends on the number of actions
-  Factors state_space = Factors(available_actions.size(), 0);
+  Factors state_space = Factors(available_actions.size() + 1, group_size + 1);
   state_space[0] = max_rounds;
-  for (size_t i=1; i < available_actions.size(); ++i)
-    state_space[i] = group_size;
   FlattenState flatten(state_space);
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
   CRDConditionalCount <EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
@@ -946,10 +934,8 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
 //  FlattenState flatten(Factors{nb_rounds, (group_size * (available_actions.size() - 1)) + 1});
   // The state is composed of the (current round, nb of times action 0 selected, ..., nb times action n selected)
   // The state space depends on the number of actions
-  Factors state_space = Factors(available_actions.size(), 0);
+  Factors state_space = Factors(available_actions.size() + 1, group_size + 1);
   state_space[0] = nb_rounds;
-  for (size_t i=1; i < available_actions.size(); ++i)
-    state_space[i] = group_size;
   FlattenState flatten(state_space);
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
   CRDConditionalCount<void, void> game(flatten);
@@ -1104,10 +1090,8 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
 //  FlattenState flatten(Factors{max_rounds, (group_size * (available_actions.size() - 1)) + 1});
   // The state is composed of the (current round, nb of times action 0 selected, ..., nb times action n selected)
   // The state space depends on the number of actions
-  Factors state_space = Factors(available_actions.size(), 0);
+  Factors state_space = Factors(available_actions.size() + 1, group_size + 1);
   state_space[0] = max_rounds;
-  for (size_t i=1; i < available_actions.size(); ++i)
-    state_space[i] = group_size;
   FlattenState flatten(state_space);
   // First we instantiate a game - for now the game is always an Unconditional CRDGame
   CRDConditionalCount <EGTTools::TimingUncertainty<std::mt19937_64>, std::mt19937_64> game(flatten);
