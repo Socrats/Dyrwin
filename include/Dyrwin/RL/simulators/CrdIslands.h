@@ -13,6 +13,7 @@
 #include <Dyrwin/RL/Utils.h>
 #include <Dyrwin/RL/Data.hpp>
 #include <Dyrwin/Sampling.h>
+#include <Dyrwin/Distributions.h>
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/OpenMPUtils.hpp>
 

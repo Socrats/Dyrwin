@@ -16,6 +16,7 @@
 #include <Dyrwin/RL/PopContainer.hpp>
 #include <Dyrwin/RL/TimingUncertainty.hpp>
 #include <Dyrwin/RL/Utils.h>
+#include <Dyrwin/SED/Utils.hpp>
 
 namespace EGTTools::RL {
 
@@ -55,16 +56,18 @@ class CRDConditionalCount {
     double total = 0.0;
     // creates a vector of size equal to the number of actions + 1
     // the first dimension stores the current round
-    // this vector will store the counts of each possible action
-    std::vector<size_t> state(actions.size() + 1, 0);
+    // the second is the index of the correspondent action count
+    std::vector<size_t> state(2, 0); // creates a vector of size 2 with all members equal to 0
+    std::vector<size_t> action_counts(actions.size(), 0);
     for (auto &player : players) {
       player->resetPayoff();
     }
     for (size_t i = 0; i < final_round; i++) {
       state[0] = i;
+      state[1] = EGTTools::SED::calculate_state(players.size(), action_counts);
       state_idx = _flatten.toIndex(state);
       // restart the count
-      for (size_t l = 1; l < actions.size() + 1; ++l) state[l] = 0;
+      for (size_t l = 0; l < actions.size(); ++l) action_counts[l] = 0;
       for (auto &player : players) {
         action_idx = player->selectAction(i, state_idx);
         if (!player->decrease(actions[action_idx])) {
@@ -78,7 +81,7 @@ class CRDConditionalCount {
           player->set_trajectory_state(i, state_idx, action_idx);
         }
         // increase action count
-        ++state[action_idx + 1];
+        ++action_counts[action_idx];
         total += actions[action_idx];
       }
     }
@@ -108,16 +111,17 @@ class CRDConditionalCount {
     double total = 0.0;
     // creates a vector of size equal to the number of actions + 1
     // the first dimension stores the current round
-    // this vector will store the counts of each possible action
-    std::vector<size_t> state(actions.size() + 1, 0);
+    std::vector<size_t> state(2, 0); // creates a vector of size 2 with all members equal to 0
+    std::vector<size_t> action_counts(actions.size(), 0);
     for (auto &player : players) {
       player->resetPayoff();
     }
     for (size_t i = 0; i < final_round; i++) {
       state[0] = i;
+      state[1] = EGTTools::SED::calculate_state(players.size(), action_counts);
       state_idx = _flatten.toIndex(state);
       // restart the count
-      for (size_t l = 1; l < actions.size() + 1; ++l) state[l] = 0;
+      for (size_t l = 0; l < actions.size(); ++l) action_counts[l] = 0;
       for (size_t j = 0; j < players.size(); ++j) {
         action_idx = players(j)->selectAction(i, state_idx);
         if (!players(j)->decrease(actions[action_idx])) {
@@ -131,7 +135,7 @@ class CRDConditionalCount {
           players(j)->set_trajectory_state(i, state_idx, action_idx);
         }
         // increase action count
-        ++state[action_idx + 1];
+        ++action_counts[action_idx];
         total += actions[action_idx];
         // now we store this data on results
         results(j, i) = actions[action_idx];
@@ -227,16 +231,17 @@ class CRDConditionalCount<void, void> {
     double total = 0.0;
     // creates a vector of size equal to the number of actions + 1
     // the first dimension stores the current round
-    // this vector will store the counts of each possible action
-    std::vector<size_t> state(actions.size() + 1, 0);
+    std::vector<size_t> state(2, 0); // creates a vector of size 2 with all members equal to 0
+    std::vector<size_t> action_counts(actions.size(), 0);
     for (auto &player : players) {
       player->resetPayoff();
     }
     for (size_t i = 0; i < rounds; ++i) {
       state[0] = i;
+      state[1] = EGTTools::SED::calculate_state(players.size(), action_counts);
       state_idx = _flatten.toIndex(state);
       // restart the count
-      for (size_t l = 1; l < actions.size() + 1; ++l) state[l] = 0;
+      for (size_t l = 0; l < actions.size(); ++l) action_counts[l] = 0;
       for (auto &player : players) {
         action_idx = player->selectAction(i, state_idx);
         if (!player->decrease(actions[action_idx])) {
@@ -250,7 +255,7 @@ class CRDConditionalCount<void, void> {
           player->set_trajectory_state(i, state_idx, action_idx);
         }
         // increase action count
-        ++state[action_idx + 1];
+        ++action_counts[action_idx];
         total += actions[action_idx];
       }
     }
@@ -282,17 +287,18 @@ class CRDConditionalCount<void, void> {
     size_t action_idx, state_idx;
     // creates a vector of size equal to the number of actions + 1
     // the first dimension stores the current round
-    // this vector will store the counts of each possible action
-    std::vector<size_t> state(actions.size() + 1, 0);
+    std::vector<size_t> state(2, 0); // creates a vector of size 2 with all members equal to 0
+    std::vector<size_t> action_counts(actions.size(), 0);
     double total = 0.0;
     for (auto &player : players) {
       player->resetPayoff();
     }
     for (size_t i = 0; i < rounds; i++) {
       state[0] = i;
+      state[1] = EGTTools::SED::calculate_state(players.size(), action_counts);
       state_idx = _flatten.toIndex(state);
       // restart the count
-      for (size_t l = 1; l < actions.size() + 1; ++l) state[l] = 0;
+      for (size_t l = 0; l < actions.size(); ++l) action_counts[l] = 0;
       for (size_t j = 0; j < players.size(); ++j) {
         action_idx = players(j)->selectAction(i, state_idx);
         if (!players(j)->decrease(actions[action_idx])) {
@@ -306,7 +312,7 @@ class CRDConditionalCount<void, void> {
           players(j)->set_trajectory_state(i, state_idx, action_idx);
         }
         // increase action count
-        ++state[action_idx + 1];
+        ++action_counts[action_idx];
         total += actions[action_idx];
         // now we store this data on results
         results(j, i) = actions[action_idx];
