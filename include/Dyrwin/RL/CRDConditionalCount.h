@@ -64,10 +64,8 @@ class CRDConditionalCount {
     }
     for (size_t i = 0; i < final_round; i++) {
       state[0] = i;
-      state[1] = EGTTools::SED::calculate_state(players.size(), action_counts);
       state_idx = _flatten.toIndex(state);
       // restart the count
-      for (size_t l = 0; l < actions.size(); ++l) action_counts[l] = 0;
       for (auto &player : players) {
         action_idx = player->selectAction(i, state_idx);
         if (!player->decrease(actions[action_idx])) {
@@ -84,6 +82,8 @@ class CRDConditionalCount {
         ++action_counts[action_idx];
         total += actions[action_idx];
       }
+      state[1] = EGTTools::SED::calculate_state(players.size(), action_counts);
+      for (size_t l = 0; l < actions.size(); ++l) action_counts[l] = 0;
     }
     return std::make_pair(total, final_round);
   }
@@ -118,10 +118,8 @@ class CRDConditionalCount {
     }
     for (size_t i = 0; i < final_round; i++) {
       state[0] = i;
-      state[1] = EGTTools::SED::calculate_state(players.size(), action_counts);
       state_idx = _flatten.toIndex(state);
       // restart the count
-      for (size_t l = 0; l < actions.size(); ++l) action_counts[l] = 0;
       for (size_t j = 0; j < players.size(); ++j) {
         action_idx = players(j)->selectAction(i, state_idx);
         if (!players(j)->decrease(actions[action_idx])) {
@@ -140,6 +138,8 @@ class CRDConditionalCount {
         // now we store this data on results
         results(j, i) = actions[action_idx];
       }
+      state[1] = EGTTools::SED::calculate_state(players.size(), action_counts);
+      for (size_t l = 0; l < actions.size(); ++l) action_counts[l] = 0;
     }
     return std::make_pair(total, final_round);
   }
@@ -238,10 +238,7 @@ class CRDConditionalCount<void, void> {
     }
     for (size_t i = 0; i < rounds; ++i) {
       state[0] = i;
-      state[1] = EGTTools::SED::calculate_state(players.size(), action_counts);
       state_idx = _flatten.toIndex(state);
-      // restart the count
-      for (size_t l = 0; l < actions.size(); ++l) action_counts[l] = 0;
       for (auto &player : players) {
         action_idx = player->selectAction(i, state_idx);
         if (!player->decrease(actions[action_idx])) {
@@ -258,6 +255,9 @@ class CRDConditionalCount<void, void> {
         ++action_counts[action_idx];
         total += actions[action_idx];
       }
+      state[1] = EGTTools::SED::calculate_state(players.size(), action_counts);
+      // restart the count
+      for (size_t l = 0; l < actions.size(); ++l) action_counts[l] = 0;
     }
     return std::make_pair(total, rounds);
   }
@@ -295,10 +295,7 @@ class CRDConditionalCount<void, void> {
     }
     for (size_t i = 0; i < rounds; i++) {
       state[0] = i;
-      state[1] = EGTTools::SED::calculate_state(players.size(), action_counts);
       state_idx = _flatten.toIndex(state);
-      // restart the count
-      for (size_t l = 0; l < actions.size(); ++l) action_counts[l] = 0;
       for (size_t j = 0; j < players.size(); ++j) {
         action_idx = players(j)->selectAction(i, state_idx);
         if (!players(j)->decrease(actions[action_idx])) {
@@ -317,6 +314,9 @@ class CRDConditionalCount<void, void> {
         // now we store this data on results
         results(j, i) = actions[action_idx];
       }
+      state[1] = EGTTools::SED::calculate_state(players.size(), action_counts);
+      // restart the count
+      for (size_t l = 0; l < actions.size(); ++l) action_counts[l] = 0;
     }
     return total;
   }
