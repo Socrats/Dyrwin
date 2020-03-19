@@ -1161,7 +1161,7 @@ size_t CRDSimIslands::evaluate_crd_populationsTU(size_t nb_populations,
     // total_contribution, payoff, success, target, final_public_account, final_round
     j = 0;
     for (const auto &elem: container) {
-      auto total_contribution = game_data.leftCols(final_round).row(j).sum();
+      auto total_contribution = game_data.row(j).leftCols(final_round).sum();
       for (size_t r = 0; r < final_round; ++r) {
         auto group_contributions = game_data.col(r).sum();
         data.data(data_index, 0) = i;
