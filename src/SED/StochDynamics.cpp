@@ -57,10 +57,10 @@ EGTTools::StochDynamics::calculate_fitness(int k, unsigned int invader, unsigned
  */
 std::tuple<double, double>
 EGTTools::StochDynamics::probIncreaseDecrease(double beta, int k, unsigned int invader, unsigned int resident) {
-    auto fitness = calculate_fitness(k, invader, resident);
+    auto[fitness_invader, fitness_resident] = calculate_fitness(k, invader, resident);
     double tmp = (k / (double) _pop_size) * ((_pop_size - k) / (double) _pop_size);
-    auto increase = tmp * fermi(-beta, std::get<0>(fitness), std::get<1>(fitness));
-    auto decrease = tmp * fermi(beta, std::get<0>(fitness), std::get<1>(fitness));
+    auto increase = tmp * fermi(-beta, fitness_invader, fitness_resident);
+    auto decrease = tmp * fermi(beta, fitness_invader, fitness_resident);
     return std::tuple<double, double>(increase, decrease);
 }
 

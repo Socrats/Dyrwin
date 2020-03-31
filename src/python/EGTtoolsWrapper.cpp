@@ -23,6 +23,7 @@
 #include <Dyrwin/RL/BatchQLearningAgent.h>
 #include <Dyrwin/RL/BatchQLearningForgetAgent.h>
 #include <Dyrwin/RL/QLearningAgent.h>
+#include <Dyrwin/RL/SARSAAgent.h>
 #include <Dyrwin/RL/RothErevAgent.h>
 #include <Dyrwin/RL/HistericQLearningAgent.hpp>
 #include <Dyrwin/RL/CRDGame.h>
@@ -578,6 +579,33 @@ PYBIND11_MODULE(EGTtools, m) {
                                                              size_t)>(&RL::QLearningAgent::selectAction),
            "samples an action from the agent's policy", py::arg("round"), py::arg("state"))
       .def("reset_q_values", &RL::QLearningAgent::resetQValues);
+
+  py::class_<RL::SARSAAgent, RL::Agent>(mRL, "SARSA")
+      .def(py::init<size_t, size_t, size_t, double, double, double, double>(),
+           "Implementation of the Q-Learning algorithm.",
+           py::arg("nb_states"), py::arg("nb_actions"),
+           py::arg("episode_length"), py::arg("endowment"),
+           py::arg("alpha"), py::arg("lambda"), py::arg("temperature"))
+      .def_property("alpha", &RL::SARSAAgent::alpha, &RL::SARSAAgent::setAlpha)
+      .def_property("lda", &RL::SARSAAgent::lambda, &RL::SARSAAgent::setLambda)
+      .def_property("temperature", &RL::SARSAAgent::temperature,
+                    &RL::SARSAAgent::setTemperature)
+      .def("update_policy", &RL::SARSAAgent::inferPolicy)
+      .def("reset_trajectory", &RL::SARSAAgent::resetTrajectory)
+      .def("reinforce",
+           static_cast<void (RL::SARSAAgent::*)()>(&RL::SARSAAgent::reinforceTrajectory),
+           "reinforces the actions from the current trajectory, based on the agent's reward")
+      .def("reinforce",
+           static_cast<void (RL::SARSAAgent::*)(size_t)>(&RL::SARSAAgent::reinforceTrajectory),
+           "reinforces the actions from the current trajectory, based on the agent's reward",
+           py::arg("episode_length"))
+      .def("act",
+           static_cast<size_t (RL::SARSAAgent::*)(size_t)>(&RL::SARSAAgent::selectAction),
+           "samples an action from the agent's policy", py::arg("round"))
+      .def("act", static_cast<size_t (RL::SARSAAgent::*)(size_t,
+                                                             size_t)>(&RL::SARSAAgent::selectAction),
+           "samples an action from the agent's policy", py::arg("round"), py::arg("state"))
+      .def("reset_q_values", &RL::SARSAAgent::resetQValues);
 
   py::class_<RL::DiscountedQLearning, RL::Agent>(mRL, "DiscountedQLearning")
       .def(py::init<size_t, size_t, size_t, double, double, double, double>(),
