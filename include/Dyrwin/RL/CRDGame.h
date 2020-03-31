@@ -503,6 +503,12 @@ class CRDGame<PopContainer, R, G> {
     }
   }
 
+  void updatePayoffs(PopContainer &players, double value) {
+    for (auto &player: players) {
+      player->multiply_by_payoff(value);
+    }
+  }
+
   double playersContribution(PopContainer &players) {
     double total = 0;
     for (auto &player : players)
@@ -634,9 +640,15 @@ class CRDGame<PopContainer, void, void> {
     return total;
   }
 
-  void setPayoffs(PopContainer &players, unsigned int value) {
+  void setPayoffs(PopContainer &players, double value) {
     for (auto &player: players) {
       player->set_payoff(value);
+    }
+  }
+
+  void updatePayoffs(PopContainer &players, double value) {
+    for (auto &player: players) {
+      player->multiply_by_payoff(value);
     }
   }
 

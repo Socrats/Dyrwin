@@ -503,9 +503,15 @@ class CRDConditional<PopContainer, R, G> {
     return total;
   }
 
-  void setPayoffs(PopContainer &players, unsigned int value) {
+  void setPayoffs(PopContainer &players, double value) {
     for (auto &player: players) {
       player->set_payoff(value);
+    }
+  }
+
+  void updatePayoffs(PopContainer &players, double value) {
+    for (auto &player: players) {
+      player->multiply_by_payoff(value);
     }
   }
 
@@ -654,9 +660,15 @@ class CRDConditional<PopContainer, void, void> {
     return total;
   }
 
-  void setPayoffs(PopContainer &players, unsigned int value) {
+  void setPayoffs(PopContainer &players, double value) {
     for (auto &player: players) {
       player->set_payoff(value);
+    }
+  }
+
+  void updatePayoffs(PopContainer &players, double value) {
+    for (auto &player: players) {
+      player->multiply_by_payoff(value);
     }
   }
 

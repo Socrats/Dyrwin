@@ -82,6 +82,8 @@ namespace EGTTools::RL {
 
         void set_payoff(double payoff);
 
+        void multiply_by_payoff(double value);
+
         void resetPayoff();
 
         void set_policy(const Eigen::Ref<const Matrix2D> &policy);

@@ -204,6 +204,8 @@ void Agent::set_endowment(double endowment) { _endowment = endowment; }
 
 void Agent::set_payoff(double payoff) { _payoff = payoff; }
 
+void Agent::multiply_by_payoff(double value) { _payoff *= value; }
+
 void Agent::resetPayoff() { _payoff = _endowment; }
 
 void Agent::set_policy(const Eigen::Ref<const Matrix2D> &policy) {

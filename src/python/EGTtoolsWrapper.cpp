@@ -749,8 +749,11 @@ PYBIND11_MODULE(EGTtools, m) {
                RL::PopContainer &)>(&RL::CRDGame<RL::PopContainer, void, void>::playersContribution),
            "returns the total contribution of the group", py::arg("players"))
       .def("set_payoffs", static_cast<void (RL::CRDGame<RL::PopContainer, void, void>::*)(
-               RL::PopContainer &, unsigned int)>(&RL::CRDGame<RL::PopContainer, void, void>::setPayoffs),
-           "sets players payoffs", py::arg("players"), py::arg("payoff"));
+               RL::PopContainer &, double)>(&RL::CRDGame<RL::PopContainer, void, void>::setPayoffs),
+           "sets players payoffs", py::arg("players"), py::arg("payoff"))
+      .def("update_payoffs", static_cast<void (RL::CRDGame<RL::PopContainer, void, void>::*)(
+           RL::PopContainer &, double)>(&RL::CRDGame<RL::PopContainer, void, void>::setPayoffs),
+       "sets players payoffs", py::arg("players"), py::arg("multiplier"));
 
   py::class_<RL::PopContainer>(mRL, "Population")
       .def(py::init<const std::string &, size_t, size_t, size_t, size_t, double, std::vector<double>>(),
