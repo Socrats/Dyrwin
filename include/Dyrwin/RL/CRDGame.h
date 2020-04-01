@@ -390,16 +390,16 @@ class CRDGame<PopContainer, R, G> {
         // In case nothing is left of the player's endowment, then donate 0
         if (!player->decrease(actions[idx])) {
           // Select the next best action
-//          if (idx > 0) {
-//            for (size_t n = 0; n < idx; ++n) {
-//              if (player->decrease(actions[idx - n - 1])) {
-//                idx = idx - n - 1;
-//                break;
-//              }
-//            }
-//          }
+          if (idx > 0) {
+            for (size_t n = 0; n < idx; ++n) {
+              if (player->decrease(actions[idx - n - 1])) {
+                idx = idx - n - 1;
+                break;
+              }
+            }
+          }
           // play zero in this case
-          idx = 0;
+//          idx = 0;
           player->set_trajectory_round(i, idx);
         }
         total += actions[idx];
@@ -438,14 +438,14 @@ class CRDGame<PopContainer, R, G> {
         // In case nothing is left of the player's endowment, then donate 0
         if (!players(j)->decrease(actions[action_idx])) {
           // Select the next best action
-//          if (action_idx > 0) {
-//            for (size_t n = 0; n < action_idx; ++n) {
-//              if (players(j)->decrease(actions[action_idx - n - 1])) {
-//                action_idx = action_idx - n - 1;
-//                break;
-//              }
-//            }
-//          }
+          if (action_idx > 0) {
+            for (size_t n = 0; n < action_idx; ++n) {
+              if (players(j)->decrease(actions[action_idx - n - 1])) {
+                action_idx = action_idx - n - 1;
+                break;
+              }
+            }
+          }
           // select 0 in this case
           action_idx = 0;
           players(j)->set_trajectory_round(i, action_idx);
@@ -546,16 +546,16 @@ class CRDGame<PopContainer, void, void> {
         idx = player->selectAction(i);
         if (!player->decrease(actions[idx])) {
           // Select the next best action
-//          if (idx > 0) {
-//            for (size_t n = 0; n < idx; ++n) {
-//              if (player->decrease(actions[idx - n - 1])) {
-//                idx = idx - n - 1;
-//                break;
-//              }
-//            }
-//          }
+          if (idx > 0) {
+            for (size_t n = 0; n < idx; ++n) {
+              if (player->decrease(actions[idx - n - 1])) {
+                idx = idx - n - 1;
+                break;
+              }
+            }
+          }
           // select 0 in this case
-          idx = 0;
+//          idx = 0;
           player->set_trajectory_round(i, idx);
         }
         total += actions[idx];
@@ -586,16 +586,16 @@ class CRDGame<PopContainer, void, void> {
         // In case nothing is left of the player's endowment, then donate 0
         if (!players(j)->decrease(actions[action_idx])) {
           // Select the next best action
-//          if (action_idx > 0) {
-//            for (size_t n = 0; n < action_idx; ++n) {
-//              if (players(j)->decrease(actions[action_idx - n - 1])) {
-//                action_idx = action_idx - n - 1;
-//                break;
-//              }
-//            }
-//          }
+          if (action_idx > 0) {
+            for (size_t n = 0; n < action_idx; ++n) {
+              if (players(j)->decrease(actions[action_idx - n - 1])) {
+                action_idx = action_idx - n - 1;
+                break;
+              }
+            }
+          }
           // select 0 in this case
-          action_idx = 0;
+//          action_idx = 0;
           players(j)->set_trajectory_round(i, action_idx);
         }
         // now we store this data on results
