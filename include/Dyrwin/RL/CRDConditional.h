@@ -393,14 +393,16 @@ class CRDConditional<PopContainer, R, G> {
         action = player->selectAction(i, idx);
         if (!player->decrease(actions[action])) {
           // Select the next best action
-          if (action > 0) {
-            for (size_t n = 0; n < action; ++n) {
-              if (player->decrease(actions[action - n - 1])) {
-                action = action - n - 1;
-                break;
-              }
-            }
-          }
+//          if (action > 0) {
+//            for (size_t n = 0; n < action; ++n) {
+//              if (player->decrease(actions[action - n - 1])) {
+//                action = action - n - 1;
+//                break;
+//              }
+//            }
+//          }
+          // In this case play 0
+          action = 0;
           player->set_trajectory_state(i, idx, action);
         }
         partial += actions[action];
@@ -444,14 +446,16 @@ class CRDConditional<PopContainer, R, G> {
         action_idx = players(j)->selectAction(i, state_idx);
         if (!players(j)->decrease(actions[action_idx])) {
           // Select the next best action
-          if (action_idx > 0) {
-            for (size_t n = 0; n < action_idx; ++n) {
-              if (players(j)->decrease(actions[action_idx - n - 1])) {
-                action_idx = action_idx - n - 1;
-                break;
-              }
-            }
-          }
+//          if (action_idx > 0) {
+//            for (size_t n = 0; n < action_idx; ++n) {
+//              if (players(j)->decrease(actions[action_idx - n - 1])) {
+//                action_idx = action_idx - n - 1;
+//                break;
+//              }
+//            }
+//          }
+          // In this case play 0
+          action_idx = 0;
           players(j)->set_trajectory_state(i, state_idx, action_idx);
         }
         partial += actions[action_idx];
@@ -570,14 +574,16 @@ class CRDConditional<PopContainer, void, void> {
         action_idx = player->selectAction(i, state_idx);
         if (!player->decrease(actions[action_idx])) {
           // Select the next best action
-          if (action_idx > 0) {
-            for (size_t n = 0; n < action_idx; ++n) {
-              if (player->decrease(actions[action_idx - n - 1])) {
-                action_idx = action_idx - n - 1;
-                break;
-              }
-            }
-          }
+//          if (action_idx > 0) {
+//            for (size_t n = 0; n < action_idx; ++n) {
+//              if (player->decrease(actions[action_idx - n - 1])) {
+//                action_idx = action_idx - n - 1;
+//                break;
+//              }
+//            }
+//          }
+          // In this case play 0
+          action_idx = 0;
           player->set_trajectory_state(i, state_idx, action_idx);
         }
         partial += actions[action_idx];
@@ -613,14 +619,16 @@ class CRDConditional<PopContainer, void, void> {
         action_idx = players(j)->selectAction(i, state_idx);
         if (!players(j)->decrease(actions[action_idx])) {
           // Select the next best action
-          if (action_idx > 0) {
-            for (size_t n = 0; n < action_idx; ++n) {
-              if (players(j)->decrease(actions[action_idx - n - 1])) {
-                action_idx = action_idx - n - 1;
-                break;
-              }
-            }
-          }
+//          if (action_idx > 0) {
+//            for (size_t n = 0; n < action_idx; ++n) {
+//              if (players(j)->decrease(actions[action_idx - n - 1])) {
+//                action_idx = action_idx - n - 1;
+//                break;
+//              }
+//            }
+//          }
+          // In this case play 0
+          action_idx = 0;
           players(j)->set_trajectory_state(i, state_idx, action_idx);
         }
         partial += actions[action_idx];
