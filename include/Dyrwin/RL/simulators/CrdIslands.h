@@ -672,7 +672,8 @@ class CRDSimIslands {
                             double &risk,
                             PopContainer &pop,
                             size_t &final_round,
-                            G &game);
+                            G &game,
+                            std::mt19937_64 &generator);
 
   /**
  * @brief This method reinforces agents proportionally to the obtained payoff for Timing uncertainty games.
@@ -692,7 +693,8 @@ class CRDSimIslands {
                             double threshold,
                             double &risk,
                             PopContainer &pop,
-                            G &game);
+                            G &game,
+                            std::mt19937_64 &generator);
 
  private:
   std::uniform_real_distribution<double> _real_rand;
@@ -704,11 +706,13 @@ void CRDSimIslands::reinforce_population(double &pool,
                                          double &risk,
                                          PopContainer &pop,
                                          size_t &final_round,
-                                         G &game) {
+                                         G &game,
+                                         std::mt19937_64 &generator) {
   if (pool >= target)
     success++;
-  else{
-    game.updatePayoffs(pop, 1 - risk);
+  else if (_real_rand(generator) < risk) {
+//    game.setPayoffs(pop, 0);
+    game.subtractEndowment(pop);
   }
 
   game.reinforcePath(pop, final_round);
@@ -719,11 +723,13 @@ void CRDSimIslands::reinforce_population(double &pool,
                                          double threshold,
                                          double &risk,
                                          EGTTools::RL::PopContainer &pop,
-                                         G &game) {
+                                         G &game,
+                                         std::mt19937_64 &generator) {
   if (pool >= threshold)
     success++;
-  else {
-    game.updatePayoffs(pop, 1 - risk);
+  else if (_real_rand(generator) < risk) {
+//    game.setPayoffs(pop, 0);
+    game.subtractEndowment(pop);
   }
 
   game.reinforcePath(pop);
@@ -738,14 +744,14 @@ void CRDSimIslands::run_crd_single_group(size_t nb_generations,
                                          EGTTools::RL::PopContainer &population,
                                          G &game) {
   size_t success = 0;
-//  std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
+  std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
   for (size_t generation = 0; generation < nb_generations; ++generation) {
     success = 0;
     for (size_t i = 0; i < nb_games; ++i) {
       // First we play several games
       auto[pool, final_round] = game.playGame(population, available_actions, nb_rounds);
-      reinforce_population(pool, success, target, risk, population, game);
+      reinforce_population(pool, success, target, risk, population, game, generator);
     }
     // Then, update the population
     game.calcProbabilities(population);
@@ -770,7 +776,7 @@ void CRDSimIslands::run_crd_single_groupTU(size_t nb_generations,
     for (size_t i = 0; i < nb_games; ++i) {
       // First we play several games
       auto[pool, final_round] = game.playGame(population, available_actions, min_rounds, timing_uncertainty, generator);
-      reinforce_population(pool, success, target, risk, population, final_round, game);
+      reinforce_population(pool, success, target, risk, population, final_round, game, generator);
     }
     // Then, update the population
     game.calcProbabilities(population);
@@ -802,7 +808,7 @@ void CRDSimIslands::run_crd_single_groupThU(size_t nb_generations,
     for (size_t i = 0; i < nb_games; ++i) {
       // First we play several games
       auto[pool, final_round] = game.playGame(population, available_actions, nb_rounds);
-      reinforce_population(pool, success, t_dist(generator), risk, population, game);
+      reinforce_population(pool, success, t_dist(generator), risk, population, game, generator);
     }
     // Then, update the population
     game.calcProbabilities(population);
@@ -830,7 +836,7 @@ void CRDSimIslands::run_crd_single_groupTUThU(size_t nb_generations,
     for (size_t i = 0; i < nb_games; ++i) {
       // First we play several games
       auto[pool, final_round] = game.playGame(population, available_actions, min_rounds, timing_uncertainty, generator);
-      reinforce_population(pool, success, t_dist(generator), risk, population, final_round, game);
+      reinforce_population(pool, success, t_dist(generator), risk, population, final_round, game, generator);
     }
     // Then, update the population
     game.calcProbabilities(population);
@@ -874,7 +880,7 @@ void CRDSimIslands::run_crd_population(size_t population_size,
       }
       // First we play the game
       auto[pool, final_round] = game.playGame(group, available_actions, nb_rounds);
-      reinforce_population(pool, success, target, risk, group, game);
+      reinforce_population(pool, success, target, risk, group, game, generator);
       container.clear();
     }
 
@@ -917,7 +923,7 @@ void CRDSimIslands::run_crd_populationTU(size_t population_size,
       }
       // First we play several games
       auto[pool, final_round] = game.playGame(group, available_actions, min_rounds, timing_uncertainty, generator);
-      reinforce_population(pool, success, target, risk, group, final_round, game);
+      reinforce_population(pool, success, target, risk, group, final_round, game, generator);
       container.clear();
     }
     // Then, update the population
@@ -966,7 +972,7 @@ void CRDSimIslands::run_crd_populationThU(size_t population_size,
       }
       // First we play the game
       auto[pool, final_round] = game.playGame(group, available_actions, nb_rounds);
-      reinforce_population(pool, success, t_dist(generator), risk, group, game);
+      reinforce_population(pool, success, t_dist(generator), risk, group, game, generator);
       container.clear();
     }
 
@@ -1013,7 +1019,7 @@ void CRDSimIslands::run_crd_populationTUThU(size_t population_size,
       }
       // First we play several games
       auto[pool, final_round] = game.playGame(group, available_actions, min_rounds, timing_uncertainty, generator);
-      reinforce_population(pool, success, t_dist(generator), risk, group, final_round, game);
+      reinforce_population(pool, success, t_dist(generator), risk, group, final_round, game, generator);
       container.clear();
     }
     // Then, update the population

@@ -509,6 +509,12 @@ class CRDGame<PopContainer, R, G> {
     }
   }
 
+  void subtractEndowment(PopContainer &players) {
+    for (auto &player: players) {
+      player->subtract_endowment_to_payoff();
+    }
+  }
+
   double playersContribution(PopContainer &players) {
     double total = 0;
     for (auto &player : players)
@@ -649,6 +655,12 @@ class CRDGame<PopContainer, void, void> {
   void updatePayoffs(PopContainer &players, double value) {
     for (auto &player: players) {
       player->multiply_by_payoff(value);
+    }
+  }
+
+  void subtractEndowment(PopContainer &players) {
+    for (auto &player: players) {
+      player->subtract_endowment_to_payoff();
     }
   }
 
