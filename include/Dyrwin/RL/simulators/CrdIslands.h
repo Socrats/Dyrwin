@@ -710,10 +710,8 @@ void CRDSimIslands::reinforce_population(double &pool,
                                          std::mt19937_64 &generator) {
   if (pool >= target)
     success++;
-  else if (_real_rand(generator) < risk) {
-//    game.setPayoffs(pop, 0);
-    game.subtractEndowment(pop);
-  }
+  else if (_real_rand(generator) < risk)
+    game.setPayoffs(pop, 0);
 
   game.reinforcePath(pop, final_round);
 }
@@ -727,10 +725,8 @@ void CRDSimIslands::reinforce_population(double &pool,
                                          std::mt19937_64 &generator) {
   if (pool >= threshold)
     success++;
-  else if (_real_rand(generator) < risk) {
-//    game.setPayoffs(pop, 0);
-    game.subtractEndowment(pop);
-  }
+  else if (_real_rand(generator) < risk)
+    game.setPayoffs(pop, 0);
 
   game.reinforcePath(pop);
 }
