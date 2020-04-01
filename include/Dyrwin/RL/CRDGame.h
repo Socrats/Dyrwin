@@ -447,7 +447,7 @@ class CRDGame<PopContainer, R, G> {
             }
           }
           // select 0 in this case
-          action_idx = 0;
+//          action_idx = 0;
           players(j)->set_trajectory_round(i, action_idx);
         }
         results(j, i) = actions[action_idx];
