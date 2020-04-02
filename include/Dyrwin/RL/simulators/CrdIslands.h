@@ -97,7 +97,7 @@ class CRDSimIslands {
                                size_t nb_games,
                                size_t nb_rounds,
                                int target,
-                               int delta,
+                               double delta,
                                double risk,
                                ActionSpace &available_actions,
                                PopContainer &population,
@@ -109,7 +109,7 @@ class CRDSimIslands {
                                  size_t min_rounds,
                                  U timing_uncertainty,
                                  int target,
-                                 int delta,
+                                 double delta,
                                  double risk,
                                  ActionSpace &available_actions,
                                  PopContainer &population,
@@ -183,7 +183,7 @@ class CRDSimIslands {
                              size_t nb_games,
                              size_t nb_rounds,
                              int target,
-                             int delta,
+                             double delta,
                              double risk,
                              ActionSpace &available_actions,
                              PopContainer &population,
@@ -197,7 +197,7 @@ class CRDSimIslands {
                                size_t min_rounds,
                                U timing_uncertainty,
                                int target,
-                               int delta,
+                               double delta,
                                double risk,
                                ActionSpace &available_actions,
                                PopContainer &population,
@@ -275,7 +275,7 @@ class CRDSimIslands {
                                    size_t nb_games,
                                    size_t nb_rounds,
                                    int target,
-                                   int delta,
+                                   double delta,
                                    double risk,
                                    ActionSpace &available_actions,
                                    G &game,
@@ -289,7 +289,7 @@ class CRDSimIslands {
                                        size_t min_rounds,
                                        U &timing_uncertainty,
                                        int target,
-                                       int delta,
+                                       double delta,
                                        double risk,
                                        ActionSpace &available_actions,
                                        G &game,
@@ -419,7 +419,7 @@ class CRDSimIslands {
                        size_t nb_games,
                        size_t nb_rounds,
                        int target,
-                       int delta,
+                       double delta,
                        int endowment,
                        double risk,
                        ActionSpace &available_actions,
@@ -434,7 +434,7 @@ class CRDSimIslands {
                                    size_t nb_games,
                                    size_t nb_rounds,
                                    int target,
-                                   int delta,
+                                   double delta,
                                    int endowment,
                                    double risk,
                                    ActionSpace &available_actions,
@@ -472,7 +472,7 @@ class CRDSimIslands {
                          size_t max_rounds,
                          double p,
                          int target,
-                         int delta,
+                         double delta,
                          int endowment,
                          double risk,
                          ActionSpace &available_actions,
@@ -490,7 +490,7 @@ class CRDSimIslands {
                                      size_t max_rounds,
                                      double p,
                                      int target,
-                                     int delta,
+                                     double delta,
                                      int endowment,
                                      double risk,
                                      ActionSpace &available_actions,
@@ -592,7 +592,7 @@ class CRDSimIslands {
                             size_t nb_games,
                             size_t nb_rounds,
                             int target,
-                            int delta,
+                            double delta,
                             int endowment,
                             double risk,
                             ActionSpace &available_actions,
@@ -608,7 +608,7 @@ class CRDSimIslands {
                                         size_t nb_games,
                                         size_t nb_rounds,
                                         int target,
-                                        int delta,
+                                        double delta,
                                         int endowment,
                                         double risk,
                                         ActionSpace &available_actions,
@@ -627,7 +627,7 @@ class CRDSimIslands {
                               size_t max_rounds,
                               double p,
                               int target,
-                              int delta,
+                              double delta,
                               int endowment,
                               double risk,
                               ActionSpace &available_actions,
@@ -646,7 +646,7 @@ class CRDSimIslands {
                                           size_t max_rounds,
                                           double p,
                                           int target,
-                                          int delta,
+                                          double delta,
                                           int endowment,
                                           double risk,
                                           ActionSpace &available_actions,
@@ -788,7 +788,7 @@ void CRDSimIslands::run_crd_single_groupThU(size_t nb_generations,
                                             size_t nb_games,
                                             size_t nb_rounds,
                                             int target,
-                                            int delta,
+                                            double delta,
                                             double risk,
                                             EGTTools::RL::ActionSpace &available_actions,
                                             EGTTools::RL::PopContainer &population,
@@ -797,7 +797,8 @@ void CRDSimIslands::run_crd_single_groupThU(size_t nb_generations,
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
   // Define the distribution for the threshold
-  std::uniform_int_distribution<int> t_dist(target - delta / 2, target + delta / 2);
+  std::uniform_int_distribution<int> t_dist(static_cast<int>(target * (1 - delta)),
+                                            static_cast<int>(target * (1 + delta)));
 
   for (size_t generation = 0; generation < nb_generations; ++generation) {
     success = 0;
@@ -817,7 +818,7 @@ void CRDSimIslands::run_crd_single_groupTUThU(size_t nb_generations,
                                               size_t min_rounds,
                                               U timing_uncertainty,
                                               int target,
-                                              int delta,
+                                              double delta,
                                               double risk,
                                               EGTTools::RL::ActionSpace &available_actions,
                                               EGTTools::RL::PopContainer &population,
@@ -825,7 +826,8 @@ void CRDSimIslands::run_crd_single_groupTUThU(size_t nb_generations,
   size_t success = 0;
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
   // Define the distribution for the threshold
-  std::uniform_int_distribution<int> t_dist(target - delta / 2, target + delta / 2);
+  std::uniform_int_distribution<int> t_dist(static_cast<int>(target * (1 - delta)),
+                                            static_cast<int>(target * (1 + delta)));
 
   for (size_t generation = 0; generation < nb_generations; ++generation) {
     success = 0;
@@ -937,7 +939,7 @@ void CRDSimIslands::run_crd_populationThU(size_t population_size,
                                           size_t nb_games,
                                           size_t nb_rounds,
                                           int target,
-                                          int delta,
+                                          double delta,
                                           double risk,
                                           ActionSpace &available_actions,
                                           PopContainer &population,
@@ -946,7 +948,8 @@ void CRDSimIslands::run_crd_populationThU(size_t population_size,
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
   // Define the distribution for the threshold
-  std::uniform_int_distribution<int> t_dist(target - delta / 2, target + delta / 2);
+  std::uniform_int_distribution<int> t_dist(static_cast<int>(target * (1 - delta)),
+                                            static_cast<int>(target * (1 + delta)));
 
   // Prepare group container
   PopContainer group;
@@ -985,7 +988,7 @@ void CRDSimIslands::run_crd_populationTUThU(size_t population_size,
                                             size_t min_rounds,
                                             U timing_uncertainty,
                                             int target,
-                                            int delta,
+                                            double delta,
                                             double risk,
                                             ActionSpace &available_actions,
                                             PopContainer &population,
@@ -994,7 +997,8 @@ void CRDSimIslands::run_crd_populationTUThU(size_t population_size,
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
 
   // Define the distribution for the threshold
-  std::uniform_int_distribution<int> t_dist(target - delta / 2, target + delta / 2);
+  std::uniform_int_distribution<int> t_dist(static_cast<int>(target * (1 - delta)),
+                                            static_cast<int>(target * (1 + delta)));
 
   // Prepare group container
   PopContainer group;
@@ -1192,7 +1196,7 @@ void CRDSimIslands::evaluate_crd_populationsThU(size_t nb_populations,
                                                 size_t nb_games,
                                                 size_t nb_rounds,
                                                 int target,
-                                                int delta,
+                                                double delta,
                                                 double risk,
                                                 EGTTools::RL::ActionSpace &available_actions,
                                                 G &game,
@@ -1205,7 +1209,8 @@ void CRDSimIslands::evaluate_crd_populationsThU(size_t nb_populations,
   Matrix2D game_data = Matrix2D::Zero(group_size, nb_rounds);
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
   // Define the distribution for the threshold
-  std::uniform_int_distribution<int> t_dist(target - delta / 2, target + delta / 2);
+  std::uniform_int_distribution<int> t_dist(static_cast<int>(target * (1 - delta)),
+                                            static_cast<int>(target * (1 + delta)));
 
   // We will need a container for the random groups
   PopContainer group;
@@ -1272,7 +1277,7 @@ size_t CRDSimIslands::evaluate_crd_populationsTUThU(size_t nb_populations,
                                                     size_t min_rounds,
                                                     U &timing_uncertainty,
                                                     int target,
-                                                    int delta,
+                                                    double delta,
                                                     double risk,
                                                     ActionSpace &available_actions,
                                                     G &game,
@@ -1285,7 +1290,8 @@ size_t CRDSimIslands::evaluate_crd_populationsTUThU(size_t nb_populations,
   Matrix2D game_data = Matrix2D::Zero(group_size, timing_uncertainty.max_rounds());
   std::mt19937_64 generator(EGTTools::Random::SeedGenerator::getInstance().getSeed());
   // Define the distribution for the threshold
-  std::uniform_int_distribution<int> t_dist(target - delta / 2, target + delta / 2);
+  std::uniform_int_distribution<int> t_dist(static_cast<int>(target * (1 - delta)),
+                                            static_cast<int>(target * (1 + delta)));
 
   // We will need a container for the random groups
   PopContainer group;
