@@ -696,7 +696,16 @@ class CRDSimIslands {
                             G &game,
                             std::mt19937_64 &generator);
 
+  // Getter
+  [[nodiscard]] size_t verbose_level() const;
+  // Setter
+  void set_verbose_level(size_t verbose_level);
+
  private:
+  // We consider 3 possible verbose levels
+  // 0: only group success and average contributions are stored
+  // 1: all information is stored
+  size_t _verbose_level;
   std::uniform_real_distribution<double> _real_rand;
 };
 template<class G>
@@ -1058,51 +1067,76 @@ void CRDSimIslands::evaluate_crd_populations(size_t nb_populations,
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.populations[0](i));
 
-  // The agents will be evaluated through nb_games games
-  for (size_t i = 0; i < nb_games; ++i) {
-    // At each iteration, we sample a random group, taking players
-    // randomly from any population. For that we sample integers from the range
-    // [0, nb_populations * population_size)
-    EGTTools::sampling::sample_without_replacement(total_population_size, group_size, container, generator);
-    int j = 0;
-    for (const auto &elem: container) {
-      group(j) = data.populations[elem / population_size](elem % population_size);
-      j++;
-    }
-    // First we play the game
-    public_pool = game.playGameVerbose(group, available_actions, nb_rounds, game_data);
-    // Check if the game was successful
-    success = public_pool >= target;
-    if ((!success) && _real_rand(generator) < risk)
-      game.setPayoffs(group, 0);
-
-    // Now we update the data table with the info of this game
-    // For each player and round, we add:
-    // group, player, game_index, round, action, group_contributions, contributions_others,
-    // total_contribution, payoff, success, target, final_public_account, final_round
-    j = 0;
-    for (const auto &elem: container) {
-      auto total_contribution = game_data.row(j).sum();
-      for (size_t r = 0; r < nb_rounds; ++r) {
-        auto group_contributions = game_data.col(r).sum();
-        data.data(data_index, 0) = i;
-        data.data(data_index, 1) = elem;
-        data.data(data_index, 2) = j;
-        data.data(data_index, 3) = r;
-        data.data(data_index, 4) = game_data(j, r);
-        data.data(data_index, 5) = group_contributions;
-        data.data(data_index, 6) = group_contributions - game_data(j, r);
-        data.data(data_index, 7) = total_contribution;
-        data.data(data_index, 8) = group(j)->payoff();
-        data.data(data_index, 9) = success;
-        data.data(data_index, 10) = target;
-        data.data(data_index, 11) = public_pool;
-        data.data(data_index, 12) = nb_rounds;
-        data_index++;
+  // Depending on the verbose level we store more or less data
+  if (_verbose_level == 0) {
+    for (size_t i = 0; i < nb_games; ++i) {
+      // At each iteration, we sample a random group, taking players
+      // randomly from any population. For that we sample integers from the range
+      // [0, nb_populations * population_size)
+      EGTTools::sampling::sample_without_replacement(total_population_size, group_size, container, generator);
+      int j = 0;
+      for (const auto &elem: container) {
+        group(j) = data.populations[elem / population_size](elem % population_size);
+        j++;
       }
-      j++;
+      // First we play the game
+      auto[public_pool, final_round] = game.playGame(group, available_actions, nb_rounds);
+      // Check if the game was successful
+      success = public_pool >= target;
+      // Now we update the data table with the info of this game
+      // group, success, final_public_account, final_round
+      data.data(data_index, 0) = i;
+      data.data(data_index, 1) = success;
+      data.data(data_index, 2) = public_pool;
+      data_index++;
+      container.clear();
     }
-    container.clear();
+  } else {
+    for (size_t i = 0; i < nb_games; ++i) {
+      // At each iteration, we sample a random group, taking players
+      // randomly from any population. For that we sample integers from the range
+      // [0, nb_populations * population_size)
+      EGTTools::sampling::sample_without_replacement(total_population_size, group_size, container, generator);
+      int j = 0;
+      for (const auto &elem: container) {
+        group(j) = data.populations[elem / population_size](elem % population_size);
+        j++;
+      }
+      // First we play the game
+      public_pool = game.playGameVerbose(group, available_actions, nb_rounds, game_data);
+      // Check if the game was successful
+      success = public_pool >= target;
+      if ((!success) && _real_rand(generator) < risk)
+        game.setPayoffs(group, 0);
+
+      // Now we update the data table with the info of this game
+      // For each player and round, we add:
+      // group, player, game_index, round, action, group_contributions, contributions_others,
+      // total_contribution, payoff, success, target, final_public_account, final_round
+      j = 0;
+      for (const auto &elem: container) {
+        auto total_contribution = game_data.row(j).sum();
+        for (size_t r = 0; r < nb_rounds; ++r) {
+          auto group_contributions = game_data.col(r).sum();
+          data.data(data_index, 0) = i;
+          data.data(data_index, 1) = elem;
+          data.data(data_index, 2) = j;
+          data.data(data_index, 3) = r;
+          data.data(data_index, 4) = game_data(j, r);
+          data.data(data_index, 5) = group_contributions;
+          data.data(data_index, 6) = group_contributions - game_data(j, r);
+          data.data(data_index, 7) = total_contribution;
+          data.data(data_index, 8) = group(j)->payoff();
+          data.data(data_index, 9) = success;
+          data.data(data_index, 10) = target;
+          data.data(data_index, 11) = public_pool;
+          data.data(data_index, 12) = nb_rounds;
+          data_index++;
+        }
+        j++;
+      }
+      container.clear();
+    }
   }
 }
 template<class G, class U>
@@ -1134,58 +1168,93 @@ size_t CRDSimIslands::evaluate_crd_populationsTU(size_t nb_populations,
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.populations[0](i));
 
-  // The agents will be evaluated through nb_games games
-  for (size_t i = 0; i < nb_games; ++i) {
-    // At each iteration, we sample a random group, taking players
-    // randomly from any population. For that we sample integers from the range
-    // [0, nb_populations * population_size)
-    EGTTools::sampling::sample_without_replacement(total_population_size, group_size, container, generator);
-    int j = 0;
-    for (const auto &elem: container) {
-      group(j) = data.populations[elem / population_size](elem % population_size);
-      j++;
-    }
-    // First we play the game
-    auto[public_pool, final_round] = game.playGameVerbose(group,
-                                                          available_actions,
-                                                          min_rounds,
-                                                          timing_uncertainty,
-                                                          generator,
-                                                          game_data);
-    total_nb_rounds += final_round;
-    // Check if the game was successful
-    success = public_pool >= target;
-    if ((!success) && _real_rand(generator) < risk)
-      game.setPayoffs(group, 0);
-
-    // Now we update the data table with the info of this game
-    // TODO: let's add here per round: public_account, private_account, contributions_others_prev
-    // For each player and round, we add:
-    // group, player, game_index, round, action, group_contributions, contributions_others,
-    // total_contribution, payoff, success, target, final_public_account, final_round
-    j = 0;
-    for (const auto &elem: container) {
-      auto total_contribution = game_data.row(j).leftCols(final_round).sum();
-      for (size_t r = 0; r < final_round; ++r) {
-        auto group_contributions = game_data.col(r).sum();
-        data.data(data_index, 0) = i;
-        data.data(data_index, 1) = elem;
-        data.data(data_index, 2) = j;
-        data.data(data_index, 3) = r;
-        data.data(data_index, 4) = game_data(j, r);
-        data.data(data_index, 5) = group_contributions;
-        data.data(data_index, 6) = group_contributions - game_data(j, r);
-        data.data(data_index, 7) = total_contribution;
-        data.data(data_index, 8) = group(j)->payoff();
-        data.data(data_index, 9) = success;
-        data.data(data_index, 10) = target;
-        data.data(data_index, 11) = public_pool;
-        data.data(data_index, 12) = final_round;
-        data_index++;
+  // Depending on the verbose level we store more or less data
+  if (_verbose_level == 0) {
+    // the number of columns correspond to each game in the case
+    total_nb_rounds = nb_games;
+    for (size_t i = 0; i < nb_games; ++i) {
+      // At each iteration, we sample a random group, taking players
+      // randomly from any population. For that we sample integers from the range
+      // [0, nb_populations * population_size)
+      EGTTools::sampling::sample_without_replacement(total_population_size, group_size, container, generator);
+      int j = 0;
+      for (const auto &elem: container) {
+        group(j) = data.populations[elem / population_size](elem % population_size);
+        j++;
       }
-      j++;
+
+      // First we play the game
+      auto[public_pool, final_round] = game.playGame(group,
+                                                     available_actions,
+                                                     min_rounds,
+                                                     timing_uncertainty,
+                                                     generator);
+      // Check if the game was successful
+      success = public_pool >= target;
+      // Now we update the data table with the info of this game
+      // For each player and round, we add:
+      // group, success, final_public_account, final_round
+      data.data(data_index, 0) = i;
+      data.data(data_index, 1) = success;
+      data.data(data_index, 2) = public_pool;
+      data.data(data_index, 3) = final_round;
+      data_index++;
+      container.clear();
     }
-    container.clear();
+  } else {
+    // The agents will be evaluated through nb_games games
+    for (size_t i = 0; i < nb_games; ++i) {
+      // At each iteration, we sample a random group, taking players
+      // randomly from any population. For that we sample integers from the range
+      // [0, nb_populations * population_size)
+      EGTTools::sampling::sample_without_replacement(total_population_size, group_size, container, generator);
+      int j = 0;
+      for (const auto &elem: container) {
+        group(j) = data.populations[elem / population_size](elem % population_size);
+        j++;
+      }
+
+      // First we play the game
+      auto[public_pool, final_round] = game.playGameVerbose(group,
+                                                            available_actions,
+                                                            min_rounds,
+                                                            timing_uncertainty,
+                                                            generator,
+                                                            game_data);
+      total_nb_rounds += final_round;
+      // Check if the game was successful
+      success = public_pool >= target;
+      if ((!success) && _real_rand(generator) < risk)
+        game.setPayoffs(group, 0);
+
+      // Now we update the data table with the info of this game
+      // For each player and round, we add:
+      // group, player, game_index, round, action, group_contributions, contributions_others,
+      // total_contribution, payoff, success, target, final_public_account, final_round
+      j = 0;
+      for (const auto &elem: container) {
+        auto total_contribution = game_data.row(j).leftCols(final_round).sum();
+        for (size_t r = 0; r < final_round; ++r) {
+          auto group_contributions = game_data.col(r).sum();
+          data.data(data_index, 0) = i;
+          data.data(data_index, 1) = elem;
+          data.data(data_index, 2) = j;
+          data.data(data_index, 3) = r;
+          data.data(data_index, 4) = game_data(j, r);
+          data.data(data_index, 5) = group_contributions;
+          data.data(data_index, 6) = group_contributions - game_data(j, r);
+          data.data(data_index, 7) = total_contribution;
+          data.data(data_index, 8) = group(j)->payoff();
+          data.data(data_index, 9) = success;
+          data.data(data_index, 10) = target;
+          data.data(data_index, 11) = public_pool;
+          data.data(data_index, 12) = final_round;
+          data_index++;
+        }
+        j++;
+      }
+      container.clear();
+    }
   }
   return total_nb_rounds;
 }
@@ -1221,52 +1290,82 @@ void CRDSimIslands::evaluate_crd_populationsThU(size_t nb_populations,
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.populations[0](i));
 
-  // The agents will be evaluated through nb_games games
-  for (size_t i = 0; i < nb_games; ++i) {
-    // At each iteration, we sample a random group, taking players
-    // randomly from any population. For that we sample integers from the range
-    // [0, nb_populations * population_size)
-    EGTTools::sampling::sample_without_replacement(total_population_size, group_size, container, generator);
-    int j = 0;
-    for (const auto &elem: container) {
-      group(j) = data.populations[elem / population_size](elem % population_size);
-      j++;
-    }
-    // First we play the game
-    public_pool = game.playGameVerbose(group, available_actions, nb_rounds, game_data);
-    // Check if the game was successful
-    auto final_target = t_dist(generator);
-    success = public_pool >= final_target;
-    if ((!success) && _real_rand(generator) < risk)
-      game.setPayoffs(group, 0);
-
-    // Now we update the data table with the info of this game
-    // For each player and round, we add:
-    // group, player, game_index, round, action, group_contributions, contributions_others,
-    // total_contribution, payoff, success, target, final_public_account, final_round
-    j = 0;
-    for (const auto &elem: container) {
-      auto total_contribution = game_data.row(j).sum();
-      for (size_t r = 0; r < nb_rounds; ++r) {
-        auto group_contributions = game_data.col(r).sum();
-        data.data(data_index, 0) = i;
-        data.data(data_index, 1) = elem;
-        data.data(data_index, 2) = j;
-        data.data(data_index, 3) = r;
-        data.data(data_index, 4) = game_data(j, r);
-        data.data(data_index, 5) = group_contributions;
-        data.data(data_index, 6) = group_contributions - game_data(j, r);
-        data.data(data_index, 7) = total_contribution;
-        data.data(data_index, 8) = group(j)->payoff();
-        data.data(data_index, 9) = success;
-        data.data(data_index, 10) = final_target;
-        data.data(data_index, 11) = public_pool;
-        data.data(data_index, 12) = nb_rounds;
-        data_index++;
+  // Depending on the verbose level we store more or less data
+  if (_verbose_level == 0) {
+    for (size_t i = 0; i < nb_games; ++i) {
+      // At each iteration, we sample a random group, taking players
+      // randomly from any population. For that we sample integers from the range
+      // [0, nb_populations * population_size)
+      EGTTools::sampling::sample_without_replacement(total_population_size, group_size, container, generator);
+      int j = 0;
+      for (const auto &elem: container) {
+        group(j) = data.populations[elem / population_size](elem % population_size);
+        j++;
       }
-      j++;
+      // First we play the game
+      auto[public_pool, final_round] = game.playGame(group, available_actions, nb_rounds);
+      // Check if the game was successful
+      auto final_target = t_dist(generator);
+      success = public_pool >= final_target;
+      // Now we update the data table with the info of this game
+      // For each player and round, we add:
+      // group, success, final_public_account, final_target
+      data.data(data_index, 0) = i;
+      data.data(data_index, 1) = success;
+      data.data(data_index, 2) = public_pool;
+      data.data(data_index, 3) = final_target;
+      data_index++;
+      container.clear();
     }
-    container.clear();
+  } else {
+    // The agents will be evaluated through nb_games games
+    for (size_t i = 0; i < nb_games; ++i) {
+      // At each iteration, we sample a random group, taking players
+      // randomly from any population. For that we sample integers from the range
+      // [0, nb_populations * population_size)
+      EGTTools::sampling::sample_without_replacement(total_population_size, group_size, container, generator);
+      int j = 0;
+      for (const auto &elem: container) {
+        group(j) = data.populations[elem / population_size](elem % population_size);
+        j++;
+      }
+
+      // First we play the game
+      public_pool = game.playGameVerbose(group, available_actions, nb_rounds, game_data);
+      // Check if the game was successful
+      auto final_target = t_dist(generator);
+      success = public_pool >= final_target;
+      if ((!success) && _real_rand(generator) < risk)
+        game.setPayoffs(group, 0);
+
+      // Now we update the data table with the info of this game
+      // For each player and round, we add:
+      // group, player, game_index, round, action, group_contributions, contributions_others,
+      // total_contribution, payoff, success, target, final_public_account, final_round
+      j = 0;
+      for (const auto &elem: container) {
+        auto total_contribution = game_data.row(j).sum();
+        for (size_t r = 0; r < nb_rounds; ++r) {
+          auto group_contributions = game_data.col(r).sum();
+          data.data(data_index, 0) = i;
+          data.data(data_index, 1) = elem;
+          data.data(data_index, 2) = j;
+          data.data(data_index, 3) = r;
+          data.data(data_index, 4) = game_data(j, r);
+          data.data(data_index, 5) = group_contributions;
+          data.data(data_index, 6) = group_contributions - game_data(j, r);
+          data.data(data_index, 7) = total_contribution;
+          data.data(data_index, 8) = group(j)->payoff();
+          data.data(data_index, 9) = success;
+          data.data(data_index, 10) = final_target;
+          data.data(data_index, 11) = public_pool;
+          data.data(data_index, 12) = nb_rounds;
+          data_index++;
+        }
+        j++;
+      }
+      container.clear();
+    }
   }
 }
 template<class G, class U>
@@ -1302,58 +1401,97 @@ size_t CRDSimIslands::evaluate_crd_populationsTUThU(size_t nb_populations,
   for (size_t i = 0; i < group_size; ++i)
     group.push_back(data.populations[0](i));
 
-  // The agents will be evaluated through nb_games games
-  for (size_t i = 0; i < nb_games; ++i) {
-    // At each iteration, we sample a random group, taking players
-    // randomly from any population. For that we sample integers from the range
-    // [0, nb_populations * population_size)
-    EGTTools::sampling::sample_without_replacement(total_population_size, group_size, container, generator);
-    int j = 0;
-    for (const auto &elem: container) {
-      group(j) = data.populations[elem / population_size](elem % population_size);
-      j++;
-    }
-    // First we play the game
-    auto[public_pool, final_round] = game.playGameVerbose(group,
-                                                          available_actions,
-                                                          min_rounds,
-                                                          timing_uncertainty,
-                                                          generator,
-                                                          game_data);
-    total_nb_rounds += final_round;
-    // Check if the game was successful
-    auto final_target = t_dist(generator);
-    success = public_pool >= final_target;
-    if ((!success) && _real_rand(generator) < risk)
-      game.setPayoffs(group, 0);
-
-    // Now we update the data table with the info of this game
-    // For each player and round, we add:
-    // group, player, game_index, round, action, group_contributions, contributions_others,
-    // total_contribution, payoff, success, target, final_public_account, final_round
-    j = 0;
-    for (const auto &elem: container) {
-      auto total_contribution = game_data.leftCols(final_round).row(j).sum();
-      for (size_t r = 0; r < final_round; ++r) {
-        auto group_contributions = game_data.col(r).sum();
-        data.data(data_index, 0) = i;
-        data.data(data_index, 1) = elem;
-        data.data(data_index, 2) = j;
-        data.data(data_index, 3) = r;
-        data.data(data_index, 4) = game_data(j, r);
-        data.data(data_index, 5) = group_contributions;
-        data.data(data_index, 6) = group_contributions - game_data(j, r);
-        data.data(data_index, 7) = total_contribution;
-        data.data(data_index, 8) = group(j)->payoff();
-        data.data(data_index, 9) = success;
-        data.data(data_index, 10) = final_target;
-        data.data(data_index, 11) = public_pool;
-        data.data(data_index, 12) = final_round;
-        data_index++;
+  // Depending on the verbose level we store more or less data
+  if (_verbose_level == 0) {
+    // the number of columns correspond to the number of groups (games) in this case
+    total_nb_rounds = nb_games;
+    // The agents will be evaluated through nb_games games
+    for (size_t i = 0; i < nb_games; ++i) {
+      // At each iteration, we sample a random group, taking players
+      // randomly from any population. For that we sample integers from the range
+      // [0, nb_populations * population_size)
+      EGTTools::sampling::sample_without_replacement(total_population_size, group_size, container, generator);
+      int j = 0;
+      for (const auto &elem: container) {
+        group(j) = data.populations[elem / population_size](elem % population_size);
+        j++;
       }
-      j++;
+
+      // First we play the game
+      auto[public_pool, final_round] = game.playGame(group,
+                                                     available_actions,
+                                                     min_rounds,
+                                                     timing_uncertainty,
+                                                     generator);
+      // Check if the game was successful
+      auto final_target = t_dist(generator);
+      success = public_pool >= final_target;
+      // Now we update the data table with the info of this game
+      // For each player and round, we add:
+      // group, success, final_public_account, final_round, final_target
+      data.data(data_index, 0) = i;
+      data.data(data_index, 1) = success;
+      data.data(data_index, 2) = public_pool;
+      data.data(data_index, 3) = final_round;
+      data.data(data_index, 4) = final_target;
+      data_index++;
+      container.clear();
     }
-    container.clear();
+  } else {
+    // The agents will be evaluated through nb_games games
+    for (size_t i = 0; i < nb_games; ++i) {
+      // At each iteration, we sample a random group, taking players
+      // randomly from any population. For that we sample integers from the range
+      // [0, nb_populations * population_size)
+      EGTTools::sampling::sample_without_replacement(total_population_size, group_size, container, generator);
+      int j = 0;
+      for (const auto &elem: container) {
+        group(j) = data.populations[elem / population_size](elem % population_size);
+        j++;
+      }
+
+      // First we play the game
+      auto[public_pool, final_round] = game.playGameVerbose(group,
+                                                            available_actions,
+                                                            min_rounds,
+                                                            timing_uncertainty,
+                                                            generator,
+                                                            game_data);
+      total_nb_rounds += final_round;
+      // Check if the game was successful
+      auto final_target = t_dist(generator);
+      success = public_pool >= final_target;
+      if ((!success) && _real_rand(generator) < risk)
+        game.setPayoffs(group, 0);
+
+      // Now we update the data table with the info of this game
+      // For each player and round, we add:
+      // group, player, game_index, round, action, group_contributions, contributions_others,
+      // total_contribution, payoff, success, target, final_public_account, final_round
+      j = 0;
+      for (const auto &elem: container) {
+        auto total_contribution = game_data.leftCols(final_round).row(j).sum();
+        for (size_t r = 0; r < final_round; ++r) {
+          auto group_contributions = game_data.col(r).sum();
+          data.data(data_index, 0) = i;
+          data.data(data_index, 1) = elem;
+          data.data(data_index, 2) = j;
+          data.data(data_index, 3) = r;
+          data.data(data_index, 4) = game_data(j, r);
+          data.data(data_index, 5) = group_contributions;
+          data.data(data_index, 6) = group_contributions - game_data(j, r);
+          data.data(data_index, 7) = total_contribution;
+          data.data(data_index, 8) = group(j)->payoff();
+          data.data(data_index, 9) = success;
+          data.data(data_index, 10) = final_target;
+          data.data(data_index, 11) = public_pool;
+          data.data(data_index, 12) = final_round;
+          data_index++;
+        }
+        j++;
+      }
+      container.clear();
+    }
   }
   return total_nb_rounds;
 }

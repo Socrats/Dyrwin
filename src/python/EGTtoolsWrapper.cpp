@@ -549,7 +549,7 @@ PYBIND11_MODULE(EGTtools, m) {
            static_cast<size_t (RL::BatchQLearningForgetAgent::*)(size_t)>(&RL::BatchQLearningForgetAgent::selectAction),
            "samples an action from the agent's policy", py::arg("round"))
       .def("act", static_cast<size_t (RL::BatchQLearningForgetAgent::*)(size_t,
-                                                                  size_t)>(&RL::BatchQLearningForgetAgent::selectAction),
+                                                                        size_t)>(&RL::BatchQLearningForgetAgent::selectAction),
            "samples an action from the agent's policy", py::arg("round"), py::arg("state"))
       .def("reset_q_values", &RL::BatchQLearningForgetAgent::resetQValues);
 
@@ -603,7 +603,7 @@ PYBIND11_MODULE(EGTtools, m) {
            static_cast<size_t (RL::SARSAAgent::*)(size_t)>(&RL::SARSAAgent::selectAction),
            "samples an action from the agent's policy", py::arg("round"))
       .def("act", static_cast<size_t (RL::SARSAAgent::*)(size_t,
-                                                             size_t)>(&RL::SARSAAgent::selectAction),
+                                                         size_t)>(&RL::SARSAAgent::selectAction),
            "samples an action from the agent's policy", py::arg("round"), py::arg("state"))
       .def("reset_q_values", &RL::SARSAAgent::resetQValues);
 
@@ -752,8 +752,8 @@ PYBIND11_MODULE(EGTtools, m) {
                RL::PopContainer &, double)>(&RL::CRDGame<RL::PopContainer, void, void>::setPayoffs),
            "sets players payoffs", py::arg("players"), py::arg("payoff"))
       .def("update_payoffs", static_cast<void (RL::CRDGame<RL::PopContainer, void, void>::*)(
-           RL::PopContainer &, double)>(&RL::CRDGame<RL::PopContainer, void, void>::setPayoffs),
-       "sets players payoffs", py::arg("players"), py::arg("multiplier"));
+               RL::PopContainer &, double)>(&RL::CRDGame<RL::PopContainer, void, void>::setPayoffs),
+           "sets players payoffs", py::arg("players"), py::arg("multiplier"));
 
   py::class_<RL::PopContainer>(mRL, "Population")
       .def(py::init<const std::string &, size_t, size_t, size_t, size_t, double, std::vector<double>>(),
@@ -1328,6 +1328,9 @@ PYBIND11_MODULE(EGTtools, m) {
       .def(py::init<>(),
            "Contains Collective-risk dilemma simulations with RL agents that learn in islands "
            "and are later evaluated by randomly playing the game with members of its own or other islands.")
+      .def_property("verbose_level",
+                    &RL::Simulators::CRD::CRDSimIslands::verbose_level,
+                    &RL::Simulators::CRD::CRDSimIslands::set_verbose_level)
       .def("run_group_islands",
            static_cast<DataTableCRD (RL::Simulators::CRD::CRDSimIslands::*)(size_t,
                                                                             size_t,

@@ -6,6 +6,8 @@
 using namespace EGTTools::RL::Simulators::CRD;
 
 CRDSimIslands::CRDSimIslands() {
+  // verbose level is initialized to highest value, so that all game data is added to the data container
+  _verbose_level = 1;
   _real_rand = std::uniform_real_distribution<double>(0.0, 1.0);
 }
 EGTTools::RL::DataTypes::DataTableCRD
@@ -37,17 +39,25 @@ CRDSimIslands::run_group_islands(size_t nb_evaluation_games,
                          risk, available_actions, groups[group], game);
   }
 
+  // Define variables and structures to store the evaluation data
+  size_t nb_rows, nb_columns;
+  std::vector<std::string> headers;
+  std::vector<std::string> column_types;
+
+  if (_verbose_level == 0) {
+    headers = {"group", "success", "final_public_account"};
+    column_types = {"int", "bool", "float"};
+    nb_rows = nb_evaluation_games;
+    nb_columns = 3;
+  } else {
+    headers = {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+               "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+    column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+    nb_rows = nb_evaluation_games * group_size * nb_rounds;
+    nb_columns = 13;
+  }
   // Now we create the data container
-  // It will contain a data matrix/table of 10 columns and
-  // nb_evaluation_games * group_size * nb_rounds
-  std::vector<std::string> headers =
-      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector<std::string>
-      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
-  EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * nb_rounds, 13,
-           headers, column_types, groups);
+  EGTTools::RL::DataTypes::DataTableCRD data(nb_rows, nb_columns, headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
   evaluate_crd_populations(nb_groups,
@@ -103,17 +113,25 @@ CRDSimIslands::run_conditional_group_islands(size_t nb_evaluation_games,
                          risk, available_actions, groups[group], game);
   }
 
+  // Define variables and structures to store the evaluation data
+  size_t nb_rows, nb_columns;
+  std::vector<std::string> headers;
+  std::vector<std::string> column_types;
+
+  if (_verbose_level == 0) {
+    headers = {"group", "success", "final_public_account"};
+    column_types = {"int", "bool", "float"};
+    nb_rows = nb_evaluation_games;
+    nb_columns = 3;
+  } else {
+    headers = {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+               "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+    column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+    nb_rows = nb_evaluation_games * group_size * nb_rounds;
+    nb_columns = 13;
+  }
   // Now we create the data container
-  // It will contain a data matrix/table of 10 columns and
-  // nb_evaluation_games * group_size * nb_rounds
-  std::vector<std::string> headers =
-      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector<std::string>
-      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
-  EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * nb_rounds, 13,
-           headers, column_types, groups);
+  EGTTools::RL::DataTypes::DataTableCRD data(nb_rows, nb_columns, headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
   evaluate_crd_populations(nb_groups,
@@ -165,17 +183,25 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsTU(size_t 
                            risk, available_actions, groups[group], game);
   }
 
+  // Define variables and structures to store the evaluation data
+  size_t nb_rows, nb_columns;
+  std::vector<std::string> headers;
+  std::vector<std::string> column_types;
+
+  if (_verbose_level == 0) {
+    headers = {"group", "success", "final_public_account", "final_round"};
+    column_types = {"int", "bool", "float", "int"};
+    nb_rows = nb_evaluation_games;
+    nb_columns = 4;
+  } else {
+    headers = {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+               "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+    column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+    nb_rows = nb_evaluation_games * group_size * max_rounds;
+    nb_columns = 13;
+  }
   // Now we create the data container
-  // It will contain a data matrix/table of 10 columns and
-  // nb_evaluation_games * group_size * nb_rounds
-  std::vector<std::string> headers =
-      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector<std::string>
-      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
-  EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * max_rounds, 13,
-           headers, column_types, groups);
+  EGTTools::RL::DataTypes::DataTableCRD data(nb_rows, nb_columns, headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
   auto total_nb_rounds = evaluate_crd_populationsTU(nb_groups,
@@ -191,8 +217,10 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsTU(size_t 
                                                     data);
 
   // Finally we clear the unused rows
-  auto total_rows = group_size * total_nb_rounds;
-  data.data.conservativeResize(total_rows, 13);
+  if (_verbose_level > 0) {
+    auto total_rows = group_size * total_nb_rounds;
+    data.data.conservativeResize(total_rows, 13);
+  }
 
   return data;
 }
@@ -245,17 +273,25 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
                            risk, available_actions, groups[group], game);
   }
 
+  // Define variables and structures to store the evaluation data
+  size_t nb_rows, nb_columns;
+  std::vector<std::string> headers;
+  std::vector<std::string> column_types;
+
+  if (_verbose_level == 0) {
+    headers = {"group", "success", "final_public_account", "final_round"};
+    column_types = {"int", "bool", "float", "int"};
+    nb_rows = nb_evaluation_games;
+    nb_columns = 4;
+  } else {
+    headers = {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+               "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+    column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+    nb_rows = nb_evaluation_games * group_size * max_rounds;
+    nb_columns = 13;
+  }
   // Now we create the data container
-  // It will contain a data matrix/table of 10 columns and
-  // nb_evaluation_games * group_size * nb_rounds
-  std::vector<std::string> headers =
-      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector<std::string>
-      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
-  EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * max_rounds, 13,
-           headers, column_types, groups);
+  EGTTools::RL::DataTypes::DataTableCRD data(nb_rows, nb_columns, headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
   auto total_nb_rounds = evaluate_crd_populationsTU(nb_groups,
@@ -271,8 +307,10 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
                                                     data);
 
   // Finally we clear the unused rows
-  auto total_rows = group_size * total_nb_rounds;
-  data.data.conservativeResize(total_rows, 13);
+  if (_verbose_level > 0) {
+    auto total_rows = group_size * total_nb_rounds;
+    data.data.conservativeResize(total_rows, 13);
+  }
 
   return data;
 }
@@ -305,17 +343,25 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsThU(size_t
                             risk, available_actions, groups[group], game);
   }
 
+  // Define variables and structures to store the evaluation data
+  size_t nb_rows, nb_columns;
+  std::vector<std::string> headers;
+  std::vector<std::string> column_types;
+
+  if (_verbose_level == 0) {
+    headers = {"group", "success", "final_public_account", "final_target"};
+    column_types = {"int", "bool", "float", "float"};
+    nb_rows = nb_evaluation_games;
+    nb_columns = 4;
+  } else {
+    headers = {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+               "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+    column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+    nb_rows = nb_evaluation_games * group_size * nb_rounds;
+    nb_columns = 13;
+  }
   // Now we create the data container
-  // It will contain a data matrix/table of 10 columns and
-  // nb_evaluation_games * group_size * nb_rounds
-  std::vector<std::string> headers =
-      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector<std::string>
-      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
-  EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * nb_rounds, 13,
-           headers, column_types, groups);
+  EGTTools::RL::DataTypes::DataTableCRD data(nb_rows, nb_columns, headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
   evaluate_crd_populationsThU(nb_groups,
@@ -372,17 +418,25 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
                             risk, available_actions, groups[group], game);
   }
 
+  // Define variables and structures to store the evaluation data
+  size_t nb_rows, nb_columns;
+  std::vector<std::string> headers;
+  std::vector<std::string> column_types;
+
+  if (_verbose_level == 0) {
+    headers = {"group", "success", "final_public_account", "final_target"};
+    column_types = {"int", "bool", "float", "float"};
+    nb_rows = nb_evaluation_games;
+    nb_columns = 4;
+  } else {
+    headers = {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+               "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+    column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+    nb_rows = nb_evaluation_games * group_size * nb_rounds;
+    nb_columns = 13;
+  }
   // Now we create the data container
-  // It will contain a data matrix/table of 10 columns and
-  // nb_evaluation_games * group_size * nb_rounds
-  std::vector<std::string> headers =
-      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector<std::string>
-      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
-  EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * nb_rounds, 13,
-           headers, column_types, groups);
+  EGTTools::RL::DataTypes::DataTableCRD data(nb_rows, nb_columns, headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
   evaluate_crd_populationsThU(nb_groups,
@@ -436,17 +490,25 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsTUThU(size
                               risk, available_actions, groups[group], game);
   }
 
+  // Define variables and structures to store the evaluation data
+  size_t nb_rows, nb_columns;
+  std::vector<std::string> headers;
+  std::vector<std::string> column_types;
+
+  if (_verbose_level == 0) {
+    headers = {"group", "success", "final_public_account", "final_round", "final_target"};
+    column_types = {"int", "bool", "float", "int", "float"};
+    nb_rows = nb_evaluation_games;
+    nb_columns = 5;
+  } else {
+    headers = {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+               "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+    column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+    nb_rows = nb_evaluation_games * group_size * max_rounds;
+    nb_columns = 13;
+  }
   // Now we create the data container
-  // It will contain a data matrix/table of 10 columns and
-  // nb_evaluation_games * group_size * nb_rounds
-  std::vector<std::string> headers =
-      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector<std::string>
-      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
-  EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * max_rounds, 13,
-           headers, column_types, groups);
+  EGTTools::RL::DataTypes::DataTableCRD data(nb_rows, nb_columns, headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
   auto total_nb_rounds = evaluate_crd_populationsTUThU(nb_groups,
@@ -463,8 +525,10 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_group_islandsTUThU(size
                                                        data);
 
   // Finally we clear the unused rows
-  auto total_rows = group_size * total_nb_rounds;
-  data.data.conservativeResize(total_rows, 13);
+  if (_verbose_level > 0) {
+    auto total_rows = group_size * total_nb_rounds;
+    data.data.conservativeResize(total_rows, 13);
+  }
 
   return data;
 }
@@ -515,17 +579,25 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
                               risk, available_actions, groups[group], game);
   }
 
+  // Define variables and structures to store the evaluation data
+  size_t nb_rows, nb_columns;
+  std::vector<std::string> headers;
+  std::vector<std::string> column_types;
+
+  if (_verbose_level == 0) {
+    headers = {"group", "success", "final_public_account", "final_round", "final_target"};
+    column_types = {"int", "bool", "float", "int", "float"};
+    nb_rows = nb_evaluation_games;
+    nb_columns = 5;
+  } else {
+    headers = {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+               "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+    column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+    nb_rows = nb_evaluation_games * group_size * max_rounds;
+    nb_columns = 13;
+  }
   // Now we create the data container
-  // It will contain a data matrix/table of 10 columns and
-  // nb_evaluation_games * group_size * nb_rounds
-  std::vector<std::string> headers =
-      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector<std::string>
-      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
-  EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * max_rounds, 13,
-           headers, column_types, groups);
+  EGTTools::RL::DataTypes::DataTableCRD data(nb_rows, nb_columns, headers, column_types, groups);
 
   // Then we evaluate the agents by creating randomly mixed groups
   auto total_nb_rounds = evaluate_crd_populationsTUThU(nb_groups,
@@ -542,8 +614,10 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_group_islan
                                                        data);
 
   // Finally we clear the unused rows
-  auto total_rows = group_size * total_nb_rounds;
-  data.data.conservativeResize(total_rows, 13);
+  if (_verbose_level > 0) {
+    auto total_rows = group_size * total_nb_rounds;
+    data.data.conservativeResize(total_rows, 13);
+  }
 
   return data;
 }
@@ -582,17 +656,25 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islands(size
                        risk, available_actions, populations[population], game);
   }
 
+  // Define variables and structures to store the evaluation data
+  size_t nb_rows, nb_columns;
+  std::vector<std::string> headers;
+  std::vector<std::string> column_types;
+
+  if (_verbose_level == 0) {
+    headers = {"group", "success", "final_public_account"};
+    column_types = {"int", "bool", "float"};
+    nb_rows = nb_evaluation_games;
+    nb_columns = 3;
+  } else {
+    headers = {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+               "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+    column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+    nb_rows = nb_evaluation_games * group_size * nb_rounds;
+    nb_columns = 13;
+  }
   // Now we create the data container
-  // It will contain a data matrix/table of 10 columns and
-  // nb_evaluation_games * group_size * nb_rounds
-  std::vector<std::string> headers =
-      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector<std::string>
-      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
-  EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * nb_rounds, 13,
-           headers, column_types, populations);
+  EGTTools::RL::DataTypes::DataTableCRD data(nb_rows, nb_columns, headers, column_types, populations);
 
   // Then we evaluate the agents by creating randomly mixed groups
   evaluate_crd_populations(nb_populations,
@@ -630,7 +712,7 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
   CRDConditionalCount<void, void> game(flatten);
 
   // Create a vector of groups - nb_actions = available_actions.size()
-  std::vector <PopContainer> populations;
+  std::vector<PopContainer> populations;
   for (size_t i = 0; i < nb_populations; i++)
     populations.emplace_back(agent_type,
                              population_size,
@@ -648,18 +730,25 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
                        risk, available_actions, populations[population], game);
   }
 
+  // Define variables and structures to store the evaluation data
+  size_t nb_rows, nb_columns;
+  std::vector<std::string> headers;
+  std::vector<std::string> column_types;
+
+  if (_verbose_level == 0) {
+    headers = {"group", "success", "final_public_account"};
+    column_types = {"int", "bool", "float"};
+    nb_rows = nb_evaluation_games;
+    nb_columns = 3;
+  } else {
+    headers = {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+               "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+    column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+    nb_rows = nb_evaluation_games * group_size * nb_rounds;
+    nb_columns = 13;
+  }
   // Now we create the data container
-  // It will contain a data matrix/table of 10 columns and
-  // nb_evaluation_games * group_size * nb_rounds
-  std::vector <std::string> headers =
-      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector <std::string>
-      column_types =
-      {"int", "int", "int", "int", "float", "float", "float", "float", "float", "bool", "float", "float", "int"};
-  EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * nb_rounds, 13,
-           headers, column_types, populations);
+  EGTTools::RL::DataTypes::DataTableCRD data(nb_rows, nb_columns, headers, column_types, populations);
 
   // Then we evaluate the agents by creating randomly mixed groups
   evaluate_crd_populations(nb_populations,
@@ -718,17 +807,25 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsTU(si
                          risk, available_actions, populations[population], game);
   }
 
+  // Define variables and structures to store the evaluation data
+  size_t nb_rows, nb_columns;
+  std::vector<std::string> headers;
+  std::vector<std::string> column_types;
+
+  if (_verbose_level == 0) {
+    headers = {"group", "success", "final_public_account", "final_round"};
+    column_types = {"int", "bool", "float", "int"};
+    nb_rows = nb_evaluation_games;
+    nb_columns = 4;
+  } else {
+    headers = {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+               "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+    column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+    nb_rows = nb_evaluation_games * group_size * max_rounds;
+    nb_columns = 13;
+  }
   // Now we create the data container
-  // It will contain a data matrix/table of 10 columns and
-  // nb_evaluation_games * group_size * nb_rounds
-  std::vector<std::string> headers =
-      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector<std::string>
-      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
-  EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * max_rounds, 13,
-           headers, column_types, populations);
+  EGTTools::RL::DataTypes::DataTableCRD data(nb_rows, nb_columns, headers, column_types, populations);
 
   // Then we evaluate the agents by creating randomly mixed groups
   auto total_nb_rounds = evaluate_crd_populationsTU(nb_populations,
@@ -744,8 +841,10 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsTU(si
                                                     data);
 
   // Finally we clear the unused rows
-  auto total_rows = group_size * total_nb_rounds;
-  data.data.conservativeResize(total_rows, 13);
+  if (_verbose_level > 0) {
+    auto total_rows = group_size * total_nb_rounds;
+    data.data.conservativeResize(total_rows, 13);
+  }
 
   return data;
 }
@@ -796,17 +895,25 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
                          risk, available_actions, populations[population], game);
   }
 
+  // Define variables and structures to store the evaluation data
+  size_t nb_rows, nb_columns;
+  std::vector<std::string> headers;
+  std::vector<std::string> column_types;
+
+  if (_verbose_level == 0) {
+    headers = {"group", "success", "final_public_account", "final_round"};
+    column_types = {"int", "bool", "float", "int"};
+    nb_rows = nb_evaluation_games;
+    nb_columns = 4;
+  } else {
+    headers = {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+               "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+    column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+    nb_rows = nb_evaluation_games * group_size * max_rounds;
+    nb_columns = 13;
+  }
   // Now we create the data container
-  // It will contain a data matrix/table of 10 columns and
-  // nb_evaluation_games * group_size * nb_rounds
-  std::vector<std::string> headers =
-      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector<std::string>
-      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
-  EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * max_rounds, 13,
-           headers, column_types, populations);
+  EGTTools::RL::DataTypes::DataTableCRD data(nb_rows, nb_columns, headers, column_types, populations);
 
   // Then we evaluate the agents by creating randomly mixed groups
   auto total_nb_rounds = evaluate_crd_populationsTU(nb_populations,
@@ -822,8 +929,10 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
                                                     data);
 
   // Finally we clear the unused rows
-  auto total_rows = group_size * total_nb_rounds;
-  data.data.conservativeResize(total_rows, 13);
+  if (_verbose_level > 0) {
+    auto total_rows = group_size * total_nb_rounds;
+    data.data.conservativeResize(total_rows, 13);
+  }
 
   return data;
 }
@@ -863,17 +972,25 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsThU(s
                           risk, available_actions, populations[population], game);
   }
 
+  // Define variables and structures to store the evaluation data
+  size_t nb_rows, nb_columns;
+  std::vector<std::string> headers;
+  std::vector<std::string> column_types;
+
+  if (_verbose_level == 0) {
+    headers = {"group", "success", "final_public_account", "final_target"};
+    column_types = {"int", "bool", "float", "float"};
+    nb_rows = nb_evaluation_games;
+    nb_columns = 4;
+  } else {
+    headers = {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+               "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+    column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+    nb_rows = nb_evaluation_games * group_size * nb_rounds;
+    nb_columns = 13;
+  }
   // Now we create the data container
-  // It will contain a data matrix/table of 10 columns and
-  // nb_evaluation_games * group_size * nb_rounds
-  std::vector<std::string> headers =
-      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector<std::string>
-      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
-  EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * nb_rounds, 13,
-           headers, column_types, populations);
+  EGTTools::RL::DataTypes::DataTableCRD data(nb_rows, nb_columns, headers, column_types, populations);
 
   // Then we evaluate the agents by creating randomly mixed groups
   evaluate_crd_populationsThU(nb_populations,
@@ -931,17 +1048,25 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
                           risk, available_actions, populations[population], game);
   }
 
+  // Define variables and structures to store the evaluation data
+  size_t nb_rows, nb_columns;
+  std::vector<std::string> headers;
+  std::vector<std::string> column_types;
+
+  if (_verbose_level == 0) {
+    headers = {"group", "success", "final_public_account", "final_target"};
+    column_types = {"int", "bool", "float", "float"};
+    nb_rows = nb_evaluation_games;
+    nb_columns = 4;
+  } else {
+    headers = {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+               "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+    column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+    nb_rows = nb_evaluation_games * group_size * nb_rounds;
+    nb_columns = 13;
+  }
   // Now we create the data container
-  // It will contain a data matrix/table of 10 columns and
-  // nb_evaluation_games * group_size * nb_rounds
-  std::vector<std::string> headers =
-      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector<std::string>
-      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
-  EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * nb_rounds, 13,
-           headers, column_types, populations);
+  EGTTools::RL::DataTypes::DataTableCRD data(nb_rows, nb_columns, headers, column_types, populations);
 
   // Then we evaluate the agents by creating randomly mixed groups
   evaluate_crd_populationsThU(nb_populations,
@@ -1002,17 +1127,25 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsTUThU
                             risk, available_actions, populations[population], game);
   }
 
+  // Define variables and structures to store the evaluation data
+  size_t nb_rows, nb_columns;
+  std::vector<std::string> headers;
+  std::vector<std::string> column_types;
+
+  if (_verbose_level == 0) {
+    headers = {"group", "success", "final_public_account", "final_round", "final_target"};
+    column_types = {"int", "bool", "float", "int", "float"};
+    nb_rows = nb_evaluation_games;
+    nb_columns = 5;
+  } else {
+    headers = {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+               "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+    column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+    nb_rows = nb_evaluation_games * group_size * max_rounds;
+    nb_columns = 13;
+  }
   // Now we create the data container
-  // It will contain a data matrix/table of 10 columns and
-  // nb_evaluation_games * group_size * nb_rounds
-  std::vector<std::string> headers =
-      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector<std::string>
-      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
-  EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * max_rounds, 13,
-           headers, column_types, populations);
+  EGTTools::RL::DataTypes::DataTableCRD data(nb_rows, nb_columns, headers, column_types, populations);
 
   // Then we evaluate the agents by creating randomly mixed groups
   auto total_nb_rounds = evaluate_crd_populationsTUThU(nb_populations,
@@ -1029,8 +1162,10 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_population_islandsTUThU
                                                        data);
 
   // Finally we clear the unused rows
-  auto total_rows = group_size * total_nb_rounds;
-  data.data.conservativeResize(total_rows, 13);
+  if (_verbose_level > 0) {
+    auto total_rows = group_size * total_nb_rounds;
+    data.data.conservativeResize(total_rows, 13);
+  }
 
   return data;
 }
@@ -1082,17 +1217,25 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
                             risk, available_actions, populations[population], game);
   }
 
+  // Define variables and structures to store the evaluation data
+  size_t nb_rows, nb_columns;
+  std::vector<std::string> headers;
+  std::vector<std::string> column_types;
+
+  if (_verbose_level == 0) {
+    headers = {"group", "success", "final_public_account", "final_round", "final_target"};
+    column_types = {"int", "bool", "float", "int", "float"};
+    nb_rows = nb_evaluation_games;
+    nb_columns = 5;
+  } else {
+    headers = {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
+               "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
+    column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
+    nb_rows = nb_evaluation_games * group_size * max_rounds;
+    nb_columns = 13;
+  }
   // Now we create the data container
-  // It will contain a data matrix/table of 10 columns and
-  // nb_evaluation_games * group_size * nb_rounds
-  std::vector<std::string> headers =
-      {"group", "player", "game_index", "round", "action", "group_contributions", "contributions_others",
-       "total_contribution", "payoff", "success", "target", "final_public_account", "final_round"};
-  std::vector<std::string>
-      column_types = {"int", "int", "int", "int", "int", "int", "int", "int", "int", "bool", "int", "int", "int"};
-  EGTTools::RL::DataTypes::DataTableCRD
-      data(nb_evaluation_games * group_size * max_rounds, 13,
-           headers, column_types, populations);
+  EGTTools::RL::DataTypes::DataTableCRD data(nb_rows, nb_columns, headers, column_types, populations);
 
   // Then we evaluate the agents by creating randomly mixed groups
   auto total_nb_rounds = evaluate_crd_populationsTUThU(nb_populations,
@@ -1109,8 +1252,17 @@ EGTTools::RL::DataTypes::DataTableCRD CRDSimIslands::run_conditional_population_
                                                        data);
 
   // Finally we clear the unused rows
-  auto total_rows = group_size * total_nb_rounds;
-  data.data.conservativeResize(total_rows, 13);
+  if (_verbose_level > 0) {
+    auto total_rows = group_size * total_nb_rounds;
+    data.data.conservativeResize(total_rows, 13);
+  }
 
   return data;
+}
+
+size_t CRDSimIslands::verbose_level() const { return _verbose_level; }
+
+void CRDSimIslands::set_verbose_level(size_t verbose_level) {
+  if (verbose_level > 1) throw std::invalid_argument("Verbose level can only be set to 0, 1.");
+  _verbose_level = verbose_level;
 }
