@@ -52,6 +52,15 @@ namespace EGTTools::RL {
 
         void add2payoff(double value);
 
+        /**
+         * Multiplies Q-values by \p forget_rate.
+         * With this only a fraction of the Q-values of the previous
+         * generation remains. This way we can balance the importance
+         * of past and new information over generations.
+         * @param forget_rate
+         */
+        void forgetQValues(double forget_rate);
+
         // Getters
         [[nodiscard]] size_t nb_states() const;
 

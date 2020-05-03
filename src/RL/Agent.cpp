@@ -164,6 +164,10 @@ void Agent::add2payoff(double value) {
     _payoff += value;
 }
 
+void Agent::forgetQValues(double forget_rate) {
+  _q_values *= forget_rate;
+}
+
 // Getters
 size_t Agent::nb_states() const { return _nb_states; }
 
