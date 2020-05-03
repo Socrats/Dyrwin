@@ -168,6 +168,14 @@ void Agent::forgetQValues(double forget_rate) {
   _q_values *= forget_rate;
 }
 
+void Agent::decreaseAlpha(double decrease_rate) {
+  UNUSED(decrease_rate);
+}
+
+void Agent::increaseTemperature(double increase_rate) {
+  UNUSED(increase_rate);
+}
+
 // Getters
 size_t Agent::nb_states() const { return _nb_states; }
 

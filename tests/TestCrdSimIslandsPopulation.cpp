@@ -4,16 +4,18 @@
 #include <iostream>
 #include <map>
 #include <random>
+#include <chrono>
 #include <Dyrwin/RL/simulators/CrdIslands.h>
 #include <Dyrwin/OutputHandlers.hpp>
 
 using namespace std;
+using namespace std::chrono;
 using namespace EGTTools;
 
 int main() {
   //parameters
   size_t nb_evaluation_games = 1000;
-  size_t nb_generations = 100;
+  size_t nb_generations = 1000;
   size_t nb_populations = 2;
   size_t population_size = 24;
   size_t group_size = 6;
@@ -34,6 +36,8 @@ int main() {
 
   try {
     EGTTools::RL::Simulators::CRD::CRDSimIslands sim;
+    // Calculate execution time
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
     EGTTools::RL::DataTypes::DataTableCRD results = sim.run_population_islands(nb_evaluation_games,
                                                                                nb_populations,
                                                                                population_size,
@@ -47,7 +51,11 @@ int main() {
                                                                                available_actions,
                                                                                agent_type,
                                                                                args);
+    // Print execution time
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(t2 - t1).count();
     std::cout << "Finished simulation" << std::endl;
+    std::cout << "Execution time: " << duration << std::endl;
     std::string header =
         std::accumulate(results.header.begin(), results.header.end(), std::string(""),
                         [](string &ss, string &s) {

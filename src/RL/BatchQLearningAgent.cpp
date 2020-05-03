@@ -75,3 +75,9 @@ void BatchQLearningAgent::setTemperature(double temperature) {
     if (temperature < 0.0) throw std::invalid_argument("temperature must be > 0");
     _temperature = temperature;
 }
+void BatchQLearningAgent::decreaseAlpha(double decrease_rate) {
+  _alpha *= decrease_rate;
+}
+void BatchQLearningAgent::increaseTemperature(double increase_rate) {
+  _temperature *= increase_rate;
+}

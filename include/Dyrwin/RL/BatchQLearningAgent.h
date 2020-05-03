@@ -40,7 +40,11 @@ namespace EGTTools::RL {
         // Setters
         void setAlpha(double alpha);
 
+        void decreaseAlpha(double decrease_rate) override ;
+
         void setTemperature(double temperature);
+
+        void increaseTemperature(double increase_rate) override ;
 
     private:
         double _alpha; // learning rate

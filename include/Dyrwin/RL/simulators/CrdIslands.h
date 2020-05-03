@@ -12,6 +12,7 @@
 #include <Dyrwin/RL/PopContainer.hpp>
 #include <Dyrwin/RL/Utils.h>
 #include <Dyrwin/RL/Data.hpp>
+#include <Dyrwin/RL/helpers/PopulationHelper.h>
 #include <Dyrwin/Sampling.h>
 #include <Dyrwin/Distributions.h>
 #include <Dyrwin/SeedGenerator.h>
@@ -665,15 +666,14 @@ class CRDSimIslands {
    * @param game : game object
    * @param generator : reference to a random generator
    */
-  template<class G = CRDGame<PopContainer, TimingUncertainty<std::mt19937_64>, std::mt19937_64>>
+  template<typename R>
   void reinforce_population(double &pool,
                             size_t &success,
                             double target,
                             double &risk,
                             PopContainer &pop,
                             size_t &final_round,
-                            G &game,
-                            std::mt19937_64 &generator);
+                            R &generator);
 
   /**
  * @brief This method reinforces agents proportionally to the obtained payoff for Timing uncertainty games.
@@ -687,14 +687,13 @@ class CRDSimIslands {
  * @param game : game object
  * @param generator : reference to a random generator
  */
-  template<class G = CRDGame<PopContainer, void, void>>
+  template<typename R>
   void reinforce_population(double &pool,
                             size_t &success,
                             double threshold,
                             double &risk,
                             PopContainer &pop,
-                            G &game,
-                            std::mt19937_64 &generator);
+                            R &generator);
 
   // Getter
   [[nodiscard]] size_t verbose_level() const;
@@ -708,36 +707,34 @@ class CRDSimIslands {
   size_t _verbose_level;
   std::uniform_real_distribution<double> _real_rand;
 };
-template<class G>
+template<typename R>
 void CRDSimIslands::reinforce_population(double &pool,
                                          size_t &success,
                                          double target,
                                          double &risk,
                                          PopContainer &pop,
                                          size_t &final_round,
-                                         G &game,
-                                         std::mt19937_64 &generator) {
-  if (pool >= target)
+                                         R &generator) {
+  if (pool >= target) {
     success++;
+    EGTTools::RL::helpers::reinforcePath(pop, final_round);
+  }
   else if (_real_rand(generator) < risk)
-    game.setPayoffs(pop, 0);
-
-  game.reinforcePath(pop, final_round);
+    EGTTools::RL::helpers::reinforcePath(pop, final_round, 0.0);
 }
-template<class G>
+template<typename R>
 void CRDSimIslands::reinforce_population(double &pool,
                                          size_t &success,
-                                         double threshold,
+                                         double target,
                                          double &risk,
                                          EGTTools::RL::PopContainer &pop,
-                                         G &game,
-                                         std::mt19937_64 &generator) {
-  if (pool >= threshold)
+                                         R &generator) {
+  if (pool >= target) {
     success++;
+    EGTTools::RL::helpers::reinforcePath(pop);
+  }
   else if (_real_rand(generator) < risk)
-    game.setPayoffs(pop, 0);
-
-  game.reinforcePath(pop);
+    EGTTools::RL::helpers::reinforcePath(pop, 0.0);
 }
 template<class G>
 void CRDSimIslands::run_crd_single_group(size_t nb_generations,
@@ -756,11 +753,10 @@ void CRDSimIslands::run_crd_single_group(size_t nb_generations,
     for (size_t i = 0; i < nb_games; ++i) {
       // First we play several games
       auto[pool, final_round] = game.playGame(population, available_actions, nb_rounds);
-      reinforce_population(pool, success, target, risk, population, game, generator);
+      reinforce_population(pool, success, target, risk, population, generator);
     }
-    // Then, update the population
-    game.calcProbabilities(population);
-    game.resetEpisode(population);
+    // Then, update the population, reset the trajectory of each agent, and forget previous propensities.
+    EGTTools::RL::helpers::calcProbabilitiesAndResetEpisode(population);
   }
 }
 template<class G, class U>
@@ -781,15 +777,11 @@ void CRDSimIslands::run_crd_single_groupTU(size_t nb_generations,
     for (size_t i = 0; i < nb_games; ++i) {
       // First we play several games
       auto[pool, final_round] = game.playGame(population, available_actions, min_rounds, timing_uncertainty, generator);
-      reinforce_population(pool, success, target, risk, population, final_round, game, generator);
+      reinforce_population(pool, success, target, risk, population, final_round, generator);
     }
-    // Then, update the population
-    game.calcProbabilities(population);
-    game.resetEpisode(population);
+    // Then, update the population, reset the trajectory of each agent, and forget previous propensities.
+    EGTTools::RL::helpers::calcProbabilitiesAndResetEpisode(population);
   }
-
-  game.calcProbabilities(population);
-  game.resetEpisode(population);
 }
 
 template<class G>
@@ -814,11 +806,10 @@ void CRDSimIslands::run_crd_single_groupThU(size_t nb_generations,
     for (size_t i = 0; i < nb_games; ++i) {
       // First we play several games
       auto[pool, final_round] = game.playGame(population, available_actions, nb_rounds);
-      reinforce_population(pool, success, t_dist(generator), risk, population, game, generator);
+      reinforce_population(pool, success, t_dist(generator), risk, population, generator);
     }
-    // Then, update the population
-    game.calcProbabilities(population);
-    game.resetEpisode(population);
+    // Then, update the population, reset the trajectory of each agent, and forget previous propensities.
+    EGTTools::RL::helpers::calcProbabilitiesAndResetEpisode(population);
   }
 }
 template<class G, class U>
@@ -843,15 +834,11 @@ void CRDSimIslands::run_crd_single_groupTUThU(size_t nb_generations,
     for (size_t i = 0; i < nb_games; ++i) {
       // First we play several games
       auto[pool, final_round] = game.playGame(population, available_actions, min_rounds, timing_uncertainty, generator);
-      reinforce_population(pool, success, t_dist(generator), risk, population, final_round, game, generator);
+      reinforce_population(pool, success, t_dist(generator), risk, population, final_round, generator);
     }
-    // Then, update the population
-    game.calcProbabilities(population);
-    game.resetEpisode(population);
+    // Then, update the population, reset the trajectory of each agent, and forget previous propensities.
+    EGTTools::RL::helpers::calcProbabilitiesAndResetEpisode(population);
   }
-
-  game.calcProbabilities(population);
-  game.resetEpisode(population);
 }
 template<class G>
 void CRDSimIslands::run_crd_population(size_t population_size,
@@ -887,12 +874,12 @@ void CRDSimIslands::run_crd_population(size_t population_size,
       }
       // First we play the game
       auto[pool, final_round] = game.playGame(group, available_actions, nb_rounds);
-      reinforce_population(pool, success, target, risk, group, game, generator);
+      reinforce_population(pool, success, target, risk, group, generator);
       container.clear();
     }
 
-    game.calcProbabilities(population);
-    game.resetEpisode(population);
+    // Then, update the population, reset the trajectory of each agent, and forget previous propensities.
+    EGTTools::RL::helpers::calcProbabilitiesAndResetEpisode(population);
   }
 
 }
@@ -930,16 +917,12 @@ void CRDSimIslands::run_crd_populationTU(size_t population_size,
       }
       // First we play several games
       auto[pool, final_round] = game.playGame(group, available_actions, min_rounds, timing_uncertainty, generator);
-      reinforce_population(pool, success, target, risk, group, final_round, game, generator);
+      reinforce_population(pool, success, target, risk, group, final_round, generator);
       container.clear();
     }
-    // Then, update the population
-    game.calcProbabilities(population);
-    game.resetEpisode(population);
+    // Then, update the population, reset the trajectory of each agent, and forget previous propensities.
+    EGTTools::RL::helpers::calcProbabilitiesAndResetEpisode(population);
   }
-
-  game.calcProbabilities(population);
-  game.resetEpisode(population);
 }
 template<class G>
 void CRDSimIslands::run_crd_populationThU(size_t population_size,
@@ -980,12 +963,12 @@ void CRDSimIslands::run_crd_populationThU(size_t population_size,
       }
       // First we play the game
       auto[pool, final_round] = game.playGame(group, available_actions, nb_rounds);
-      reinforce_population(pool, success, t_dist(generator), risk, group, game, generator);
+      reinforce_population(pool, success, t_dist(generator), risk, group, generator);
       container.clear();
     }
 
-    game.calcProbabilities(population);
-    game.resetEpisode(population);
+    // Then, update the population, reset the trajectory of each agent, and forget previous propensities.
+    EGTTools::RL::helpers::calcProbabilitiesAndResetEpisode(population);
   }
 
 }
@@ -1028,16 +1011,12 @@ void CRDSimIslands::run_crd_populationTUThU(size_t population_size,
       }
       // First we play several games
       auto[pool, final_round] = game.playGame(group, available_actions, min_rounds, timing_uncertainty, generator);
-      reinforce_population(pool, success, t_dist(generator), risk, group, final_round, game, generator);
+      reinforce_population(pool, success, t_dist(generator), risk, group, final_round, generator);
       container.clear();
     }
-    // Then, update the population
-    game.calcProbabilities(population);
-    game.resetEpisode(population);
+    // Then, update the population, reset the trajectory of each agent, and forget previous propensities.
+    EGTTools::RL::helpers::calcProbabilitiesAndResetEpisode(population);
   }
-
-  game.calcProbabilities(population);
-  game.resetEpisode(population);
 }
 template<class G>
 void CRDSimIslands::evaluate_crd_populations(size_t nb_populations,

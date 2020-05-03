@@ -40,7 +40,11 @@ class BatchQLearning : public Agent {
   // Setters
   void setAlpha(double alpha);
 
+  void decreaseAlpha(double decrease_rate);
+
   void setTemperature(double temperature);
+
+  void increaseTemperature(double increase_rate);
 
  private:
   double _alpha; // learning rate

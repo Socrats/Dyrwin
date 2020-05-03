@@ -16,6 +16,22 @@ bool EGTTools::RL::helpers::reinforcePath(PopContainer &players, size_t final_ro
   return true;
 }
 
+bool EGTTools::RL::helpers::reinforcePath(PopContainer &players, double reward) {
+  for (auto &player : players) {
+    player->set_payoff(reward);
+    player->reinforceTrajectory();
+  }
+  return true;
+}
+
+bool EGTTools::RL::helpers::reinforcePath(PopContainer &players, size_t final_round, double reward) {
+  for (auto &player : players) {
+    player->set_payoff(reward);
+    player->reinforceTrajectory(final_round);
+  }
+  return true;
+}
+
 void EGTTools::RL::helpers::printGroup(PopContainer &players) {
   for (auto &player : players) {
     std::cout << *player << std::endl;
@@ -30,6 +46,14 @@ bool EGTTools::RL::helpers::calcProbabilities(PopContainer &players) {
 
 bool EGTTools::RL::helpers::resetEpisode(PopContainer &players) {
   for (auto &player : players) {
+    player->resetTrajectory();
+  }
+  return true;
+}
+
+bool EGTTools::RL::helpers::calcProbabilitiesAndResetEpisode(PopContainer &players) {
+  for (auto &player : players) {
+    player->inferPolicy();
     player->resetTrajectory();
   }
   return true;
@@ -78,5 +102,17 @@ void EGTTools::RL::helpers::resetQValues(PopContainer &players) {
 void EGTTools::RL::helpers::forgetPropensities(PopContainer &players, double forget_rate) {
   for (auto &player : players) {
     player->forgetQValues(forget_rate);
+  }
+}
+
+void EGTTools::RL::helpers::decreaseLearningRate(PopContainer &players, double decrease_rate) {
+  for (auto &player : players) {
+    player->decreaseAlpha(decrease_rate);
+  }
+}
+
+void EGTTools::RL::helpers::increaseTemperature(PopContainer &players, double increase_rate) {
+  for (auto &player : players) {
+    player->increaseTemperature(increase_rate);
   }
 }
