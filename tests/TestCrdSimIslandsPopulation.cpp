@@ -16,15 +16,15 @@ int main() {
   //parameters
   size_t nb_evaluation_games = 1000;
   size_t nb_generations = 1000;
-  size_t nb_populations = 2;
-  size_t population_size = 24;
+  size_t nb_populations = 1;
+  size_t population_size = 50;
   size_t group_size = 6;
-  size_t nb_actions = 3; //0, 2 and 4
+  size_t nb_actions = 5; //0, 2 and 4
   size_t nb_rounds = 10;
   size_t nb_games = 1000;
-  double risk = 0.9;
+  double risk = 0.1;
   double alpha = 0.09;
-  double temperature = 5;
+  double temperature = 10;
   std::string agent_type = "BatchQLearning";
 
   auto endowment = static_cast<double>(2 * nb_rounds);
@@ -36,6 +36,8 @@ int main() {
 
   try {
     EGTTools::RL::Simulators::CRD::CRDSimIslands sim;
+    sim.set_verbose_level(0);
+    sim.set_learning_rate_decay(0.1, 0.001);
     // Calculate execution time
     high_resolution_clock::time_point t1 = high_resolution_clock::now();
     EGTTools::RL::DataTypes::DataTableCRD results = sim.run_population_islands(nb_evaluation_games,

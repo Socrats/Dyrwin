@@ -84,6 +84,8 @@ class Agent {
 
   [[nodiscard]] const Matrix2D &qValues() const;
 
+  [[nodiscard]] [[maybe_unused]] virtual double alpha() const;
+
   // Setters
   void set_nb_states(size_t nb_states);
 
@@ -107,6 +109,8 @@ class Agent {
 
   void set_trajectory_round(size_t round, size_t action);
   void set_trajectory_state(size_t round, size_t state, size_t action);
+
+  [[maybe_unused]] virtual void setAlpha(double learning_rate);
 
  protected:
   virtual std::ostream &display(std::ostream &os) const;

@@ -33,12 +33,12 @@ namespace EGTTools::RL {
         [[nodiscard]] std::string type() const override;
 
         // Getters
-        [[nodiscard]] double alpha() const;
+        [[nodiscard]] double alpha() const override;
 
         [[nodiscard]] double temperature() const;
 
         // Setters
-        void setAlpha(double alpha);
+        void setAlpha(double alpha) override;
 
         void decreaseAlpha(double decrease_rate) override ;
 

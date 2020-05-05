@@ -8,7 +8,34 @@ using namespace EGTTools::RL::Simulators::CRD;
 CRDSimIslands::CRDSimIslands() {
   // verbose level is initialized to highest value, so that all game data is added to the data container
   _verbose_level = 1;
+  _decay = 1.;
+  _min_learning_rate = 1.;
   _real_rand = std::uniform_real_distribution<double>(0.0, 1.0);
+}
+void CRDSimIslands::reinforce_population(double &pool,
+                                         size_t &success,
+                                         double target,
+                                         double &risk,
+                                         PopContainer &pop,
+                                         size_t &final_round) {
+  if (pool >= target) {
+    success++;
+    EGTTools::RL::helpers::reinforcePath(pop, final_round);
+  } else {
+    EGTTools::RL::helpers::reinforcePath(pop, final_round, 1 - risk);
+  }
+}
+void CRDSimIslands::reinforce_population(double &pool,
+                                         size_t &success,
+                                         double target,
+                                         double &risk,
+                                         EGTTools::RL::PopContainer &pop) {
+  if (pool >= target) {
+    success++;
+    EGTTools::RL::helpers::reinforcePath(pop);
+  } else {
+    EGTTools::RL::helpers::reinforcePath(pop, 1 - risk);
+  }
 }
 EGTTools::RL::DataTypes::DataTableCRD
 CRDSimIslands::run_group_islands(size_t nb_evaluation_games,
@@ -1265,4 +1292,9 @@ size_t CRDSimIslands::verbose_level() const { return _verbose_level; }
 void CRDSimIslands::set_verbose_level(size_t verbose_level) {
   if (verbose_level > 1) throw std::invalid_argument("Verbose level can only be set to 0, 1.");
   _verbose_level = verbose_level;
+}
+
+void CRDSimIslands::set_learning_rate_decay(double decay, double min_lr) {
+  _decay = decay;
+  _min_learning_rate = min_lr;
 }

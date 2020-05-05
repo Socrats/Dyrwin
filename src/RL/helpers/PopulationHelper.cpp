@@ -16,17 +16,17 @@ bool EGTTools::RL::helpers::reinforcePath(PopContainer &players, size_t final_ro
   return true;
 }
 
-bool EGTTools::RL::helpers::reinforcePath(PopContainer &players, double reward) {
+bool EGTTools::RL::helpers::reinforcePath(PopContainer &players, double factor) {
   for (auto &player : players) {
-    player->set_payoff(reward);
+    player->multiply_by_payoff(factor);
     player->reinforceTrajectory();
   }
   return true;
 }
 
-bool EGTTools::RL::helpers::reinforcePath(PopContainer &players, size_t final_round, double reward) {
+bool EGTTools::RL::helpers::reinforcePath(PopContainer &players, size_t final_round, double factor) {
   for (auto &player : players) {
-    player->set_payoff(reward);
+    player->multiply_by_payoff(factor);
     player->reinforceTrajectory(final_round);
   }
   return true;
@@ -55,6 +55,26 @@ bool EGTTools::RL::helpers::calcProbabilitiesAndResetEpisode(PopContainer &playe
   for (auto &player : players) {
     player->inferPolicy();
     player->resetTrajectory();
+  }
+  return true;
+}
+
+bool EGTTools::RL::helpers::calcProbabilitiesResetEpisodeAndUpdateLearningRate(PopContainer &players,
+                                                                               double decay,
+                                                                               double min_learning_rate) {
+  // first we check the learning rate
+  auto lr = players(0)->alpha() * decay;
+  if (lr <= min_learning_rate) {
+    for (auto &player : players) {
+      player->inferPolicy();
+      player->resetTrajectory();
+    }
+  } else { // in case the learning rate is correct
+    for (auto &player : players) {
+      player->inferPolicy();
+      player->resetTrajectory();
+      player->setAlpha(lr);
+    }
   }
   return true;
 }
@@ -102,6 +122,12 @@ void EGTTools::RL::helpers::resetQValues(PopContainer &players) {
 void EGTTools::RL::helpers::forgetPropensities(PopContainer &players, double forget_rate) {
   for (auto &player : players) {
     player->forgetQValues(forget_rate);
+  }
+}
+
+void EGTTools::RL::helpers::setLearningRate(PopContainer &players, double learning_rate) {
+  for (auto &player : players) {
+    player->setAlpha(learning_rate);
   }
 }
 
