@@ -24,16 +24,16 @@ namespace EGTTools::RL::helpers {
 [[maybe_unused]] bool reinforcePath(PopContainer &players, size_t final_round);
 
 /**
- * Reinforces the actions of all players in PopContainer with payoff * \p factor.
+ * Reinforces the actions of all players in PopContainer with \p reward.
  *
  * This function should be used when the current payoff of a player should be
  * multiplied by a factor before reinforcing.
  *
  * @param players : container with pointers to each agent
- * @param factor : factor multiplied by the reward used to reinforce the agents
+ * @param reward : reward used to reinforce the agents
  * @return true if the update was successful
  */
-[[maybe_unused]] bool reinforcePath(PopContainer &players, double factor);
+[[maybe_unused]] bool reinforcePath(PopContainer &players, double reward);
 
 /**
  * Reinforces the actions of all players in PopContainer with payoff * \p factor.
@@ -43,10 +43,10 @@ namespace EGTTools::RL::helpers {
  *
  * @param players : container with pointers to each agent
  * @param final_round : total number of rounds of the game, so that the trajectory can be correctly reinforced.
- * @param reward : factor multiplyied by the reward used to reinforce the agents
+ * @param reward : reward used to reinforce the agents
  * @return true if the update was successful
  */
-[[maybe_unused]] bool reinforcePath(PopContainer &players, size_t final_round, double factor);
+[[maybe_unused]] bool reinforcePath(PopContainer &players, size_t final_round, double reward);
 
 /**
  * Prints each player's description

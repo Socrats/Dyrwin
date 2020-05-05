@@ -22,7 +22,7 @@ int main() {
   size_t nb_actions = 5; //0, 2 and 4
   size_t nb_rounds = 10;
   size_t nb_games = 1000;
-  double risk = 0.1;
+  double risk = 0.7;
   double alpha = 0.09;
   double temperature = 10;
   std::string agent_type = "BatchQLearning";

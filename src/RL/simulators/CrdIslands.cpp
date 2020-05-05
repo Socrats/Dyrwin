@@ -12,31 +12,6 @@ CRDSimIslands::CRDSimIslands() {
   _min_learning_rate = 1.;
   _real_rand = std::uniform_real_distribution<double>(0.0, 1.0);
 }
-void CRDSimIslands::reinforce_population(double &pool,
-                                         size_t &success,
-                                         double target,
-                                         double &risk,
-                                         PopContainer &pop,
-                                         size_t &final_round) {
-  if (pool >= target) {
-    success++;
-    EGTTools::RL::helpers::reinforcePath(pop, final_round);
-  } else {
-    EGTTools::RL::helpers::reinforcePath(pop, final_round, 1 - risk);
-  }
-}
-void CRDSimIslands::reinforce_population(double &pool,
-                                         size_t &success,
-                                         double target,
-                                         double &risk,
-                                         EGTTools::RL::PopContainer &pop) {
-  if (pool >= target) {
-    success++;
-    EGTTools::RL::helpers::reinforcePath(pop);
-  } else {
-    EGTTools::RL::helpers::reinforcePath(pop, 1 - risk);
-  }
-}
 EGTTools::RL::DataTypes::DataTableCRD
 CRDSimIslands::run_group_islands(size_t nb_evaluation_games,
                                  size_t nb_groups,

@@ -16,17 +16,17 @@ bool EGTTools::RL::helpers::reinforcePath(PopContainer &players, size_t final_ro
   return true;
 }
 
-bool EGTTools::RL::helpers::reinforcePath(PopContainer &players, double factor) {
+bool EGTTools::RL::helpers::reinforcePath(PopContainer &players, double reward) {
   for (auto &player : players) {
-    player->multiply_by_payoff(factor);
+    player->set_payoff(reward);
     player->reinforceTrajectory();
   }
   return true;
 }
 
-bool EGTTools::RL::helpers::reinforcePath(PopContainer &players, size_t final_round, double factor) {
+bool EGTTools::RL::helpers::reinforcePath(PopContainer &players, size_t final_round, double reward) {
   for (auto &player : players) {
-    player->multiply_by_payoff(factor);
+    player->set_payoff(reward);
     player->reinforceTrajectory(final_round);
   }
   return true;
