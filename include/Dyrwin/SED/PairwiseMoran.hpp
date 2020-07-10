@@ -115,7 +115,7 @@ class PairwiseMoran {
    * @param runs : number of independent runs to average
    * @return a vector that contains the gradient of selection for each state of the population
    */
-  VectorXd gradientOfSelection(size_t invader, size_t resident, size_t runs);
+  Vector gradientOfSelection(size_t invader, size_t resident, size_t runs);
 
   /**
    * @brief Estimates the fixation probability of the invading strategy over the resident strategy.
@@ -560,24 +560,22 @@ MatrixXui2D PairwiseMoran<Cache>::run(size_t nb_generations, double beta,
                                       const Eigen::Ref<const EGTTools::VectorXui> &init_state) {
   size_t die, birth, strategy_p1 = 0, strategy_p2 = 0, current_generation = 1;
   MatrixXui2D states = MatrixXui2D::Zero(nb_generations, _nb_strategies);
+  VectorXui strategies(_nb_strategies);
+  // initialise initial state
+  states.row(0) = init_state;
+  strategies = init_state;
 
   // Check if state is homogeneous
-  auto[homogeneous, idx_homo] = _is_homogeneous(init_state);
+  auto[homogeneous, idx_homo] = _is_homogeneous(strategies);
 
-  // If we return a matrix where the population never changes
+  // If homogeneous we return a matrix where the population never changes
   if (homogeneous) {
-    states.rowise() = init_state;
+    states.colwise() = strategies;
     return states;
   }
 
-  VectorXui strategies(_nb_strategies);
-  // initialise initial state
-  strategies = init_state;
-  states.row(0) = init_state
-
   // Creates a cache for the fitness data
   Cache cache(_cache_size);
-  size_t k = 0;
 
   for (size_t j = current_generation; j < nb_generations; ++j) {
     // Update with mutation and return how many steps should be added to the current
@@ -595,7 +593,7 @@ MatrixXui2D PairwiseMoran<Cache>::run(size_t nb_generations, double beta,
       // Update states matrix
       states.row(j) = strategies;
       // If here, j < nb_generations, then we fill the rest of the matrix
-      states.tail(nb_generations - j).colwise() = strategies;
+      states.block(nb_generations - j - 1, 0, nb_generations - j, init_state.size()).colwise() = strategies;
       break;
     }
   }

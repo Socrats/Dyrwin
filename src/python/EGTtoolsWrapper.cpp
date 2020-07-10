@@ -421,15 +421,23 @@ PYBIND11_MODULE(EGTtools, m) {
            "evolves the strategies for a maximum of nb_generations", py::arg("nb_generations"), py::arg("beta"),
            py::arg("mu"), py::arg("init_state"))
       .def("run",
-           &PairwiseComparison::run,
-           "runs the moran process with social imitation and returns a matrix with all the states the system went through",
-           py::arg("nb_generations"),
-           py::arg("beta"),
-           py::arg("mu"),
-           py::arg("init_state"))
-      .def("fixation_probability", &PairwiseComparison::fixationProbability,
-           "Estimates the fixation probability of an strategy in the population.",
-           py::arg("mutant"), py::arg("resident"), py::arg("nb_runs"), py::arg("nb_generations"), py::arg("beta"))
+           static_cast<EGTTools::MatrixXui2D (PairwiseComparison::*)(size_t, double, double,
+                                                                    const Eigen::Ref<const EGTTools::VectorXui> &)>(&PairwiseComparison::run),
+      "runs the moran process with social imitation and returns a matrix with all the states the system went through",
+      py::arg("nb_generations"),
+      py::arg("beta"),
+      py::arg("mu"),
+      py::arg("init_state"))
+      .def("run",
+       static_cast<EGTTools::MatrixXui2D (PairwiseComparison::*)(size_t, double,
+                                                                const Eigen::Ref<const EGTTools::VectorXui> &)>(&PairwiseComparison::run),
+       "runs the moran process with social imitation and returns a matrix with all the states the system went through",
+      py::arg("nb_generations"),
+      py::arg("beta"),
+      py::arg("init_state"))
+  .def("fixation_probability", &PairwiseComparison::fixationProbability,
+       "Estimates the fixation probability of an strategy in the population.",
+       py::arg("mutant"), py::arg("resident"), py::arg("nb_runs"), py::arg("nb_generations"), py::arg("beta"))
       .def("stationary_distribution", &PairwiseComparison::stationaryDistribution,
            py::call_guard<py::gil_scoped_release>(),
            "Estimates the stationary distribution of the population of strategies given the game.",
