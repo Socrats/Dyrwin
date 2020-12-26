@@ -53,7 +53,6 @@ class SeedGenerator {
    * @return SeedGenerator
    */
   static SeedGenerator &getInstance();
-  static SeedGenerator &getInstance(unsigned long int seed);
   ~SeedGenerator() = default;
 
   /**

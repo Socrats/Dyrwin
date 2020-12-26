@@ -61,18 +61,22 @@ PYBIND11_MODULE(EGTtools, m) {
             Initializes the random seed generator from random_device.
            )pbdoc")
       .def("init", [](unsigned long int seed) {
-        return std::unique_ptr<Random::SeedGenerator, py::nodelete>(&Random::SeedGenerator::getInstance(seed));
+        auto instance = std::unique_ptr<Random::SeedGenerator, py::nodelete>(&Random::SeedGenerator::getInstance());
+        instance->setMainSeed(seed);
+        return instance;
       }, R"pbdoc(
             Initializes the random seed generator from seed.
            )pbdoc")
-      .def("getSeed",
-           &Random::SeedGenerator::getMainSeed, "seed",
-           R"pbdoc(
-            Returns current seed
-           )pbdoc"
+      .def_property_readonly_static("seed_", [](const py::object&) {
+                                      return EGTTools::Random::SeedGenerator::getInstance().getMainSeed();
+                                    }, R"pbdoc(Returns current seed)pbdoc"
       )
-      .def("seed", &Random::SeedGenerator::getMainSeed,
-           "Set main seed");
+      .def_static("generate", []() {
+        return EGTTools::Random::SeedGenerator::getInstance().getSeed();
+      },"generates a random seed")
+      .def_static("seed", [](unsigned long int seed){
+        EGTTools::Random::SeedGenerator::getInstance().setMainSeed(seed);
+      });
 
   py::class_<PDImitation>(m, "PDImitation")
       .def(py::init<unsigned int, unsigned int, float, float, float, const Eigen::Ref<const Matrix2D> &>())
@@ -429,22 +433,22 @@ PYBIND11_MODULE(EGTtools, m) {
            py::arg("mu"), py::arg("init_state"))
       .def("run",
            static_cast<EGTTools::MatrixXui2D (PairwiseComparison::*)(size_t, double, double,
-                                                                    const Eigen::Ref<const EGTTools::VectorXui> &)>(&PairwiseComparison::run),
-      "runs the moran process with social imitation and returns a matrix with all the states the system went through",
-      py::arg("nb_generations"),
-      py::arg("beta"),
-      py::arg("mu"),
-      py::arg("init_state"))
+                                                                     const Eigen::Ref<const EGTTools::VectorXui> &)>(&PairwiseComparison::run),
+           "runs the moran process with social imitation and returns a matrix with all the states the system went through",
+           py::arg("nb_generations"),
+           py::arg("beta"),
+           py::arg("mu"),
+           py::arg("init_state"))
       .def("run",
-       static_cast<EGTTools::MatrixXui2D (PairwiseComparison::*)(size_t, double,
-                                                                const Eigen::Ref<const EGTTools::VectorXui> &)>(&PairwiseComparison::run),
-       "runs the moran process with social imitation and returns a matrix with all the states the system went through",
-      py::arg("nb_generations"),
-      py::arg("beta"),
-      py::arg("init_state"))
-  .def("fixation_probability", &PairwiseComparison::fixationProbability,
-       "Estimates the fixation probability of an strategy in the population.",
-       py::arg("mutant"), py::arg("resident"), py::arg("nb_runs"), py::arg("nb_generations"), py::arg("beta"))
+           static_cast<EGTTools::MatrixXui2D (PairwiseComparison::*)(size_t, double,
+                                                                     const Eigen::Ref<const EGTTools::VectorXui> &)>(&PairwiseComparison::run),
+           "runs the moran process with social imitation and returns a matrix with all the states the system went through",
+           py::arg("nb_generations"),
+           py::arg("beta"),
+           py::arg("init_state"))
+      .def("fixation_probability", &PairwiseComparison::fixationProbability,
+           "Estimates the fixation probability of an strategy in the population.",
+           py::arg("mutant"), py::arg("resident"), py::arg("nb_runs"), py::arg("nb_generations"), py::arg("beta"))
       .def("stationary_distribution", &PairwiseComparison::stationaryDistribution,
            py::call_guard<py::gil_scoped_release>(),
            "Estimates the stationary distribution of the population of strategies given the game.",

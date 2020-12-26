@@ -13,16 +13,12 @@ SeedGenerator::SeedGenerator() {
 }
 
 SeedGenerator::SeedGenerator(unsigned long int seed) {
+  _rng_seed = seed;
   _rng_engine.seed(seed);
 }
 
 SeedGenerator &SeedGenerator::getInstance() {
   static SeedGenerator _instance;
-  return _instance;
-}
-
-SeedGenerator &SeedGenerator::getInstance(unsigned long int seed) {
-  static SeedGenerator _instance(seed);
   return _instance;
 }
 
