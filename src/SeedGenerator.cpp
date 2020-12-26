@@ -7,40 +7,31 @@
 using namespace EGTTools::Random;
 
 SeedGenerator::SeedGenerator() {
-    _initSeed();
+  std::random_device sys_rand;
+  _rng_seed = sys_rand();
+  _rng_engine.seed(_rng_seed);
+}
+
+SeedGenerator::SeedGenerator(unsigned long int seed) {
+  _rng_engine.seed(seed);
 }
 
 SeedGenerator &SeedGenerator::getInstance() {
-    static SeedGenerator _instance;
-    return _instance;
+  static SeedGenerator _instance;
+  return _instance;
+}
+
+SeedGenerator &SeedGenerator::getInstance(unsigned long int seed) {
+  static SeedGenerator _instance(seed);
+  return _instance;
 }
 
 unsigned long int SeedGenerator::getSeed() {
-    std::uniform_int_distribution<unsigned long int> distribution(0, std::numeric_limits<unsigned>::max());
-    return distribution(rng_engine);
+  // wrapping up the generator with uniform distribution helps guarantee a good quality for the seed
+  std::uniform_int_distribution<unsigned long int> distribution(0, std::numeric_limits<unsigned>::max());
+  return distribution(_rng_engine);
 }
-
-void SeedGenerator::_initSeed() {
-    std::ifstream filein;
-    std::ofstream fileout;
-    fileout.open("seed.out");
-    filein.open("seed.in");
-
-    if (!filein) {
-
-        std::random_device sysrand;
-        _rng_seed = sysrand();
-
-        rng_engine.seed(_rng_seed); //seed RNGengine
-
-        fileout << _rng_seed << std::endl;
-        fileout.close();
-    } else {
-        filein >> _rng_seed;
-        fileout << _rng_seed << std::endl;
-
-        rng_engine.seed(_rng_seed); //seed rndEngine
-        fileout.close();
-        filein.close();
-    }
+void SeedGenerator::setMainSeed(unsigned long seed) {
+  _rng_seed = seed;
+  _rng_engine.seed(_rng_seed);
 }

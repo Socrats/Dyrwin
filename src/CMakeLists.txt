@@ -31,10 +31,11 @@ add_library(EGTTools
         RL/simulators/CrdIslands.cpp
         RL/Data.cpp
         RL/helpers/PopulationHelper.cpp
-        AbouCRD/CollectiveRiskDilemma.cpp
-        AbouCRD/CRDPlayer.cpp
-        AbouCRD/CRDSimulator.cpp
-        AbouCRD/DataStruct.cpp)
+        )
+# AbouCRD/CollectiveRiskDilemma.cpp
+#        AbouCRD/CRDPlayer.cpp
+#        AbouCRD/CRDSimulator.cpp
+#        AbouCRD/DataStruct.cpp
 
 # TODO: Separate libraries into EGT & RL
 set_target_properties(EGTTools PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})

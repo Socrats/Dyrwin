@@ -6,6 +6,7 @@
 #define DYRWIN_SED_GAMES_CRDGAME_HPP
 
 #include <cassert>
+#include <fstream>
 #include <Dyrwin/Distributions.h>
 #include <Dyrwin/SED/games/AbstractGame.hpp>
 #include <Dyrwin/SED/behaviors/CrdBehaviors.hpp>
@@ -15,7 +16,7 @@ namespace EGTTools::SED::CRD {
     using PayoffVector = std::vector<double>;
     using RandomDist = std::uniform_real_distribution<double>;
 
-    class CrdGame : public EGTTools::SED::AbstractGame {
+    class CrdGame final : public EGTTools::SED::AbstractGame {
     public:
         /**
          * @brief This class will update the payoffs according to the Collective-risk dilemma defined in Milinski et al. 2008.
@@ -132,33 +133,33 @@ namespace EGTTools::SED::CRD {
         calculate_polarization_success(size_t pop_size, const Eigen::Ref<const Vector> &stationary_distribution);
 
         // getters
-        size_t endowment() const;
+        [[nodiscard]] size_t endowment() const;
 
-        size_t target() const;
+        [[nodiscard]] size_t target() const;
 
-        size_t nb_rounds() const;
+        [[nodiscard]] size_t nb_rounds() const;
 
-        size_t group_size() const;
+        [[nodiscard]] size_t group_size() const;
 
-        size_t nb_strategies() const override;
+        [[nodiscard]] size_t nb_strategies() const override;
 
-        size_t nb_states() const;
+        [[nodiscard]] size_t nb_states() const;
 
-        double risk() const;
+        [[nodiscard]] double risk() const;
 
-        std::string toString() const override;
+        [[nodiscard]] std::string toString() const override;
 
-        std::string type() const override;
+        [[nodiscard]] std::string type() const override;
 
-        const GroupPayoffs &payoffs() const override;
+        [[nodiscard]] const GroupPayoffs &payoffs() const override;
 
-        double payoff(size_t strategy, const EGTTools::SED::StrategyCounts &group_composition) const override;
+        [[nodiscard]] double payoff(size_t strategy, const EGTTools::SED::StrategyCounts &group_composition) const override;
 
         void save_payoffs(std::string file_name) const override;
 
-        const Vector &group_achievements() const;
+        [[nodiscard]] const Vector &group_achievements() const;
 
-        const MatrixXui2D &contribution_behaviors() const;
+        [[nodiscard]] const MatrixXui2D &contribution_behaviors() const;
 
     protected:
         size_t endowment_, threshold_, nb_rounds_, group_size_, nb_strategies_, nb_states_;

@@ -57,7 +57,14 @@ PYBIND11_MODULE(EGTtools, m) {
   py::class_<Random::SeedGenerator, std::unique_ptr<Random::SeedGenerator, py::nodelete>>(m, "Random")
       .def("init", []() {
         return std::unique_ptr<Random::SeedGenerator, py::nodelete>(&Random::SeedGenerator::getInstance());
-      })
+      }, R"pbdoc(
+            Initializes the random seed generator from random_device.
+           )pbdoc")
+      .def("init", [](unsigned long int seed) {
+        return std::unique_ptr<Random::SeedGenerator, py::nodelete>(&Random::SeedGenerator::getInstance(seed));
+      }, R"pbdoc(
+            Initializes the random seed generator from seed.
+           )pbdoc")
       .def("getSeed",
            &Random::SeedGenerator::getMainSeed, "seed",
            R"pbdoc(

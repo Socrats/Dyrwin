@@ -284,7 +284,7 @@ double EGTTools::SED::CRD::CrdGameTU::calculate_group_achievement(size_t pop_siz
                                                                   const Eigen::Ref<const EGTTools::Vector> &stationary_distribution) {
     double group_achievement = 0;
 
-#pragma omp parallel for reduction(+:group_achievement)
+#pragma omp parallel for default(none) shared(pop_size, stationary_distribution, nb_strategies_) reduction(+:group_achievement)
     for (long int i = 0; i < stationary_distribution.size(); ++i) {
         VectorXui strategies = VectorXui::Zero(nb_strategies_);
         EGTTools::SED::sample_simplex(i, pop_size, nb_strategies_, strategies);
@@ -338,7 +338,7 @@ EGTTools::Vector3d EGTTools::SED::CRD::CrdGameTU::calculate_polarization(size_t 
                                                                          const Eigen::Ref<const EGTTools::Vector> &stationary_distribution) {
     EGTTools::Vector3d polarization = EGTTools::Vector3d::Zero();
 
-#pragma omp parallel for reduction(+:polarization)
+#pragma omp parallel for default(none) shared(pop_size, stationary_distribution, nb_strategies_) reduction(+:polarization)
     for (long int i = 0; i < stationary_distribution.size(); ++i) {
         EGTTools::Vector3d container = EGTTools::Vector3d::Zero();
         VectorXui strategies = VectorXui::Zero(nb_strategies_);
@@ -354,7 +354,7 @@ EGTTools::Vector3d EGTTools::SED::CRD::CrdGameTU::calculate_polarization_success
                                                                                  const Eigen::Ref<const EGTTools::Vector> &stationary_distribution) {
     EGTTools::Vector3d polarization = EGTTools::Vector3d::Zero();
 
-#pragma omp parallel for reduction(+:polarization)
+#pragma omp parallel for default(none) shared(pop_size, stationary_distribution, nb_strategies_) reduction(+:polarization)
     for (long int i = 0; i < stationary_distribution.size(); ++i) {
         EGTTools::Vector3d container = EGTTools::Vector3d::Zero();
         VectorXui strategies = VectorXui::Zero(nb_strategies_);

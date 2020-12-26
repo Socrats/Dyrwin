@@ -105,3 +105,6 @@ target_link_libraries(testCrdSimIslandsThUConditionalPop EGTTools)
 add_executable(testCrdSimIslandsTUThUConditionalPop testCrdSimIslandsTUThUConditionalPopulation.cpp)
 set_target_properties(testCrdSimIslandsTUThUConditionalPop PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(testCrdSimIslandsTUThUConditionalPop EGTTools)
+
+add_executable(testSeeder TestRandomSeeder.cpp)
+#target_link_libraries(testCrdSimIslandsTUThUConditionalPop EGTTools)

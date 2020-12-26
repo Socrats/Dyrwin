@@ -212,6 +212,7 @@ class MLS {
   *
   * @tparam S : group container
   * @param invader : index of the invading strategy
+  * @param resident : index of the resident strategy
   * @param init_state : vector indicating the initial state of the population (how many individuals of each strategy)
   * @param runs : number of runs (to average the results)
   * @param w : intensity of selection
@@ -219,7 +220,7 @@ class MLS {
   * @return : an Eigen vector with the gradient of selection for each k/Z where k is the number of invaders.
   */
   Vector
-  gradientOfSelection(size_t invader, size_t reduce, const Eigen::Ref<const VectorXui> &init_state, size_t runs,
+  gradientOfSelection(size_t invader, size_t resident, const Eigen::Ref<const VectorXui> &init_state, size_t runs,
                       double w, double q = 0.0);
 
   // To avoid memory explosion, we limit the call to this function for a maximum of 3 strategies
@@ -1021,7 +1022,9 @@ MLS<S>::fixationProbability(size_t invader, size_t resident, size_t runs, double
   group_strategies(resident) = _group_size;
 
   // This loop can be done in parallel
-#pragma omp parallel for shared(group_strategies) reduction(+:r2m, r2r)
+#pragma omp parallel for default(none) shared(group_strategies, invader, resident, runs, q, w, \
+_nb_strategies, _group_size, \
+_payoff_matrix, _nb_groups, _pop_size, _generations) reduction(+:r2m, r2r)
   for (size_t i = 0; i < runs; ++i) {
     // First we initialize a homogeneous population with the resident strategy
     SED::Group group(_nb_strategies, _group_size, w, group_strategies, _payoff_matrix);
@@ -1069,7 +1072,9 @@ MLS<S>::fixationProbability(size_t invader, size_t resident, size_t runs,
   group_strategies(resident) = _group_size;
 
   // This loop can be done in parallel
-#pragma omp parallel for shared(group_strategies) reduction(+:r2m, r2r)
+#pragma omp parallel for default(none) shared(group_strategies, invader, resident, runs, q, w, lambda, \
+_nb_strategies, _group_size, \
+_payoff_matrix, _nb_groups, _pop_size, _generations) reduction(+:r2m, r2r)
   for (size_t i = 0; i < runs; ++i) {
     // First we initialize a homogeneous population with the resident strategy
     SED::Group group(_nb_strategies, _group_size, w, group_strategies, _payoff_matrix);
@@ -1117,7 +1122,9 @@ double MLS<S>::fixationProbability(size_t invader, size_t resident, size_t runs,
   group_strategies(resident) = _group_size;
 
   // This loop can be done in parallel
-#pragma omp parallel for shared(group_strategies) reduction(+:r2m, r2r)
+#pragma omp parallel for default(none) shared(group_strategies, invader, resident, runs, q, w, lambda, kappa, z, \
+_nb_strategies, _group_size, \
+_payoff_matrix, _nb_groups, _pop_size, _generations) reduction(+:r2m, r2r)
   for (size_t i = 0; i < runs; ++i) {
     // First we initialize a homogeneous population with the resident strategy
     SED::Group group(_nb_strategies, _group_size, w, group_strategies, _payoff_matrix);
@@ -1182,7 +1189,9 @@ Vector MLS<S>::fixationProbability(size_t invader, const Eigen::Ref<const Vector
   }
 
   // This loop can be done in parallel
-#pragma omp parallel for shared(group, pop_container) reduction(+:fixations)
+#pragma omp parallel for default(none) shared(group, pop_container, init_state, invader, runs, q, w, \
+group, _nb_groups, _generations, \
+_nb_strategies) reduction(+:fixations)
   for (size_t i = 0; i < runs; ++i) {
     // First we initialize a homogeneous population with the resident strategy
     bool fixated = false;
@@ -1230,7 +1239,8 @@ MLS<S>::gradientOfSelection(size_t invader, size_t resident, size_t runs, double
   Vector gradient = Vector::Zero(_pop_size + 1);
 
   // This loop can be done in parallel
-#pragma omp parallel for shared(gradient)
+#pragma omp parallel for default(none) shared(gradient, invader, resident, runs, w, q, \
+_pop_size, _nb_strategies, _group_size, _payoff_matrix, _nb_groups, _pop_size)
   for (size_t k = 1; k < _pop_size; ++k) { // Loops over all population configurations
     VectorXui strategies = VectorXui::Zero(_nb_strategies);
     Group group(_nb_strategies, _group_size, w, strategies, _payoff_matrix);
@@ -1270,7 +1280,7 @@ MLS<S>::gradientOfSelection(size_t invader, size_t resident, size_t runs, double
 
 template<typename S>
 Vector
-MLS<S>::gradientOfSelection(size_t invader, size_t reduce, const Eigen::Ref<const VectorXui> &init_state,
+MLS<S>::gradientOfSelection(size_t invader, size_t resident, const Eigen::Ref<const VectorXui> &init_state,
                             size_t runs, double w, double q) {
   if (invader > _nb_strategies)
     throw std::invalid_argument(
@@ -1284,11 +1294,12 @@ MLS<S>::gradientOfSelection(size_t invader, size_t reduce, const Eigen::Ref<cons
     throw std::invalid_argument(
         "the sum of individuals in the initial state must be equal to " + std::to_string(_pop_size));
 
-  Vector gradient = Vector::Zero(init_state(reduce) + 1);
+  Vector gradient = Vector::Zero(init_state(resident) + 1);
 
   // This loop can be done in parallel
-#pragma omp parallel for shared(gradient)
-  for (size_t k = 0; k <= init_state(reduce); ++k) { // Loops over all population configurations
+#pragma omp parallel for default(none) shared(gradient, invader, resident, runs, w, q, init_state, \
+_pop_size, _nb_strategies, _group_size, _payoff_matrix, _nb_groups, _pop_size)
+  for (size_t k = 0; k <= init_state(resident); ++k) { // Loops over all population configurations
     VectorXui strategies = VectorXui::Zero(_nb_strategies);
     Group group(_nb_strategies, _group_size, w, strategies, _payoff_matrix);
     group.set_group_size(_group_size);
@@ -1300,7 +1311,7 @@ MLS<S>::gradientOfSelection(size_t invader, size_t reduce, const Eigen::Ref<cons
     size_t z = 0;
     for (size_t i = 0; i < _nb_strategies; ++i) {
       if (i == invader) strategies(i) = k;
-      else if (i == reduce) strategies(i) = init_state(i) - k;
+      else if (i == resident) strategies(i) = init_state(i) - k;
       else strategies(i) = init_state(i);
       for (size_t j = 0; j < strategies(i); ++j) {
         pop_container[z++] = i;
@@ -1320,7 +1331,7 @@ MLS<S>::gradientOfSelection(size_t invader, size_t reduce, const Eigen::Ref<cons
       }
       strategies.array() = init_state;
       strategies(invader) = k;
-      strategies(reduce) -= k;
+      strategies(resident) -= k;
     }
     // Calculate gradient
     gradient(k) = (static_cast<double>(t_plus) - static_cast<double>(t_minus)) / static_cast<double>(runs);
