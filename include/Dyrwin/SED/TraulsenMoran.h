@@ -5,10 +5,10 @@
 #ifndef DYRWIN_SED_TRAULSENMORAN_H
 #define DYRWIN_SED_TRAULSENMORAN_H
 
+#include <cmath>
 #include <random>
 #include <algorithm>
 #include <vector>
-#include <cmath>
 #include <iostream>
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/Types.h>

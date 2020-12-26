@@ -5,9 +5,9 @@
 #ifndef DYRWIN_SED_MLS_HPP
 #define DYRWIN_SED_MLS_HPP
 
+#include <cmath>
 #include <random>
 #include <algorithm>
-#include <cmath>
 #include <unordered_set>
 #include <iterator>
 #include <Dyrwin/SeedGenerator.h>

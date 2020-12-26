@@ -5,8 +5,8 @@
 #ifndef DYRWIN_RL_SPARSEAGENT_H
 #define DYRWIN_RL_SPARSEAGENT_H
 
-#include <string>
 #include <cmath>
+#include <string>
 #include <iostream>
 #include <cassert>
 #include <vector>

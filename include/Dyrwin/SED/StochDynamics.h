@@ -5,9 +5,9 @@
 #ifndef DYRWIN_SED_STOCHDYNAMICS_H
 #define DYRWIN_SED_STOCHDYNAMICS_H
 
+#include <cmath>
 #include <random>
 #include <vector>
-#include <cmath>
 #include <tuple>
 #include <Eigen/Dense>
 #include <iostream>

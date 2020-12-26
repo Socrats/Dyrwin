@@ -5,9 +5,9 @@
 #ifndef DYRWIN_SED_STRUCTURE_GARCIAGROUP_HPP
 #define DYRWIN_SED_STRUCTURE_GARCIAGROUP_HPP
 
+#include <cmath>
 #include <random>
 #include <algorithm>
-#include <cmath>
 #include <Dyrwin/Types.h>
 #include <iostream>
 

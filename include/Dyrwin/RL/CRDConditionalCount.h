@@ -7,9 +7,9 @@
 #ifndef DYRWIN_RL_CRDCONDITIONALC0UNT_H
 #define DYRWIN_RL_CRDCONDITIONALC0UNT_H
 
+#include <cmath>
 #include <random>
 #include <vector>
-#include <cmath>
 #include <tuple>
 #include <iostream>
 #include <Dyrwin/SeedGenerator.h>

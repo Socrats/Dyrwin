@@ -5,9 +5,9 @@
 #ifndef DYRWIN_SED_MORANPROCESS_HPP
 #define DYRWIN_SED_MORANPROCESS_HPP
 
+#include <cmath>
 #include <random>
 #include <algorithm>
-#include <cmath>
 #include <Dyrwin/SeedGenerator.h>
 #include <Dyrwin/Types.h>
 
