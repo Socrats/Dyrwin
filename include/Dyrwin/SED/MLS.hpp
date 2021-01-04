@@ -231,25 +231,25 @@ class MLS {
 
 
   // Getters
-  size_t generations() { return _generations; }
+  [[nodiscard]] size_t generations() const { return _generations; }
 
-  size_t nb_strategies() { return _nb_strategies; }
+  [[nodiscard]] size_t nb_strategies() const { return _nb_strategies; }
 
-  size_t max_pop_size() { return _pop_size; }
+  [[nodiscard]] size_t max_pop_size() const { return _pop_size; }
 
-  size_t group_size() { return _group_size; }
+  [[nodiscard]] size_t group_size() const { return _group_size; }
 
-  size_t nb_groups() { return _nb_groups; }
+  [[nodiscard]] size_t nb_groups() const { return _nb_groups; }
 
-  double selection_intensity() { return _w; }
+  [[nodiscard]] [[maybe_unused]] double selection_intensity() const { return _w; }
 
-  Vector init_strategy_freq() { return _strategies.cast<double>() / _pop_size; }
+  [[nodiscard]] const Vector init_strategy_freq() const { return _strategies.cast<double>() / _pop_size; }
 
-  Vector &strategy_freq() { return _strategy_freq; }
+  [[nodiscard]] const Vector &strategy_freq() const { return _strategy_freq; }
 
-  VectorXui &init_strategy_count() { return _strategies; }
+  [[nodiscard]] const VectorXui &init_strategy_count() const { return _strategies; }
 
-  Matrix2D &payoff_matrix() { return _payoff_matrix; }
+  [[nodiscard]] const Matrix2D &payoff_matrix() const { return _payoff_matrix; }
 
   // Setters
   void set_generations(size_t generations) { _generations = generations; }

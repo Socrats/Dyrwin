@@ -59,24 +59,24 @@ namespace EGTTools::SED {
         calculate_fitness(const size_t &player_type, const size_t &pop_size,
                           const Eigen::Ref<const VectorXui> &strategies) = 0;
 
-        virtual size_t nb_strategies() const = 0;
+        [[nodiscard]] virtual size_t nb_strategies() const = 0;
 
         /**
          * @return Returns a small description of the game.
          */
-        virtual std::string toString() const = 0;
+        [[nodiscard]] virtual std::string toString() const = 0;
 
         /**
          *
          * @return The type of game
          */
-        virtual std::string type() const = 0;
+        [[nodiscard]] virtual std::string type() const = 0;
 
         /**
          *
          * @return payoff matrix of the game
          */
-        virtual const GroupPayoffs &payoffs() const = 0;
+        [[nodiscard]] virtual const GroupPayoffs &payoffs() const = 0;
 
         /**
          * @brief returns the payoff of a strategy given a group composition
@@ -87,7 +87,7 @@ namespace EGTTools::SED {
          * @param group_composition : vector with the group composition
          * @return the payoff value
          */
-        virtual double payoff(size_t strategy, const EGTTools::SED::StrategyCounts &group_composition) const = 0;
+        [[nodiscard]] virtual double payoff(size_t strategy, const EGTTools::SED::StrategyCounts &group_composition) const = 0;
 
         /**
          * @brief stores the payoff matrix in a txt file
