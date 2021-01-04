@@ -995,6 +995,7 @@ void PairwiseMoran<Cache>::set_population_size(size_t pop_size) {
   _pop_size = pop_size;
   _nb_states = EGTTools::starsBars(_pop_size, _nb_strategies);
   _state_sampler = std::uniform_int_distribution<size_t>(0, _nb_states - 1);
+  _pop_sampler = std::uniform_int_distribution<size_t>(0, _pop_size - 1);
 }
 
 template<class Cache>
