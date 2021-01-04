@@ -15,6 +15,7 @@
 #include <Dyrwin/SED/structure/GarciaGroup.hpp>
 #include <Dyrwin/SED/PairwiseMoran.hpp>
 #include <Dyrwin/SED/games/AbstractGame.hpp>
+#include <Dyrwin/SED/games/NormalFormGame.h>
 #include <Dyrwin/SED/games/CrdGame.hpp>
 #include <Dyrwin/SED/games/CrdGameTU.hpp>
 #include <Dyrwin/SED/behaviors/CrdBehaviors.hpp>
@@ -27,7 +28,7 @@
 #include <Dyrwin/RL/RothErevAgent.h>
 #include <Dyrwin/RL/HistericQLearningAgent.hpp>
 #include <Dyrwin/RL/CRDGame.h>
-#include <Dyrwin/RL/CRDDemocracy.h>
+//#include <Dyrwin/RL/CRDDemocracy.h>
 #include <Dyrwin/RL/CRDConditional.h>
 #include <Dyrwin/RL/CrdSim.hpp>
 #include <Dyrwin/RL/Data.hpp>
@@ -45,6 +46,13 @@ using DataTableCRD = EGTTools::RL::DataTypes::DataTableCRD;
 PYBIND11_MODULE(EGTtools, m) {
   m.doc() = R"pbdoc(
         EGTtools: Efficient methods for modeling and studying Social Dynamics and Game Theory.
+        This library is written in C++ (with python bindings) and pure Python.
+
+        Note:
+        Soon this library will be separated into two modules: EGTtools and LTtools which will contain
+        methods for analysing social dynamics with evolutionary game theory (EGT) and Learning Theory (LT).
+        The latter will be mostly focused on reinforcement learning (RL). These modules will be
+        issues both separately and joined in the Dyrwin library.
         -----------------------
         .. currentmodule:: EGTtools
         .. autosummary::
@@ -321,6 +329,30 @@ PYBIND11_MODULE(EGTtools, m) {
         &EGTTools::starsBars,
         "calculates the number of states (combinations) of the members of a group in a subgroup.",
         py::arg("group_size"), py::arg("sub_group_size"));
+
+  py::class_<EGTTools::SED::NormalFormGame, EGTTools::SED::AbstractGame>(m, "NormalFormGame")
+      .def(py::init<size_t, const Eigen::Ref<const Matrix2D> &>(), "Normal Form Game", py::arg("nb_rounds"),
+           py::arg("payoff_matrix"))
+      .def("play", &EGTTools::SED::NormalFormGame::play)
+      .def("calculate_payoffs", &EGTTools::SED::NormalFormGame::calculate_payoffs,
+           "updates the internal payoff and coop_level matrices by calculating the payoff of each strategy "
+           "given any possible strategy pair")
+      .def("calculate_fitness", &EGTTools::SED::NormalFormGame::calculate_fitness,
+           "calculates the fitness of an individual of a given strategy given a population state."
+           "It always assumes that the population state does not contain the current individual",
+           py::arg("player_strategy"),
+           py::arg("pop_size"), py::arg("population_state"))
+      .def("to_string", &EGTTools::SED::NormalFormGame::toString)
+      .def("type", &EGTTools::SED::NormalFormGame::type)
+      .def("payoffs", &EGTTools::SED::NormalFormGame::payoffs)
+      .def("payoff", &EGTTools::SED::NormalFormGame::payoff,
+           "returns the payoff of a strategy given a strategy pair.", py::arg("strategy"),
+           py::arg("strategy pair"))
+      .def("expected_payoffs", &EGTTools::SED::NormalFormGame::expected_payoffs, "returns the expected payoffs of each strategy vs another")
+      .def_property_readonly("nb_strategies", &EGTTools::SED::NormalFormGame::nb_strategies)
+      .def_property_readonly("nb_rounds", &EGTTools::SED::NormalFormGame::nb_rounds)
+      .def_property_readonly("nb_states", &EGTTools::SED::NormalFormGame::nb_states)
+      .def("save_payoffs", &EGTTools::SED::NormalFormGame::save_payoffs);
 
   // Now we define a submodule
   auto mCRD = m.def_submodule("CRD");

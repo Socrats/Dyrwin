@@ -31,7 +31,7 @@ add_library(EGTTools
         RL/simulators/CrdIslands.cpp
         RL/Data.cpp
         RL/helpers/PopulationHelper.cpp
-        )
+        SED/games/NormalFormGame.cpp)
 # AbouCRD/CollectiveRiskDilemma.cpp
 #        AbouCRD/CRDPlayer.cpp
 #        AbouCRD/CRDSimulator.cpp

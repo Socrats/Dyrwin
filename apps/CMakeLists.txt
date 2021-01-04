@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 
-add_executable(AbouCRD AbouCRD/main.cpp)
+add_executable(AbouCRD AbouCRD/main.cpp ../include/Dyrwin/SED/games/NormalFormGame.h)
 target_link_libraries(AbouCRD ${Boost_LIBRARIES} boost_program_options)
 set_target_properties(AbouCRD PROPERTIES CMAKE_CXX_FLAGS lboost_program_options)
 set_target_properties(AbouCRD PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
